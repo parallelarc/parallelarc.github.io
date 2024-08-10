@@ -1,13 +1,13 @@
 ---
 permalink: /
-title: "Academic Pages is a ready-to-fork GitHub Pages template for academic personal websites"
+title: ""
 author_profile: true
 redirect_from: 
   - /about/
   - /about.html
 ---
 
-My name is Jianwei Ren. 
+Hi, I am Ren Jianwei, a graduate student at the School of Artificial Intelligence, [Beijing University of Posts and Telecommunications (BUPT)](https://www.bupt.edu.cn). My research interests are **unsupervised representation learning, 3D vision and autonomous driving**.
 
 A data-driven personal website
 ======
