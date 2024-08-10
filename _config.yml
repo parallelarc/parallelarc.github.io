@@ -21,10 +21,10 @@ repository               : "parallelarc/parallelarc.github.io"
 #               Additional customization can be done by editing /_includes/author-profile.html
 author:
   # Biographic information
-  avatar           : "profile.png"
+  avatar           : "fox.png"
   name             : "Jianwei Rem"
-  pronouns         : example: "he/him"  
-  bio              : "Short biography for the left-hand sidebar"
+  pronouns         : "he/him"  
+  bio              : #"Short biography for the left-hand sidebar"
   location         : "Beijing, China"
   employer         : #"Red Brick University"
   uri              : # URL
