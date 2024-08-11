@@ -7,7 +7,9 @@ redirect_from:
   - /about.html
 ---
 
-Hi, I am Ren Jianwei, a graduate student at the School of Artificial Intelligence, [Beijing University of Posts and Telecommunications (BUPT)](https://www.bupt.edu.cn). My research interests are **unsupervised representation learning, 3D vision and autonomous driving**.
+Hi, I am Jianwei Ren, a graduate student from [Beijing University of Posts and Telecommunications (BUPT)](https://www.bupt.edu.cn). My research interests are **3D vision, Autonomous Driving and Unsupervised Representation Learning**. 
+
+I was an intern at Xiaomi EV, working with Dr. Guang Li and [Dr. Kuiyuan Yang](https://scholar.google.com/citations?user=g2gAY_0AAAAJ), and during which I secured 2nd place in the [Mapless Driving track of the CVPR2024 Autonomous Grand Challenge](https://opendrivelab.com/challenge2024/#mapless_driving). I earned my BEng (2021) with a UK First Class Honours Degree from the joint program between BUPT and [Queen Mary University of London (QMUL)](https://www.qmul.ac.uk/). I am fortunate to have received recommendation letters from Dr. Kuiyuan Yang and [President Kun XU](https://www.bupt.edu.cn/info/1274/84949.htm) of BUPT.
 
 A data-driven personal website
 ======
