@@ -1,5 +1,5 @@
 ---
-layout: archive
+# layout: archive
 permalink: /
 title: ""
 author_profile: true
@@ -8,9 +8,13 @@ redirect_from:
   - /about.html
 ---
 
-Hi, I am Jianwei Ren, a graduate student from [Beijing University of Posts and Telecommunications (BUPT)](https://www.bupt.edu.cn). My research interests are **3D Vision, Autonomous Driving and Unsupervised Representation Learning**. 
+Hi, I am a research assistant in [MARS Lab](http://group.iiis.tsinghua.edu.cn/~marslab/) at IIIS, Tsinghua University, working with [Prof. Hang Zhao](https://hangzhaomit.github.io/). My research interests are **3D Vision, Autonomous Driving and Unsupervised Representation Learning**. 
 
-I was an intern at Xiaomi EV, working with Dr. Guang Li and [Dr. Kuiyuan Yang](https://scholar.google.com/citations?user=g2gAY_0AAAAJ), and during which I secured 2nd place in the Mapless Driving track of the CVPR2024 [Autonomous Grand Challenge](https://opendrivelab.com/challenge2024/#mapless_driving). I earned my BEng (2021) with a UK First Class Honours Degree from the joint program between BUPT and [Queen Mary University of London (QMUL)](https://www.qmul.ac.uk/). I am fortunate to have received recommendation letters from Dr. Kuiyuan Yang and [President Kun XU](https://www.bupt.edu.cn/info/1274/84949.htm) of BUPT.
+
+I was an intern at Xiaomi EV, working with Dr. Guang Li and [Dr. Kuiyuan Yang](https://scholar.google.com/citations?user=g2gAY_0AAAAJ), and during which I secured 2nd place in the Mapless Driving track of the CVPR2024 [Autonomous Grand Challenge](https://opendrivelab.com/challenge2024/#mapless_driving). 
+
+
+I earned my MEng (2024) from [Beijing University of Posts and Telecommunications (BUPT)](https://www.bupt.edu.cn) and my BEng (2021) with a UK First Class Honours Degree from the joint program between BUPT and [Queen Mary University of London (QMUL)](https://www.qmul.ac.uk/). I am fortunate to have received recommendation letters from Dr. Kuiyuan Yang and [Pres. Kun XU](https://www.bupt.edu.cn/info/1274/84949.htm) of BUPT.
 
 :fire: **I'm actively on the hunt for a PhD opportunity. Should you come across any promising leads, I'd be delighted to hear from you. My [CV](/files/CV_JianweiREN.pdf) and [research proposal](/files/Research Proposal_SMTP.pdf) are available.**
 
@@ -28,7 +32,10 @@ I was an intern at Xiaomi EV, working with Dr. Guang Li and [Dr. Kuiyuan Yang](h
 }
 
 .pub .img {
+  display: flex;
+  flex: 1;
   margin-right: 20px;
+  align-items: center;
 }
 
 .pub .img img{
@@ -63,7 +70,7 @@ I was an intern at Xiaomi EV, working with Dr. Guang Li and [Dr. Kuiyuan Yang](h
 
 <div class="pub">
   <div class="img">
-    <img src="/images/pub1.png">
+    <img src="/images/pub/pub1.png">
   </div>
   <div class="txt">
     <h2>
@@ -71,14 +78,14 @@ I was an intern at Xiaomi EV, working with Dr. Guang Li and [Dr. Kuiyuan Yang](h
     </h2>
     <p>Guang Li*, <b>Jianwei Ren*</b>, Quanyun Zhou, Anbin Xiong, Kuiyuan Yang <br>
       <b>CVPR Workshop, 2024</b><br>
-      This work is a technical report for Mapless Driving, achieving 2nd place on the OpenLane-V2 leaderboard. A "lane-crosswalk-boundary" joint training framework is adopted to detect vectorized traffic elements, demonstrating that employing appropriate representations for traffic elements and incorporating SD map into BEV generation significantly enhance performance. Additionally, a YOLOv8-based multi-scale framework is employed for detecting traffic signs. We also introduce geometric priors to refine topological modeling, achieving state-of-the-art results.
+      This is a technical report for Mapless Driving, achieving 2nd place on the OpenLane-V2 leaderboard. A "lane-crosswalk-boundary" joint training framework is adopted to detect vectorized traffic elements, demonstrating that employing appropriate representations for traffic elements and incorporating SD map into BEV generation significantly enhance performance. Additionally, a YOLOv8-based multi-scale framework is employed for detecting traffic signs. We also introduce geometric priors to refine topological modeling, achieving state-of-the-art results.
     </p>
   </div>
 </div>
 
 <div class="pub">
   <div class="img">
-    <img src="/images/pub3.png">
+    <img src="/images/pub/pub3.png">
   </div>
   <div class="txt">
     <h2>
@@ -86,6 +93,7 @@ I was an intern at Xiaomi EV, working with Dr. Guang Li and [Dr. Kuiyuan Yang](h
     </h2>
     <p><b>Jianwei Ren</b><br>
       <b>One Chapter of Master Thesis </b><br>
+      This is a simple pixel-wise representation learning framework for self-supervised monocular depth estimation. It explicitly constructs a knowledge transfer path between the original frame and reconstructed frame, enabling its siamese weight-sharing encoders to extract scene-invariant features. SimPix achieves competitive results with state-of-the-art without increasing the complexity during inference.
       
     </p>
   </div>
@@ -93,7 +101,7 @@ I was an intern at Xiaomi EV, working with Dr. Guang Li and [Dr. Kuiyuan Yang](h
 
 <div class="pub">
   <div class="img">
-    <img src="/images/pub2.png">
+    <img src="/images/pub/pub2.png">
   </div>
   <div class="txt">
     <h2>
@@ -101,7 +109,7 @@ I was an intern at Xiaomi EV, working with Dr. Guang Li and [Dr. Kuiyuan Yang](h
     </h2>
     <p><b>Jianwei Ren</b><br>
       <b>ArXiv, 2024</b><br>
-      This work is the first to introduce adaptive discrete strategy into the self-supervised monocular depth estimation community. Through global perception of distinct scenes, a learnable module is designed to dynamically allocate pixels into bins with adaptive depth values. 
+      This is the first work to introduce adaptive discrete strategy into the self-supervised monocular depth estimation community. Through global perception of distinct scenes, a learnable module is designed to dynamically allocate pixels into bins with adaptive depth values. To prevent collapse due to the absence of supervision, a regularization is proposed to encourage a uniform distribution of samples overall. Empirical results underscore that adaptive methods retain superiority to conventional handcrafted strategies even without supervision.
     </p>
   </div>
 </div>

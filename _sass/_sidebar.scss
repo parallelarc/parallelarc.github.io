@@ -81,7 +81,7 @@
   vertical-align: top;
   width: 36px;
   // set width only, for non-square avatars
-  // height: 36px;
+  height: 36px;
 
   @include breakpoint($large) {
     display: block;
@@ -97,6 +97,10 @@
       padding: 5px;
       border: 1px solid $border-color;
     }
+  }
+
+  #overlap{
+    display: none;
   }
 }
 

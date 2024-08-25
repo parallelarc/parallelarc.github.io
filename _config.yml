@@ -8,7 +8,7 @@
 
 # Basic Site Settings
 locale                   : "en-US"
-title                    : "Homepage"
+title                    : "Jianwei Ren"
 title_separator          : "-"
 name                     : &name "Jianwei Ren"
 description              : &description "personal description"
@@ -24,9 +24,9 @@ author:
   avatar           : "fox.png"
   name             : "Jianwei Ren"
   pronouns         : "he/him"  
-  bio              : #"Short biography for the left-hand sidebar"
+  bio              : #"research assistant"
   location         : "Beijing, China"
-  employer         : #"Red Brick University"
+  employer         : "Tsinghua University"
   uri              : # URL
   email            : "jvren42@gmail.com" 
 
