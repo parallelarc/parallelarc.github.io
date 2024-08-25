@@ -45,9 +45,9 @@ I'm a devoted fan of indie games, and one of my dreams is to create a game of my
 
 <script type="text/javascript">
     window.onload = function () {
-        var img1 = document.querySelector('.flip-card-inner #overlap')
-        var img2 = document.querySelector('.flip-card-inner img')
-        var avatars = document.querySelectorAll('.avatar')
+        img1 = document.querySelector('.flip-card-inner #overlap')
+        img2 = document.querySelector('.flip-card-inner img')
+        avatars = document.querySelectorAll('.avatar')
         
         avatars.forEach(function(ele) {
             ele.addEventListener('mouseover', function() {
