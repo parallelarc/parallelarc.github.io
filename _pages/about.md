@@ -8,7 +8,7 @@ redirect_from:
   - /about.html
 ---
 
-Hi, I am a research assistant in [MARS Lab](http://group.iiis.tsinghua.edu.cn/~marslab/) at IIIS, Tsinghua University, working with [Prof. Hang Zhao](https://hangzhaomit.github.io/). My research interests are **3D Vision, Autonomous Driving and Unsupervised Representation Learning**. 
+Hi, I am a research assistant in [MARS Lab](http://group.iiis.tsinghua.edu.cn/~marslab/) at IIIS, Tsinghua University, working with [Prof. Hang Zhao](https://hangzhaomit.github.io/). My research interests lie at the intersection of artificial intelligence and computer vision, with a particular focus on **generative models, autonomous driving, and multi-modal machine learning**.
 
 
 I was an intern at Xiaomi EV, working with Dr. Guang Li and [Dr. Kuiyuan Yang](https://scholar.google.com/citations?user=g2gAY_0AAAAJ), and during which I secured 2nd place in the Mapless Driving track of the CVPR2024 [Autonomous Grand Challenge](https://opendrivelab.com/challenge2024/#mapless_driving). 
