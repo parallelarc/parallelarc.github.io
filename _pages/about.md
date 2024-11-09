@@ -16,7 +16,7 @@ I was an intern at Xiaomi EV, working with Dr. Guang Li and [Dr. Kuiyuan Yang](h
 
 I earned my MEng (2024) from [Beijing University of Posts and Telecommunications (BUPT)](https://www.bupt.edu.cn) and my BEng (2021) with a UK First Class Honours Degree from the joint program between BUPT and [Queen Mary University of London (QMUL)](https://www.qmul.ac.uk/). I am fortunate to have received recommendation letters from Dr. Kuiyuan Yang and [Pres. Kun XU](https://www.bupt.edu.cn/info/1274/84949.htm) of BUPT.
 
-:fire: **I'm actively on the hunt for a PhD opportunity. Should you come across any promising leads, I'd be delighted to hear from you. My [CV](/files/CV.pdf), [research statement](/files/Research_Statement.pdf) and [research proposal](/files/Research Proposal_SMTP.pdf) are available.**
+:fire: **I'm actively on the hunt for a PhD opportunity. Should you come across any promising leads, I'd be delighted to hear from you. My [CV](/files/CV.pdf), [research statement](/files/Research_Statement.pdf) and [research proposal](/files/Diffusion-Based Simulation Agents for Scalable Autonomous Driving.pdf) are available.**
 
 <hr>
 
