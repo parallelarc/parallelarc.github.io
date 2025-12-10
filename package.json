@@ -52,9 +52,11 @@
     "vitest": "^0.31.1"
   },
   "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --max-warnings=0"
+    ],
     "*": [
-      "eslint",
-      "prettier --write"
+      "prettier --write --ignore-unknown"
     ]
   }
 }

@@ -1,4 +1,33 @@
-import styled from "styled-components";
+import styled, { css, keyframes } from "styled-components";
+
+const rainbowShift = keyframes`
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+`;
+
+const rainbowTextStyles = css`
+  display: inline-block;
+  background: linear-gradient(
+    120deg,
+    #ff6b6b,
+    #f7b733,
+    #51cf66,
+    #1e90ff,
+    #845ef7
+  );
+  background-size: 280% 280%;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: ${rainbowShift} 12s ease infinite;
+`;
 
 export const HeroContainer = styled.div`
   display: flex;
@@ -18,6 +47,7 @@ export const HeroContainer = styled.div`
 export const PreName = styled.pre`
   margin-top: 0.5rem;
   margin-bottom: 1.5rem;
+  ${rainbowTextStyles};
 
   @media (max-width: 550px) {
     display: none;
@@ -31,6 +61,7 @@ export const PreWrapper = styled.div`
 export const PreNameMobile = styled.pre`
   margin-top: 0.5rem;
   margin-bottom: 1.5rem;
+  ${rainbowTextStyles};
 
   @media (min-width: 550px) {
     display: none;
@@ -62,4 +93,11 @@ export const Link = styled.a`
   &:hover {
     border-bottom-style: solid;
   }
+`;
+
+export const RainbowText = styled.p`
+  margin-top: 0.75rem;
+  line-height: 1.6;
+  font-weight: 500;
+  ${rainbowTextStyles};
 `;
