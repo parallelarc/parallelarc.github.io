@@ -18,7 +18,7 @@ const Socials: React.FC = () => {
 
   /* ===== check current command makes redirect ===== */
   useEffect(() => {
-    if (checkRedirect(rerender, currentCommand, "socials")) {
+    if (checkRedirect(rerender, currentCommand, "socials", [1, 2])) {
       socials.forEach(({ id, url }) => {
         id === parseInt(arg[1]) && window.open(url, "_blank");
       });
@@ -27,7 +27,7 @@ const Socials: React.FC = () => {
 
   /* ===== check arg is valid ===== */
   const checkArg = () =>
-    isArgInvalid(arg, "go", ["1", "2", "3", "4"]) ? (
+    isArgInvalid(arg, "go", ["1", "2"]) ? (
       <Usage cmd="socials" />
     ) : null;
 
@@ -52,26 +52,14 @@ const socials = [
   {
     id: 1,
     title: "GitHub",
-    url: "https://github.com/satnaing",
+    url: "https://github.com/parallelarc",
     tab: 3,
   },
   {
     id: 2,
-    title: "Dev.to",
-    url: "https://dev.to/satnaing",
-    tab: 3,
-  },
-  {
-    id: 3,
-    title: "Facebook",
-    url: "https://www.facebook.com/satnaing.dev",
-    tab: 1,
-  },
-  {
-    id: 4,
-    title: "Instagram",
-    url: "https://instagram.com/satnaing.dev",
-    tab: 0,
+    title: "Steam",
+    url: "https://steamcommunity.com/id/parallelarc",
+    tab: 4,
   },
 ];
 

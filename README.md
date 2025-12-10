@@ -1,18 +1,13 @@
-# Terminal Portfolio Website by Sat Naing
+# Terminal Portfolio Website by Jianwei Ren
 
-![Terminal Portfolio Website by Sat Naing](https://user-images.githubusercontent.com/53733092/194220661-e2ff8b4c-f64a-4b64-a836-c52fae6bbcda.png)
+![Terminal Portfolio Website by Jianwei Ren](public/portfolio-og.png)
 
 ![ts](https://badgen.net/badge/Built%20With/TypeScript/blue?style=flat-square)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/81fdb91d-c06f-46c2-b18d-dfc6f090f281/deploy-status)](https://app.netlify.com/sites/terminal-sn/deploys)
 ![Gitmoji](https://img.shields.io/badge/gitmoji-%20😜%20😍-FFDD67.svg?style=flat-square)
 
-My perfolio website in terminal version developed with React, TypeScript and Styled-Components. Multiple themes supported and keyboard shortcuts can be used for some functionalities.
-
-Blog Post: https://satnaing.dev/blog/posts/how-do-i-develop-my-terminal-portfolio-website-with-react
-
-## Demo
-
-<a href="https://www.jinno.app/redirect?from=satnaing&redirect=libary&libName=terminal-portfolio&componentName=App&libCreator=satnaing" target="_blank" rel="noopener noreferrer">Demo - try it in your editor</a>
+This is the personal terminal-style portfolio for **Ren Jianwei**.  
+It highlights robotics, algorithms, and AI explorations inside a keyboard-driven UI built with React, TypeScript, and styled-components.
 
 ## Features
 
@@ -35,28 +30,14 @@ Blog Post: https://satnaing.dev/blog/posts/how-do-i-develop-my-terminal-portfoli
 
 ## Multiple Themes
 
-<a href="https://www.jinno.app/redirect?from=satnaing&redirect=libary&libName=terminal-portfolio&componentName=App&libCreator=satnaing" target="_blank" rel="noopener noreferrer">Demo - Dark theme</a><br/>
-<a href="https://www.jinno.app/redirect?from=satnaing&redirect=libary&libName=terminal-portfolio&componentName=AppLight&libCreator=satnaing" target="_blank" rel="noopener noreferrer">Demo - light theme</a><br/>
-<a href="https://www.jinno.app/redirect?from=satnaing&redirect=libary&libName=terminal-portfolio&componentName=AppBlue&libCreator=satnaing" target="_blank" rel="noopener noreferrer">Demo - blue-matrix theme</a><br/>
-<a href="https://www.jinno.app/redirect?from=satnaing&redirect=libary&libName=terminal-portfolio&componentName=AppEspresso&libCreator=satnaing" target="_blank" rel="noopener noreferrer">Demo - espresso theme</a><br/>
-<a href="https://www.jinno.app/redirect?from=satnaing&redirect=libary&libName=terminal-portfolio&componentName=AppGreen&libCreator=satnaing" target="_blank" rel="noopener noreferrer">Demo - green-goblin theme</a><br/>
-<a href="https://www.jinno.app/redirect?from=satnaing&redirect=libary&libName=terminal-portfolio&componentName=AppUbuntu&libCreator=satnaing" target="_blank" rel="noopener noreferrer">Demo - ubuntu theme</a><br/>
-
-Currently, this website supports 6 themes. Type `themes` in the terminal for more info.
-![terminal-portfolio-themes](https://user-images.githubusercontent.com/53733092/194221801-94f1c28b-4865-4b7f-a73e-d41132519bea.png)
-
-## Lighthouse Score
-
-<p align="center">
-<img width="710" alt="Sat Naing Terminal Lighthouse Score" src="public/lighthouse-result.svg">
-</p>
+Type `themes` in the terminal to explore six built-in palettes ranging from espresso to matrix green.
 
 ## Running Locally
 
 Clone the project
 
 ```bash
-git clone https://github.com/satnaing/terminal-portfolio.git
+git clone https://github.com/parallelarc/terminal-portfolio.git
 ```
 
 Go to the project directory
@@ -80,17 +61,10 @@ npm install
 Start the server
 
 ```bash
-npm run dev
+pnpm dev
 ```
-
-## Inspiration and Credits
-
-Here are some inspiration for this kind of terminal website. Only some features and functionalities are inspired by these following websites. All codes are written on my own.
-
-- I built this repository using [Jinno](https://www.jinno.app/redirect?from=satnaing&redirect=vs)
-- [term m4tt72](https://term.m4tt72.com/)
-- [Forrest](https://fkcodes.com/)
 
 ## Author
 
-- [@satnaing](https://satnaing.dev)
+- [@parallelarc](https://github.com/parallelarc)
+- [Steam](https://steamcommunity.com/id/parallelarc)
