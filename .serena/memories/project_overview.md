@@ -1,0 +1,13 @@
+# Project Overview
+- **Name**: terminal-portfolio
+- **Purpose**: Single-page terminal-style personal portfolio for Ren Jianwei with keyboard-driven UI that displays commands such as about, projects, socials, etc.
+- **Architecture**: React 18 + TypeScript SPA bootstrapped via Vite. <App /> sets up theming with styled-components and renders <Terminal />, which manages command history, autocomplete, and routing to command components under src/components/commands/.
+- **Key Modules**:
+  - `src/main.tsx`: Vite entry rendering <App />
+  - `src/App.tsx`: ThemeProvider, global styles, renders <Terminal />
+  - `src/components/Terminal.tsx`: Command list, history, input handling, keyboard shortcuts
+  - `src/components/Output.tsx`: Dispatches to command components
+  - `src/hooks/useTheme.ts`: Theme persistence and switching
+  - `src/utils/funcs.ts`: Helpers (autocomplete, parsing)
+  - `src/test/Terminal.spec.tsx`: Main behaviour tests
+- **Docs**: `docs/building_the_project.md`, `docs/service_architecture.md`, `docs/evaluation.md`, `docs/engineering_principles.md`.

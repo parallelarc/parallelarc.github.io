@@ -10,6 +10,7 @@ import Output from "./Output";
 import TermInfo from "./TermInfo";
 import {
   CmdNotFound,
+  CopyToast,
   Empty,
   Form,
   Hints,
@@ -58,7 +59,7 @@ export const termContext = createContext<Term>({
 });
 
 const Terminal = () => {
-  const containerRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [inputVal, setInputVal] = useState("");
@@ -66,6 +67,8 @@ const Terminal = () => {
   const [rerender, setRerender] = useState(false);
   const [hints, setHints] = useState<string[]>([]);
   const [pointer, setPointer] = useState(-1);
+  const [showCopyToast, setShowCopyToast] = useState(false);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,7 +80,14 @@ const Terminal = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setCmdHistory([inputVal, ...cmdHistory]);
+    const trimmedInput = _.trim(inputVal);
+    if (!trimmedInput) {
+      setInputVal("");
+      setHints([]);
+      setPointer(-1);
+      return;
+    }
+    setCmdHistory([trimmedInput, ...cmdHistory]);
     setInputVal("");
     setRerender(true);
     setHints([]);
@@ -178,8 +188,75 @@ const Terminal = () => {
     return () => clearTimeout(timer);
   }, [inputRef, inputVal, pointer]);
 
+  useEffect(() => {
+    const handleMouseUp = () => {
+      const containerEl = containerRef.current;
+      const selection = window.getSelection();
+
+      if (
+        !containerEl ||
+        !selection ||
+        selection.isCollapsed ||
+        !selection.anchorNode ||
+        !selection.focusNode ||
+        !containerEl.contains(selection.anchorNode) ||
+        !containerEl.contains(selection.focusNode)
+      ) {
+        return;
+      }
+
+      const selectedText = selection.toString();
+      if (!selectedText.trim()) return;
+
+      const triggerToast = () => {
+        setShowCopyToast(true);
+        if (toastTimerRef.current) {
+          clearTimeout(toastTimerRef.current);
+        }
+        toastTimerRef.current = setTimeout(() => {
+          setShowCopyToast(false);
+        }, 2200);
+      };
+
+      if (navigator?.clipboard?.writeText) {
+        navigator.clipboard
+          .writeText(selectedText)
+          .then(triggerToast)
+          .catch(() => {
+            try {
+              const copied = document.execCommand("copy");
+              if (copied) triggerToast();
+            } catch {
+              /* ignore copy failure */
+            }
+          });
+        return;
+      }
+
+      try {
+        const copied = document.execCommand("copy");
+        if (copied) triggerToast();
+      } catch {
+        /* ignore copy failure */
+      }
+    };
+
+    document.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      document.removeEventListener("mouseup", handleMouseUp);
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+      }
+    };
+  }, []);
+
   return (
     <Wrapper data-testid="terminal-wrapper" ref={containerRef}>
+      {showCopyToast && (
+        <CopyToast role="status" aria-live="polite">
+          <span aria-hidden="true">✨</span> Copied to clipboard
+        </CopyToast>
+      )}
       {hints.length > 1 && (
         <div>
           {hints.map(hCmd => (

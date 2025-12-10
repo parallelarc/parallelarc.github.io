@@ -47,6 +47,12 @@ describe("Terminal Component", () => {
       );
     });
 
+    it("should ignore whitespace-only input", async () => {
+      await user.type(terminalInput, "    {enter}");
+      expect(screen.queryByTestId("not-found-0")).toBeNull();
+      expect(screen.getAllByTestId("input-command").length).toBe(1);
+    });
+
     it("should return 'visitor' when user type 'whoami' cmd", async () => {
       await user.type(terminalInput, "whoami{enter}");
       expect(screen.getByTestId("latest-output").firstChild?.textContent).toBe(

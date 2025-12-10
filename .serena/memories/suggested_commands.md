@@ -1,0 +1,11 @@
+# Suggested Commands
+- Install deps: `pnpm install`
+- Run dev server (Vite, HMR): `pnpm dev`
+- Build production bundle: `pnpm build`
+- Preview built app: `pnpm preview`
+- Lint (ESLint): `pnpm lint`
+- Format check (Prettier): `pnpm format:check`
+- Format fix: `pnpm format`
+- Run Vitest in watch mode: `pnpm test`
+- Run tests once: `pnpm test:once`
+- Run tests with coverage: `pnpm coverage`

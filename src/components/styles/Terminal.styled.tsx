@@ -10,6 +10,43 @@ export const Wrapper = styled.div`
   overflow-y: auto;
 `;
 
+export const CopyToast = styled.div`
+  position: sticky;
+  top: 0.5rem;
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.65rem;
+  border-radius: 999px;
+  background: ${({ theme }) => theme.colors?.primary};
+  color: ${({ theme }) => theme.colors?.text[100]};
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  animation: fadeSlide 2.6s ease forwards;
+
+  @keyframes fadeSlide {
+    0% {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+    8% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    92% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+  }
+`;
+
 export const CmdNotFound = styled.div`
   margin-top: 0.25rem;
   margin-bottom: 1rem;
