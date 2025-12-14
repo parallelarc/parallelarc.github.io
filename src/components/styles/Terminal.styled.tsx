@@ -1,6 +1,7 @@
 import styled from "styled-components";
 
 export const Wrapper = styled.div`
+  position: relative;
   padding: 1.25rem;
   padding-top: 0.75rem;
 
@@ -11,9 +12,11 @@ export const Wrapper = styled.div`
 `;
 
 export const CopyToast = styled.div`
-  position: sticky;
-  top: 0.5rem;
-  align-self: flex-end;
+  position: fixed;
+  top: 0.85rem;
+  right: clamp(1rem, 4vw, 2.5rem);
+  z-index: 20;
+  pointer-events: none;
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
@@ -26,6 +29,12 @@ export const CopyToast = styled.div`
   letter-spacing: 0.05em;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
   animation: fadeSlide 2.6s ease forwards;
+
+  @media (max-width: 640px) {
+    left: 1rem;
+    right: 1rem;
+    justify-content: center;
+  }
 
   @keyframes fadeSlide {
     0% {

@@ -151,17 +151,10 @@ describe("Terminal Component", () => {
         expect(window.open).toHaveBeenCalled();
       });
     });
-
-    nums.forEach(num => {
-      it(`should redirect to social media when user type 'socials go ${num}' cmd`, async () => {
-        await user.type(terminalInput, `socials go ${num}{enter}`);
-        expect(window.open).toHaveBeenCalled();
-      });
-    });
   });
 
   describe("Invalid Arguments", () => {
-    const specialUsageCmds = ["themes", "socials", "projects"];
+    const specialUsageCmds = ["themes", "projects"];
     const usageCmds = allCmds.filter(
       cmd => !["echo", ...specialUsageCmds].includes(cmd)
     );
@@ -193,7 +186,6 @@ describe("Terminal Component", () => {
 
         // firstly run commands correct options
         await user.type(terminalInput, `projects go 4{enter}`);
-        await user.type(terminalInput, `socials go 4{enter}`);
         await user.type(terminalInput, `themes set espresso{enter}`);
 
         // then run cmd with incorrect options

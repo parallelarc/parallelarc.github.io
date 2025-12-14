@@ -50,7 +50,7 @@ export const checkRedirect = (
   validIds: number[]
 ): boolean =>
   rerender && // is submitted
-  currentCommand[0] === command && // current command starts with ('socials'|'projects')
+  currentCommand[0] === command && // current command starts with ('projects')
   currentCommand[1] === "go" && // first arg is 'go'
   currentCommand.length > 1 && // current command has arg
   currentCommand.length < 4 && // if num of arg is valid (not `projects go 1 sth`)
@@ -121,27 +121,7 @@ export const argTab = (
     return hintsCmds;
   }
 
-  // 5) if input is 'socials '
-  else if (inputVal === "socials ") {
-    setInputVal(`socials go`);
-    return [];
-  }
-
-  // 6) if input is 'socials g'
-  else if (inputVal === "socials g") {
-    setInputVal(`socials go`);
-    return [];
-  }
-
-  // 7) if input is 'socials go '
-  else if (_.startsWith(inputVal, "socials go ")) {
-    ["1.GitHub", "2.Steam"].forEach(t => {
-      hintsCmds = [...hintsCmds, t];
-    });
-    return hintsCmds;
-  }
-
-  // 8) if input is 'projects go '
+  // 5) if input is 'projects go '
   else if (_.startsWith(inputVal, "projects go ")) {
     return [];
   }
