@@ -9,6 +9,14 @@ export const AboutWrapper = styled.div`
   }
 `;
 
+export const Divider = styled.div`
+  margin: 0.75rem 0;
+  height: 1px;
+  width: 100%;
+  background: ${({ theme }) => theme.colors?.text[300]};
+  opacity: 0.35;
+`;
+
 export const HighlightSpan = styled.span`
   font-weight: 700;
 `;

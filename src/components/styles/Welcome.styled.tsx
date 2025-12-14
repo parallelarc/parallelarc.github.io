@@ -79,6 +79,12 @@ export const Seperator = styled.div`
   margin-bottom: 0.75rem;
 `;
 
+export const Instruction = styled.p`
+  margin-top: 0.75rem;
+  line-height: 1.6;
+  font-weight: 500;
+`;
+
 export const Cmd = styled.span`
   color: ${({ theme }) => theme.colors?.primary};
 `;

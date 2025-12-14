@@ -1,7 +1,7 @@
 import {
   Cmd,
   HeroContainer,
-  Link,
+  Instruction,
   PreImg,
   PreName,
   PreNameMobile,
@@ -49,17 +49,10 @@ ______   ___  _    _
           interfaces and immortality than about living on Mars.
         </RainbowText>
         <Seperator>----</Seperator>
-        <div>
-          This project's source code can be found in this project's{" "}
-          <Link href="https://github.com/parallelarc/terminal-portfolio">
-            GitHub repo
-          </Link>
-          .
-        </div>
-        <Seperator>----</Seperator>
-        <div>
-          For a list of available commands, type `<Cmd>help</Cmd>`.
-        </div>
+        <Instruction>
+          For a list of available commands, type `<Cmd>help</Cmd>`. <br />
+          Use `<Cmd>Tab</Cmd>` to autocomplete commands.
+        </Instruction>
       </div>
       <div className="illu-section">
         <PreImg>

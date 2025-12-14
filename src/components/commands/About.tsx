@@ -1,10 +1,10 @@
-import { AboutWrapper, HighlightSpan, Link } from "../styles/About.styled";
+import { AboutWrapper, Divider, HighlightSpan, Link } from "../styles/About.styled";
 
 const About: React.FC = () => {
   return (
     <AboutWrapper data-testid="about">
       <p>
-        Hi, my name is <HighlightSpan>Jianwei Ren</HighlightSpan>!
+        Hi, my name is <HighlightSpan>Jianwei Ren</HighlightSpan>. 
       </p>
       <p>
         My work focuses on robotics, algorithms, and AI systems. I am currently
@@ -21,6 +21,14 @@ const About: React.FC = () => {
         </Link>{" "}
         at IIIS, Tsinghua University, working with Prof. Hang Zhao. I
         collaborated with Xiaomi Auto and Li Auto.
+      </p>
+      <Divider />
+      <p>
+        This project's source code can be found in this project's{" "}
+        <Link href="https://github.com/parallelarc/terminal-portfolio">
+          GitHub repo
+        </Link>
+        .
       </p>
     </AboutWrapper>
   );
