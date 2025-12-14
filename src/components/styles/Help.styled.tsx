@@ -6,7 +6,8 @@ export const HelpWrapper = styled.div`
 `;
 
 export const CmdList = styled.div`
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.65rem;
+  line-height: 1.7rem;
 `;
 
 export const Cmd = styled.span`

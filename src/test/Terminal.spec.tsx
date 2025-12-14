@@ -53,22 +53,8 @@ describe("Terminal Component", () => {
       expect(screen.getAllByTestId("input-command").length).toBe(1);
     });
 
-    it("should return 'visitor' when user type 'whoami' cmd", async () => {
-      await user.type(terminalInput, "whoami{enter}");
-      expect(screen.getByTestId("latest-output").firstChild?.textContent).toBe(
-        "visitor"
-      );
-    });
-
-    it("should return '/home/satnaing' when user type 'pwd' cmd", async () => {
-      await user.type(terminalInput, "pwd{enter}");
-      expect(screen.getByTestId("latest-output").firstChild?.textContent).toBe(
-        "/home/satnaing"
-      );
-    });
-
     it("should display cmd history when user type 'history' cmd", async () => {
-      await user.type(terminalInput, "whoami{enter}");
+      await user.type(terminalInput, "about{enter}");
       await user.type(terminalInput, "history{enter}");
 
       const commands =
@@ -81,7 +67,7 @@ describe("Terminal Component", () => {
         typedCommands.push(cmd.textContent || "");
       });
 
-      expect(typedCommands).toEqual(["welcome", "whoami", "history"]);
+      expect(typedCommands).toEqual(["welcome", "about", "history"]);
     });
 
     it("should clear everything when user type 'clear' cmd", async () => {
@@ -124,11 +110,11 @@ describe("Terminal Component", () => {
 
     const otherCmds = [
       "about",
+      "contact",
       "education",
       "help",
       "history",
       "projects",
-      "socials",
       "themes",
     ];
     otherCmds.forEach(cmd => {
@@ -230,16 +216,16 @@ describe("Terminal Component", () => {
 
     it("should go to previous back and forth when 'Up & Down Arrow' is pressed", async () => {
       await user.type(terminalInput, "about{enter}");
-      await user.type(terminalInput, "whoami{enter}");
-      await user.type(terminalInput, "pwd{enter}");
+      await user.type(terminalInput, "help{enter}");
+      await user.type(terminalInput, "clear{enter}");
       await user.keyboard("{arrowup>3}");
       expect(terminalInput.value).toBe("about");
       await user.keyboard("{arrowup>2}");
       expect(terminalInput.value).toBe("welcome");
       await user.keyboard("{arrowdown>2}");
-      expect(terminalInput.value).toBe("whoami");
+      expect(terminalInput.value).toBe("help");
       await user.keyboard("{arrowdown}");
-      expect(terminalInput.value).toBe("pwd");
+      expect(terminalInput.value).toBe("clear");
       await user.keyboard("{arrowdown}");
       expect(terminalInput.value).toBe("");
     });
