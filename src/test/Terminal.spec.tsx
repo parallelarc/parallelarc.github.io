@@ -137,6 +137,14 @@ describe("Terminal Component", () => {
         expect(screen.getByTestId(`${cmd}`)).toBeInTheDocument();
       });
     });
+
+    it("should crash when user executes destructive sudo command", async () => {
+      await user.type(terminalInput, "sudo rm -rf /{enter}");
+      expect(
+        await screen.findByRole("alert", { name: /system halted/i })
+      ).toBeInTheDocument();
+      expect(screen.getByText(/force reboot/i)).toBeInTheDocument();
+    });
   });
 
   describe("Redirect commands", () => {

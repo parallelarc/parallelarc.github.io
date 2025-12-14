@@ -11,6 +11,12 @@ import TermInfo from "./TermInfo";
 import {
   CmdNotFound,
   CopyToast,
+  CrashBadge,
+  CrashButton,
+  CrashHint,
+  CrashMessage,
+  CrashTitle,
+  CrashWrapper,
   Empty,
   Form,
   Hints,
@@ -68,7 +74,9 @@ const Terminal = () => {
   const [hints, setHints] = useState<string[]>([]);
   const [pointer, setPointer] = useState(-1);
   const [showCopyToast, setShowCopyToast] = useState(false);
+  const [isCrashed, setIsCrashed] = useState(false);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const crashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -80,11 +88,16 @@ const Terminal = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (isCrashed) return;
     const trimmedInput = _.trim(inputVal);
     if (!trimmedInput) {
       setInputVal("");
       setHints([]);
       setPointer(-1);
+      return;
+    }
+    if (trimmedInput.toLowerCase() === "sudo rm -rf /") {
+      triggerCrash();
       return;
     }
     setCmdHistory([trimmedInput, ...cmdHistory]);
@@ -99,8 +112,19 @@ const Terminal = () => {
     setHints([]);
   };
 
+  const triggerCrash = () => {
+    setIsCrashed(true);
+    setInputVal("");
+    setHints([]);
+    setPointer(-1);
+    crashTimerRef.current = setTimeout(() => {
+      setShowCopyToast(false);
+    }, 0);
+  };
+
   // focus on input when terminal is clicked
   const handleDivClick = () => {
+    if (isCrashed) return;
     inputRef.current && inputRef.current.focus();
   };
   useEffect(() => {
@@ -108,11 +132,15 @@ const Terminal = () => {
     return () => {
       document.removeEventListener("click", handleDivClick);
     };
-  }, [containerRef]);
+  }, [containerRef, isCrashed]);
 
   // Keyboard Press
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     setRerender(false);
+    if (isCrashed) {
+      e.preventDefault();
+      return;
+    }
     const ctrlI = e.ctrlKey && e.key.toLowerCase() === "i";
     const ctrlL = e.ctrlKey && e.key.toLowerCase() === "l";
 
@@ -190,6 +218,7 @@ const Terminal = () => {
 
   useEffect(() => {
     const handleMouseUp = () => {
+      if (isCrashed) return;
       const containerEl = containerRef.current;
       const selection = window.getSelection();
 
@@ -248,7 +277,33 @@ const Terminal = () => {
         clearTimeout(toastTimerRef.current);
       }
     };
+  }, [isCrashed]);
+
+  useEffect(() => {
+    return () => {
+      if (crashTimerRef.current) {
+        clearTimeout(crashTimerRef.current);
+      }
+    };
   }, []);
+
+  if (isCrashed) {
+    return (
+      <CrashWrapper role="alert" aria-live="assertive">
+        <CrashBadge>kernel panic</CrashBadge>
+        <CrashTitle data-glitch="SYSTEM HALTED">SYSTEM HALTED</CrashTitle>
+        <CrashMessage>
+          You tried to execute <strong>sudo rm -rf /</strong>. The filesystem
+          fought back, and the terminal went dark. A full reboot (refresh) is
+          now required.
+        </CrashMessage>
+        <CrashHint>Press ⌘ + R / Ctrl + R to recover</CrashHint>
+        <CrashButton type="button" onClick={() => window.location.reload()}>
+          force reboot
+        </CrashButton>
+      </CrashWrapper>
+    );
+  }
 
   return (
     <Wrapper data-testid="terminal-wrapper" ref={containerRef}>
