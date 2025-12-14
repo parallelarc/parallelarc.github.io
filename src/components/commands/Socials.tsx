@@ -1,6 +1,13 @@
 import { ProjectsIntro } from "../styles/Projects.styled";
 import { Cmd, CmdDesc, CmdLink, CmdList, HelpWrapper } from "../styles/Help.styled";
 
+type SocialLink = {
+  id: number;
+  title: string;
+  url: string;
+  desc?: string;
+};
+
 const Socials: React.FC = () => {
   return (
     <HelpWrapper data-testid="socials">
@@ -18,7 +25,7 @@ const Socials: React.FC = () => {
   );
 };
 
-const socials = [
+const socials: SocialLink[] = [
   {
     id: 1,
     title: "GitHub",
