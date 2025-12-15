@@ -1,8 +1,8 @@
 import { FaEnvelope, FaGithub, FaSteam } from "react-icons/fa6";
 import styled from "styled-components";
 import {
-  GalleryItem,
-  ProjectGallery,
+  ContactGallery,
+  ContactGalleryItem,
   ProjectsIntro,
 } from "../styles/Projects.styled";
 import { CmdDesc, CmdLink, CmdList, HelpWrapper } from "../styles/Help.styled";
@@ -58,18 +58,18 @@ const Contact: React.FC = () => {
               {desc && <CmdDesc> – {desc}</CmdDesc>}
             </CmdList>
             {gallery && (
-              <ProjectGallery aria-label={`${title} collection preview`}>
+              <ContactGallery aria-label={`${title} collection preview`}>
                 {gallery.map(image => (
-                  <GalleryItem key={image.src}>
+                  <ContactGalleryItem key={image.src}>
                     <img
                       src={image.src}
                       alt={image.alt}
                       loading="lazy"
                       decoding="async"
                     />
-                  </GalleryItem>
+                  </ContactGalleryItem>
                 ))}
-              </ProjectGallery>
+              </ContactGallery>
             )}
           </div>
         );

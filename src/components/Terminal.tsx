@@ -59,7 +59,7 @@ export const commands: Command = [
   { cmd: "history", desc: "view command history", tab: 6 },
   { cmd: "export", desc: "set environment variables", tab: 7 },
   { cmd: "env", desc: "view environment variables", tab: 10 },
-  { cmd: "projects", desc: "view projects that I've coded", tab: 5 },
+  { cmd: "projects", desc: "some work, in no particular order", tab: 5 },
   { cmd: "themes", desc: "check available themes", tab: 7 },
   { cmd: "welcome", desc: "display hero section", tab: 6 },
 ];
