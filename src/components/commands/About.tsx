@@ -24,7 +24,7 @@ const About: React.FC = () => {
       </p>
       <Divider />
       <p>
-        This project's source code can be found in this project's{" "}
+        This project's source code can be found in {" "}
         <Link href="https://github.com/parallelarc/terminal-portfolio">
           GitHub repo
         </Link>

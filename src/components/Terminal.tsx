@@ -57,8 +57,8 @@ export const commands: Command = [
   },
   { cmd: "help", desc: "check available commands", tab: 9 },
   { cmd: "history", desc: "view command history", tab: 6 },
-  { cmd: "export", desc: "set AI config variables", tab: 7 },
-  { cmd: "env", desc: "view AI environment variables", tab: 6 },
+  { cmd: "export", desc: "set environment variables", tab: 7 },
+  { cmd: "env", desc: "view environment variables", tab: 10 },
   { cmd: "projects", desc: "view projects that I've coded", tab: 5 },
   { cmd: "themes", desc: "check available themes", tab: 7 },
   { cmd: "welcome", desc: "display hero section", tab: 6 },
@@ -332,9 +332,14 @@ const Terminal = () => {
     const ctrlL = e.ctrlKey && e.key.toLowerCase() === "l";
     const ctrlC = e.ctrlKey && e.key.toLowerCase() === "c";
 
-    if (ctrlC && isChatMode) {
+    if (ctrlC) {
       e.preventDefault();
-      setIsChatMode(false);
+      setInputVal("");
+      setHints([]);
+      setPointer(-1);
+      if (isChatMode) {
+        setIsChatMode(false);
+      }
       return;
     }
 
