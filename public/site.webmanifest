@@ -1,6 +1,6 @@
 {
-  "name": "Terminal Portfolio by Jianwei Ren",
-  "short_name": "Terminal",
+  "name": "whoami — an interactive terminal portfolio",
+  "short_name": "whoami",
   "description": "Ren Jianwei's terminal-style portfolio for robotics, algorithms, and AI explorations.",
   "start_url": "/",
   "icons": [

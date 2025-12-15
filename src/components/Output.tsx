@@ -8,6 +8,9 @@ import Welcome from "./commands/Welcome";
 import History from "./commands/History";
 import Projects from "./commands/Projects";
 import Themes from "./commands/Themes";
+import Hi from "./commands/Hi";
+import ExportCmd from "./commands/Export";
+import Env from "./commands/Env";
 import { OutputContainer, UsageDiv } from "./styles/Output.styled";
 import { termContext } from "./Terminal";
 import { useContext } from "react";
@@ -20,11 +23,14 @@ type Props = {
 const Output: React.FC<Props> = ({ index, cmd }) => {
   const { arg } = useContext(termContext);
 
-  const specialCmds = ["projects", "themes", "echo"];
+  const specialCmds = ["projects", "themes", "echo", "hi", "hello", "export"];
 
   // return 'Usage: <cmd>' if command arg is not valid
   // eg: about tt
   if (!specialCmds.includes(cmd) && arg.length > 0)
+    return <UsageDiv data-testid="usage-output">Usage: {cmd}</UsageDiv>;
+
+  if ((cmd === "hi" || cmd === "hello") && arg.length > 0)
     return <UsageDiv data-testid="usage-output">Usage: {cmd}</UsageDiv>;
 
   return (
@@ -40,6 +46,10 @@ const Output: React.FC<Props> = ({ index, cmd }) => {
           history: <History />,
           projects: <Projects />,
           themes: <Themes />,
+          hi: <Hi />,
+          hello: <Hi />,
+          export: <ExportCmd />,
+          env: <Env />,
           welcome: <Welcome />,
         }[cmd]
       }

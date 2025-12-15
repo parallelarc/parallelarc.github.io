@@ -21,11 +21,21 @@ import {
   Form,
   Hints,
   Input,
+  InputHint,
   MobileBr,
   MobileSpan,
+  PromptBlock,
   Wrapper,
 } from "./styles/Terminal.styled";
 import { argTab } from "../utils/funcs";
+
+const normalizeBaseUrl = (url: string) =>
+  url.endsWith("/") ? url.slice(0, -1) : url;
+
+type ChatMessage = {
+  role: "assistant" | "user";
+  content: string;
+};
 
 type Command = {
   cmd: string;
@@ -35,6 +45,8 @@ type Command = {
 
 export const commands: Command = [
   { cmd: "about", desc: "about me", tab: 8 },
+  { cmd: "hi", desc: "chat with my AI copilot", tab: 11 },
+  { cmd: "hello", desc: "chat with my AI copilot", tab: 11 },
   { cmd: "clear", desc: "clear the terminal", tab: 8 },
   { cmd: "echo", desc: "print out anything", tab: 9 },
   { cmd: "education", desc: "my education background", tab: 4 },
@@ -45,6 +57,8 @@ export const commands: Command = [
   },
   { cmd: "help", desc: "check available commands", tab: 9 },
   { cmd: "history", desc: "view command history", tab: 6 },
+  { cmd: "export", desc: "set AI config variables", tab: 7 },
+  { cmd: "env", desc: "view AI environment variables", tab: 6 },
   { cmd: "projects", desc: "view projects that I've coded", tab: 5 },
   { cmd: "themes", desc: "check available themes", tab: 7 },
   { cmd: "welcome", desc: "display hero section", tab: 6 },
@@ -56,6 +70,13 @@ type Term = {
   rerender: boolean;
   index: number;
   clearHistory?: () => void;
+  chat: {
+    messages: ChatMessage[];
+    loading: boolean;
+    error: string | null;
+    configured: boolean;
+  };
+  setEnv?: (name: string, value: string) => void;
 };
 
 export const termContext = createContext<Term>({
@@ -63,11 +84,19 @@ export const termContext = createContext<Term>({
   history: [],
   rerender: false,
   index: 0,
+  chat: {
+    messages: [],
+    loading: false,
+    error: null,
+    configured: false,
+  },
+  setEnv: undefined,
 });
 
 const Terminal = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const hiAbortRef = useRef<AbortController | null>(null);
 
   const [inputVal, setInputVal] = useState("");
   const [cmdHistory, setCmdHistory] = useState<string[]>(["welcome"]);
@@ -76,8 +105,38 @@ const Terminal = () => {
   const [pointer, setPointer] = useState(-1);
   const [showCopyToast, setShowCopyToast] = useState(false);
   const [isCrashed, setIsCrashed] = useState(false);
+  const [isChatMode, setIsChatMode] = useState(false);
+  const defaultChatGreeting =
+    "╭────────────────────────────────────────────╮\n" +
+    "│ >_ OpenAI Compatible (0.42.0)              │\n" +
+    "│                                            │\n" +
+    "│ model:     Qwen3-Next-80B-A3B-Instruct     │\n" +
+    "│ directory: ~                               │\n" +
+    "╰────────────────────────────────────────────╯\n" +
+    "\nPress Ctrl+C to exit chat mode.";
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
+    { role: "assistant", content: defaultChatGreeting },
+  ]);
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const crashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [openAiApiKey, setOpenAiApiKey] = useState(
+    import.meta.env.OPENAI_API_KEY || ""
+  );
+  const [openAiBaseUrl, setOpenAiBaseUrl] = useState(
+    normalizeBaseUrl(
+      import.meta.env.OPENAI_BASE_URL || "https://api.openai.com/v1"
+    )
+  );
+  const [openAiModel, setOpenAiModel] = useState(
+    import.meta.env.OPENAI_MODEL || "gpt-4o-mini"
+  );
+  const [systemPrompt, setSystemPrompt] = useState(
+    import.meta.env.OPENAI_SYSTEM_PROMPT ||
+      "You are an enthusiastic yet concise AI concierge for Ren Jianwei's interactive terminal portfolio. Keep answers grounded in Ren's work and experience."
+  );
+  const chatConfigured = Boolean(openAiApiKey);
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,6 +144,89 @@ const Terminal = () => {
       setInputVal(e.target.value);
     },
     [inputVal]
+  );
+
+  const sendHiPrompt = useCallback(
+    async (prompt: string) => {
+      if (!chatConfigured) {
+        setChatError(
+          "Missing API key. Please set OPENAI_API_KEY in your environment and try again."
+        );
+        return;
+      }
+
+      const userMessage = prompt.trim() ? prompt : "hi";
+      const nextConversation = [
+        ...chatMessages,
+        { role: "user", content: userMessage } as ChatMessage,
+      ];
+
+      setChatMessages(nextConversation);
+      setChatLoading(true);
+      setChatError(null);
+
+      if (hiAbortRef.current) {
+        hiAbortRef.current.abort();
+      }
+      const controller = new AbortController();
+      hiAbortRef.current = controller;
+
+      try {
+        const response = await fetch(`${openAiBaseUrl}/chat/completions`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${openAiApiKey}`,
+          },
+          body: JSON.stringify({
+            model: openAiModel,
+            messages: [
+              { role: "system", content: systemPrompt },
+              ...nextConversation.map(message => ({
+                role: message.role,
+                content: message.content,
+              })),
+            ],
+            temperature: 0.7,
+          }),
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(text || "LLM request failed");
+        }
+
+        const payload = await response.json();
+        const assistantReply =
+          payload?.choices?.[0]?.message?.content?.trim() ??
+          "No response was returned by the model.";
+
+        setChatMessages(prev => [
+          ...prev,
+          { role: "assistant", content: assistantReply },
+        ]);
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+        setChatError(
+          error instanceof Error
+            ? error.message
+            : "Failed to send request. Please try again later."
+        );
+      } finally {
+        setChatLoading(false);
+      }
+    },
+    [
+      chatConfigured,
+      chatMessages,
+      openAiApiKey,
+      openAiBaseUrl,
+      openAiModel,
+      systemPrompt,
+    ]
   );
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -101,6 +243,26 @@ const Terminal = () => {
       triggerCrash();
       return;
     }
+
+    if (isChatMode) {
+      void sendHiPrompt(trimmedInput);
+      setInputVal("");
+      setHints([]);
+      setPointer(-1);
+      return;
+    }
+
+    const commandArray = _.split(trimmedInput, " ");
+    const normalizedCommand = _.toLower(commandArray[0]);
+    const args = _.drop(commandArray);
+
+    if (
+      (normalizedCommand === "hi" || normalizedCommand === "hello") &&
+      args.length === 0
+    ) {
+      setIsChatMode(true);
+    }
+
     setCmdHistory([trimmedInput, ...cmdHistory]);
     setInputVal("");
     setRerender(true);
@@ -111,6 +273,26 @@ const Terminal = () => {
   const clearHistory = () => {
     setCmdHistory([]);
     setHints([]);
+    setChatMessages([{ role: "assistant", content: defaultChatGreeting }]);
+    setChatError(null);
+    setChatLoading(false);
+    setIsChatMode(false);
+    if (hiAbortRef.current) {
+      hiAbortRef.current.abort();
+    }
+  };
+
+  const setEnvVar = (name: string, value: string) => {
+    const key = name.toUpperCase();
+    if (key === "OPENAI_API_KEY") {
+      setOpenAiApiKey(value);
+    } else if (key === "OPENAI_BASE_URL") {
+      setOpenAiBaseUrl(normalizeBaseUrl(value));
+    } else if (key === "OPENAI_MODEL") {
+      setOpenAiModel(value);
+    } else if (key === "OPENAI_SYSTEM_PROMPT") {
+      setSystemPrompt(value);
+    }
   };
 
   const triggerCrash = () => {
@@ -118,6 +300,10 @@ const Terminal = () => {
     setInputVal("");
     setHints([]);
     setPointer(-1);
+    setIsChatMode(false);
+    if (hiAbortRef.current) {
+      hiAbortRef.current.abort();
+    }
     crashTimerRef.current = setTimeout(() => {
       setShowCopyToast(false);
     }, 0);
@@ -144,6 +330,13 @@ const Terminal = () => {
     }
     const ctrlI = e.ctrlKey && e.key.toLowerCase() === "i";
     const ctrlL = e.ctrlKey && e.key.toLowerCase() === "l";
+    const ctrlC = e.ctrlKey && e.key.toLowerCase() === "c";
+
+    if (ctrlC && isChatMode) {
+      e.preventDefault();
+      setIsChatMode(false);
+      return;
+    }
 
     // if Tab or Ctrl + I
     if (e.key === "Tab" || ctrlI) {
@@ -152,6 +345,7 @@ const Terminal = () => {
 
       let hintsCmds: string[] = [];
       commands.forEach(({ cmd }) => {
+        if (cmd === "hi" || cmd === "hello") return;
         if (_.startsWith(cmd, inputVal)) {
           hintsCmds = [...hintsCmds, cmd];
         }
@@ -285,6 +479,9 @@ const Terminal = () => {
       if (crashTimerRef.current) {
         clearTimeout(crashTimerRef.current);
       }
+      if (hiAbortRef.current) {
+        hiAbortRef.current.abort();
+      }
     };
   }, []);
 
@@ -322,13 +519,22 @@ const Terminal = () => {
       )}
       <Form onSubmit={handleSubmit}>
         <label htmlFor="terminal-input">
-          <TermInfo /> <MobileBr />
-          <MobileSpan>&#62;</MobileSpan>
+          {isChatMode ? (
+            // LLM chat mode: show minimal Codex-style block cursor
+            <PromptBlock aria-hidden="true">▌</PromptBlock>
+          ) : (
+            <>
+              <TermInfo />
+              <MobileBr />
+              <MobileSpan>&#62;</MobileSpan>
+            </>
+          )}
         </label>
         <Input
           title="terminal-input"
           type="text"
           id="terminal-input"
+          placeholder={isChatMode ? "share an idea with me" : ""}
           autoComplete="off"
           spellCheck="false"
           autoFocus
@@ -339,16 +545,27 @@ const Terminal = () => {
           onChange={handleChange}
         />
       </Form>
+      {isChatMode && (
+        <InputHint aria-hidden="true">⏎ send · Ctrl+C quit</InputHint>
+      )}
 
       {cmdHistory.map((cmdH, index) => {
         const commandArray = _.split(_.trim(cmdH), " ");
-        const validCommand = _.find(commands, { cmd: commandArray[0] });
+        const normalizedCommand = _.toLower(commandArray[0]);
+        const validCommand = _.find(commands, { cmd: normalizedCommand });
         const contextValue = {
           arg: _.drop(commandArray),
           history: cmdHistory,
           rerender,
           index,
           clearHistory,
+          chat: {
+            messages: chatMessages,
+            loading: chatLoading,
+            error: chatError,
+            configured: chatConfigured,
+          },
+          setEnv: setEnvVar,
         };
         return (
           <div key={_.uniqueId(`${cmdH}_`)}>
@@ -360,7 +577,7 @@ const Terminal = () => {
             </div>
             {validCommand ? (
               <termContext.Provider value={contextValue}>
-                <Output index={index} cmd={commandArray[0]} />
+                <Output index={index} cmd={normalizedCommand} />
               </termContext.Provider>
             ) : cmdH === "" ? (
               <Empty />

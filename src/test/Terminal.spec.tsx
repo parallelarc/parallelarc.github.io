@@ -147,10 +147,37 @@ describe("Terminal Component", () => {
     });
   });
 
+  describe("Export and env commands", () => {
+    it("should block modifying OPENAI_SYSTEM_PROMPT from export", async () => {
+      await user.type(terminalInput, "export OPENAI_SYSTEM_PROMPT=custom{enter}");
+      const exportOutput = await screen.findByTestId("export");
+      expect(exportOutput.textContent).toContain(
+        "OPENAI_SYSTEM_PROMPT cannot be modified from this terminal."
+      );
+    });
+
+    it("should be silent when setting OPENAI_API_KEY", async () => {
+      await user.type(terminalInput, "clear{enter}");
+      await user.type(terminalInput, "export OPENAI_API_KEY=test-key{enter}");
+      expect(screen.queryByTestId("export")).toBeNull();
+      expect(screen.queryByTestId("usage-output")).toBeNull();
+    });
+
+    it("should list environment variables with env command", async () => {
+      await user.type(terminalInput, "env{enter}");
+      const envOutput = await screen.findByTestId("env");
+      const content = envOutput.textContent || "";
+      expect(content).toContain("OPENAI_API_KEY");
+      expect(content).toContain("OPENAI_BASE_URL");
+      expect(content).toContain("OPENAI_MODEL");
+      expect(content).toContain("OPENAI_SYSTEM_PROMPT");
+    });
+  });
+
   describe("Invalid Arguments", () => {
     const specialUsageCmds = ["themes", "projects"];
     const usageCmds = allCmds.filter(
-      cmd => !["echo", ...specialUsageCmds].includes(cmd)
+      cmd => !["echo", "export", ...specialUsageCmds].includes(cmd)
     );
 
     usageCmds.forEach(cmd => {
@@ -192,7 +219,12 @@ describe("Terminal Component", () => {
   });
 
   describe("Keyboard shortcuts", () => {
-    allCmds.forEach(cmd => {
+    const noAutocompleteCmds = ["hi", "hello"];
+    const autocompleteCmds = allCmds.filter(
+      cmd => !noAutocompleteCmds.includes(cmd)
+    );
+
+    autocompleteCmds.forEach(cmd => {
       it(`should autocomplete '${cmd}' when 'Tab' is pressed`, async () => {
         await user.type(terminalInput, cmd.slice(0, 2));
         await user.tab();
@@ -200,7 +232,7 @@ describe("Terminal Component", () => {
       });
     });
 
-    allCmds.forEach(cmd => {
+    autocompleteCmds.forEach(cmd => {
       it(`should autocomplete '${cmd}' when 'Ctrl + i' is pressed`, async () => {
         await user.type(terminalInput, cmd.slice(0, 2));
         await user.keyboard("{Control>}i{/Control}");

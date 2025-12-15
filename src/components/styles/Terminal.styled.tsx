@@ -81,17 +81,31 @@ export const MobileBr = styled.br`
 `;
 
 export const Form = styled.form`
-  @media (min-width: 550px) {
-    display: flex;
-  }
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+`;
+
+export const PromptBlock = styled.span`
+  color: ${({ theme }) => theme.colors?.primary || "#3b82f6"};
 `;
 
 export const Input = styled.input`
   flex-grow: 1;
 
+  &::placeholder {
+    color: ${({ theme }) => theme.colors?.text[300]};
+  }
+
   @media (max-width: 550px) {
     min-width: 85%;
   }
+`;
+
+export const InputHint = styled.div`
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: ${({ theme }) => theme.colors?.text[300]};
 `;
 
 export const Hints = styled.span`
