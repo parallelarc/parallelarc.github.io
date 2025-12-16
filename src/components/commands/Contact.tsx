@@ -1,4 +1,7 @@
+import { createElement } from "react";
+import type { ComponentType } from "react";
 import { FaEnvelope, FaGithub, FaSteam } from "react-icons/fa6";
+import type { IconBaseProps } from "react-icons";
 import styled from "styled-components";
 import {
   ContactGallery,
@@ -11,7 +14,7 @@ type ContactLink = {
   title: string;
   url: string;
   desc?: string;
-  icon: React.ReactElement;
+  icon: ComponentType<IconBaseProps>;
   gallery?: {
     src: string;
     alt: string;
@@ -23,17 +26,17 @@ const contacts: ContactLink[] = [
     title: "Email",
     url: "mailto:jvren42@gmail.com",
     desc: "ping me",
-    icon: <FaEnvelope aria-hidden="true" />,
+    icon: FaEnvelope as ComponentType<IconBaseProps>,
   },
   {
     title: "GitHub",
     url: "https://github.com/parallelarc",
-    icon: <FaGithub aria-hidden="true" />,
+    icon: FaGithub as ComponentType<IconBaseProps>,
   },
   {
     title: "Steam",
     url: "https://steamcommunity.com/id/parallelarc",
-    icon: <FaSteam aria-hidden="true" />,
+    icon: FaSteam as ComponentType<IconBaseProps>,
     gallery: [
       {
         src: "/profile-media/steam_mosaic.jpg",
@@ -51,7 +54,9 @@ const Contact: React.FC = () => {
         return (
           <div key={title}>
             <CmdList>
-              <IconBubble aria-hidden="true">{icon}</IconBubble>
+              <IconBubble aria-hidden="true">
+                {createElement(icon, { "aria-hidden": true })}
+              </IconBubble>
               <CmdLink href={url} target="_blank" rel="noopener noreferrer">
                 {title}
               </CmdLink>
