@@ -1,4 +1,4 @@
-import { createElement, useState } from "react";
+import { createElement, useCallback, useEffect, useState } from "react";
 import type { ComponentType } from "react";
 import { FaEnvelope, FaGithub, FaSteam } from "react-icons/fa6";
 import type { IconBaseProps } from "react-icons";
@@ -58,9 +58,25 @@ const Contact: React.FC = () => {
     setSelectedImage(image);
   };
 
-  const closeLightbox = () => {
+  const closeLightbox = useCallback(() => {
     setSelectedImage(null);
-  };
+  }, []);
+
+  // 监听ESC键关闭灯箱
+  useEffect(() => {
+    if (!selectedImage) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        closeLightbox();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selectedImage, closeLightbox]);
 
   return (
     <HelpWrapper data-testid="contact">

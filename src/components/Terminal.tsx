@@ -319,17 +319,6 @@ const Terminal = () => {
     }, 0);
   };
 
-  // focus on input when terminal is clicked
-  const handleDivClick = () => {
-    if (isCrashed) return;
-    inputRef.current && inputRef.current.focus();
-  };
-  useEffect(() => {
-    document.addEventListener("click", handleDivClick);
-    return () => {
-      document.removeEventListener("click", handleDivClick);
-    };
-  }, [containerRef, isCrashed]);
 
   // Keyboard Press
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
