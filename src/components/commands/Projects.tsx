@@ -12,7 +12,7 @@ import {
   AlbumImage,
   LightboxOverlay,
   LightboxImage,
-} from "../styles/Projects.styled";
+} from "../styles/Commands.styled";
 
 type ImageOrientation = "landscape" | "portrait" | "square";
 

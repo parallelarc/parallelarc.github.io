@@ -9,8 +9,11 @@ import {
   ProjectsIntro,
   LightboxOverlay,
   LightboxImage,
-} from "../styles/Projects.styled";
-import { CmdDesc, CmdLink, CmdList, HelpWrapper } from "../styles/Help.styled";
+  CmdDesc,
+  CmdLink,
+  CmdList,
+  HelpWrapper,
+} from "../styles/Commands.styled";
 
 type ContactLink = {
   title: string;

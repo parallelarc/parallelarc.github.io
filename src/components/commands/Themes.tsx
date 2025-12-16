@@ -2,7 +2,7 @@ import { useContext, useEffect } from "react";
 import _ from "lodash";
 import { themeContext } from "../../App";
 import { Wrapper } from "../styles/Output.styled";
-import { ThemeSpan, ThemesWrapper } from "../styles/Themes.styled";
+import { ThemeSpan, ThemesWrapper } from "../styles/Commands.styled";
 import {
   checkThemeSwitch,
   getCurrentCmdArry,

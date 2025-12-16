@@ -1,4 +1,4 @@
-import { AboutWrapper, Divider, HighlightSpan, Link } from "../styles/About.styled";
+import { AboutWrapper, Divider, HighlightSpan, Link } from "../styles/Commands.styled";
 
 const About: React.FC = () => {
   return (

@@ -6,7 +6,7 @@ import {
   MessageText,
   StatusText,
   LoadingDots,
-} from "../styles/Hi.styled";
+} from "../styles/Commands.styled";
 import { termContext } from "../Terminal";
 
 const Hi: React.FC = () => {

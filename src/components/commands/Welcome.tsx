@@ -8,7 +8,7 @@ import {
   PreWrapper,
   RainbowText,
   Seperator,
-} from "../styles/Welcome.styled";
+} from "../styles/Commands.styled";
 
 const Welcome: React.FC = () => {
   return (
