@@ -32,7 +32,7 @@ const Themes: React.FC = () => {
   /* ===== check arg is valid ===== */
   const checkArg = () => (isArgInvalid(arg, "set", myThemes) ? <Usage /> : null);
 
-  return arg.length > 0 || arg.length > 2 ? (
+  return arg.length > 0 ? (
     checkArg()
   ) : (
     <Wrapper data-testid="themes">

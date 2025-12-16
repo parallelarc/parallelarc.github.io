@@ -22,16 +22,12 @@ type Props = {
 
 const Output: React.FC<Props> = ({ index, cmd }) => {
   const { arg } = useContext(termContext);
+  const commandsWithArgsAllowed = ["projects", "themes", "echo", "export"];
 
-  const specialCmds = ["projects", "themes", "echo", "hi", "hello", "export"];
-
-  // return 'Usage: <cmd>' if command arg is not valid
-  // eg: about tt
-  if (!specialCmds.includes(cmd) && arg.length > 0)
+  // return 'Usage: <cmd>' if the command should not receive arguments
+  if (arg.length > 0 && !commandsWithArgsAllowed.includes(cmd)) {
     return <UsageDiv data-testid="usage-output">Usage: {cmd}</UsageDiv>;
-
-  if ((cmd === "hi" || cmd === "hello") && arg.length > 0)
-    return <UsageDiv data-testid="usage-output">Usage: {cmd}</UsageDiv>;
+  }
 
   return (
     <OutputContainer data-testid={index === 0 ? "latest-output" : null}>

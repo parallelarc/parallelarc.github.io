@@ -383,9 +383,7 @@ const Terminal = () => {
 
     // Go previous cmd
     if (e.key === "ArrowUp") {
-      if (pointer >= cmdHistory.length) return;
-
-      if (pointer + 1 === cmdHistory.length) return;
+      if (pointer + 1 >= cmdHistory.length) return;
 
       setInputVal(cmdHistory[pointer + 1]);
       setPointer(prevState => prevState + 1);
@@ -447,27 +445,25 @@ const Terminal = () => {
         }, 2200);
       };
 
+      const tryLegacyCopy = () => {
+        try {
+          return document.execCommand("copy");
+        } catch {
+          return false;
+        }
+      };
+
       if (navigator?.clipboard?.writeText) {
         navigator.clipboard
           .writeText(selectedText)
           .then(triggerToast)
           .catch(() => {
-            try {
-              const copied = document.execCommand("copy");
-              if (copied) triggerToast();
-            } catch {
-              /* ignore copy failure */
-            }
+            if (tryLegacyCopy()) triggerToast();
           });
         return;
       }
 
-      try {
-        const copied = document.execCommand("copy");
-        if (copied) triggerToast();
-      } catch {
-        /* ignore copy failure */
-      }
+      if (tryLegacyCopy()) triggerToast();
     };
 
     document.addEventListener("mouseup", handleMouseUp);

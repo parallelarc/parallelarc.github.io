@@ -43,19 +43,6 @@ export const getCurrentCmdArry = (history: string[]) =>
  * @param {string} command - the command of the function
  * @returns {boolean} redirect - true | false
  */
-export const checkRedirect = (
-  rerender: boolean,
-  currentCommand: string[],
-  command: string,
-  validIds: number[]
-): boolean =>
-  rerender && // is submitted
-  currentCommand[0] === command && // current command starts with ('projects')
-  currentCommand[1] === "go" && // first arg is 'go'
-  currentCommand.length > 1 && // current command has arg
-  currentCommand.length < 4 && // if num of arg is valid (not `projects go 1 sth`)
-  _.includes(validIds, parseInt(currentCommand[2])); // arg last part is one of id
-
 /**
  * Check current render makes redirect for theme
  * @param {boolean} rerender - is submitted or not
