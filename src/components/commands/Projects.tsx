@@ -25,7 +25,7 @@ const Projects: React.FC = () => (
                 data-orientation={image.orientation}
               >
                 <img
-                  src={image.src}
+                  src={resolveAsset(image.src)}
                   alt={image.alt}
                   loading="lazy"
                   decoding="async"
@@ -51,6 +51,9 @@ type Project = {
   }[];
 };
 
+const resolveAsset = (src: string) =>
+  new URL(src.replace(/^\//, ""), import.meta.env.BASE_URL).href;
+
 const projects: Project[] = [
   {
     id: 1,
@@ -60,47 +63,47 @@ const projects: Project[] = [
     url: "https://example.com/vbot",
     images: [
       {
-        src: "/profile-media/project_vbot/Husky.jpg",
+        src: "/profile-media/project_vbot/husky.jpg",
         alt: "Husky robot companion bounding through fresh snow",
         orientation: "panorama",
       },
       {
-        src: "/profile-media/project_vbot/Labrador.jpg",
+        src: "/profile-media/project_vbot/labrador.jpg",
         alt: "Labrador-like robot strolling beside guests",
         orientation: "landscape",
       },
       {
-        src: "/profile-media/project_vbot/PeaFowl.jpg",
+        src: "/profile-media/project_vbot/peafowl.jpg",
         alt: "Peafowl spreading feathers in the courtyard",
         orientation: "portrait",
       },
       {
-        src: "/profile-media/project_vbot/BranchesTower.jpg",
+        src: "/profile-media/project_vbot/branchestower.jpg",
         alt: "Tree branches and tower wrapped in snowfall",
         orientation: "landscape",
       },
       {
-        src: "/profile-media/project_vbot/Deer.jpg",
+        src: "/profile-media/project_vbot/deer.jpg",
         alt: "Deer sculpture showcasing Vbot’s environmental sensors",
         orientation: "landscape",
       },
       {
-        src: "/profile-media/project_vbot/Dessert.jpg",
+        src: "/profile-media/project_vbot/dessert.jpg",
         alt: "Dessert platter prepared for Vbot’s guests",
         orientation: "portrait",
       },
       {
-        src: "/profile-media/project_vbot/Marmot.jpg",
+        src: "/profile-media/project_vbot/marmot.jpg",
         alt: "Marmot resting near the patio heaters",
         orientation: "portrait",
       },
       {
-        src: "/profile-media/project_vbot/Staff.png",
+        src: "/profile-media/project_vbot/staff.png",
         alt: "Staff members configuring Vbot’s control tablet",
         orientation: "portrait",
       },
       {
-        src: "/profile-media/project_vbot/Avatar.jpg",
+        src: "/profile-media/project_vbot/avatar.jpg",
         alt: "TV wall looping Vbot telemetry visualizations",
         orientation: "portrait",
       },
