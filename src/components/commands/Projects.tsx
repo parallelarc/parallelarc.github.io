@@ -245,9 +245,25 @@ const Projects: React.FC = () => {
             {resolvedGroups.map(group => {
               const layout = layouts[group.id]?.layout ?? "3v";
               const gridPositions = layouts[group.id]?.gridAreas ?? [];
+              
+              // 根据布局类型设置宽度比例
+              // 2h1v: 3份宽度 (2个横图 + 1个竖图)
+              // 1h2v: 2份宽度 (1个横图 + 2个竖图)
+              // 3h 和 3v: 1份宽度 (基础宽度)
+              const getFlexRatio = (layoutType: GroupLayout): number => {
+                if (layoutType === "2h1v") {
+                  return 3; // 3份宽度
+                }
+                if (layoutType === "1h2v") {
+                  return 2; // 2份宽度
+                }
+                return 1; // 基础宽度 (3h 和 3v)
+              };
+              
+              const flexRatio = getFlexRatio(layout);
 
               return (
-                <AlbumGroup key={group.id}>
+                <AlbumGroup key={group.id} flexRatio={flexRatio}>
                   <AlbumGrid className={`layout-${layout}`}>
                     {group.images.map((image, index) => (
                       <AlbumImage

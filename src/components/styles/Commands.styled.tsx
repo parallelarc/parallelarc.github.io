@@ -232,11 +232,11 @@ export const AlbumGroups = styled.div`
   align-items: stretch;
 `;
 
-export const AlbumGroup = styled.div`
+export const AlbumGroup = styled.div<{ flexRatio?: number }>`
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  flex: 1;
+  flex: ${props => props.flexRatio ?? 1};
 `;
 
 export const AlbumGrid = styled.div`
