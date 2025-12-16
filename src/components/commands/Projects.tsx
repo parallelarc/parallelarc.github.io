@@ -51,8 +51,12 @@ type Project = {
   }[];
 };
 
-const resolveAsset = (src: string) =>
-  new URL(src.replace(/^\//, ""), import.meta.env.BASE_URL).href;
+const resolveAsset = (src: string) => {
+  const base = import.meta.env.BASE_URL || "/";
+  const baseNormalized = base.endsWith("/") ? base.slice(0, -1) : base;
+  const srcNormalized = src.startsWith("/") ? src : `/${src}`;
+  return `${baseNormalized}${srcNormalized}`;
+};
 
 const projects: Project[] = [
   {
