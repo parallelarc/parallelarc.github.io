@@ -1,4 +1,4 @@
-import { createElement } from "react";
+import { createElement, useState } from "react";
 import type { ComponentType } from "react";
 import { FaEnvelope, FaGithub, FaSteam } from "react-icons/fa6";
 import type { IconBaseProps } from "react-icons";
@@ -7,6 +7,8 @@ import {
   ContactGallery,
   ContactGalleryItem,
   ProjectsIntro,
+  LightboxOverlay,
+  LightboxImage,
 } from "../styles/Projects.styled";
 import { CmdDesc, CmdLink, CmdList, HelpWrapper } from "../styles/Help.styled";
 
@@ -47,6 +49,16 @@ const contacts: ContactLink[] = [
 ];
 
 const Contact: React.FC = () => {
+  const [selectedImage, setSelectedImage] = useState<{ src: string; alt: string } | null>(null);
+
+  const openLightbox = (image: { src: string; alt: string }) => {
+    setSelectedImage(image);
+  };
+
+  const closeLightbox = () => {
+    setSelectedImage(null);
+  };
+
   return (
     <HelpWrapper data-testid="contact">
       <ProjectsIntro>Ping me via email or find me online</ProjectsIntro>
@@ -65,7 +77,7 @@ const Contact: React.FC = () => {
             {gallery && (
               <ContactGallery aria-label={`${title} collection preview`}>
                 {gallery.map(image => (
-                  <ContactGalleryItem key={image.src}>
+                  <ContactGalleryItem key={image.src} onClick={() => openLightbox(image)}>
                     <img
                       src={image.src}
                       alt={image.alt}
@@ -79,6 +91,16 @@ const Contact: React.FC = () => {
           </div>
         );
       })}
+
+      {selectedImage && (
+        <LightboxOverlay onClick={closeLightbox}>
+          <LightboxImage
+            src={selectedImage.src}
+            alt={selectedImage.alt}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </LightboxOverlay>
+      )}
     </HelpWrapper>
   );
 };

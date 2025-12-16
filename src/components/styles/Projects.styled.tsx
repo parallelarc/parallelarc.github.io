@@ -23,6 +23,65 @@ export const ProjectDesc = styled.div`
   max-width: 500px;
 `;
 
+export const ProjectLayout = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+`;
+
+export const TextPanel = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+export const AlbumSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`;
+
+export const AlbumGroups = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 0.85rem;
+  align-items: stretch;
+`;
+
+export const AlbumGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  flex: 1;
+`;
+
+export const AlbumGrid = styled.div`
+  display: grid;
+  gap: 0.6rem;
+  flex: 1;
+
+  &.layout-3h {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(3, 1fr);
+  }
+
+  &.layout-3v {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: 1fr;
+  }
+
+  &.layout-2h1v {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+
+  &.layout-1h2v {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+`;
+
 export const ProjectGallery = styled.div`
   margin-top: 0.75rem;
   display: grid;
@@ -106,6 +165,15 @@ export const GalleryItem = styled.figure`
   }
 `;
 
+export const AlbumImage = styled(GalleryItem)`
+  min-height: 140px;
+  cursor: pointer;
+
+  img {
+    height: 100%;
+  }
+`;
+
 export const ContactGallery = styled(ProjectGallery)`
   display: inline-grid;
   justify-content: flex-start;
@@ -116,10 +184,56 @@ export const ContactGallery = styled(ProjectGallery)`
 
 export const ContactGalleryItem = styled(GalleryItem)`
   min-height: unset;
+  cursor: pointer;
 
   img {
     height: auto;
     max-height: 260px;
     object-fit: contain;
+  }
+`;
+
+export const LightboxOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  cursor: pointer;
+  animation: fadeIn 0.3s ease;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+`;
+
+export const LightboxImage = styled.img`
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 0.4rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: zoomIn 0.3s ease;
+  cursor: default;
+
+  @keyframes zoomIn {
+    from {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
   }
 `;
