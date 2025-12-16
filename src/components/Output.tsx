@@ -1,3 +1,4 @@
+import React from "react";
 import About from "./commands/About";
 import Clear from "./commands/Clear";
 import Echo from "./commands/Echo";
@@ -53,4 +54,7 @@ const Output: React.FC<Props> = ({ index, cmd }) => {
   );
 };
 
-export default Output;
+// 使用React.memo优化，只有当index或cmd改变时才重新渲染
+export default React.memo(Output, (prevProps, nextProps) => {
+  return prevProps.index === nextProps.index && prevProps.cmd === nextProps.cmd;
+});

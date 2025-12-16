@@ -2,14 +2,14 @@ import React, {
   createContext,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
 import _ from "lodash";
-import Output from "./Output";
+import CommandHistoryItem from "./CommandHistoryItem";
 import TermInfo from "./TermInfo";
 import {
-  CmdNotFound,
   CopyToast,
   CrashBadge,
   CrashButton,
@@ -17,7 +17,6 @@ import {
   CrashMessage,
   CrashTitle,
   CrashWrapper,
-  Empty,
   Form,
   Hints,
   Input,
@@ -64,7 +63,7 @@ export const commands: Command = [
   { cmd: "welcome", desc: "display hero section", tab: 6 },
 ];
 
-type Term = {
+export type Term = {
   arg: string[];
   history: string[];
   rerender: boolean;
@@ -137,6 +136,17 @@ const Terminal = () => {
       "You are an enthusiastic yet concise AI concierge for Ren Jianwei's interactive terminal portfolio. Keep answers grounded in Ren's work and experience."
   );
   const chatConfigured = Boolean(openAiApiKey);
+
+  // 记忆化chat对象，避免每次渲染时创建新对象
+  const chatValue = useMemo(
+    () => ({
+      messages: chatMessages,
+      loading: chatLoading,
+      error: chatError,
+      configured: chatConfigured,
+    }),
+    [chatMessages, chatLoading, chatError, chatConfigured]
+  );
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -550,46 +560,18 @@ const Terminal = () => {
         <InputHint aria-hidden="true">⏎ send · Ctrl+C quit</InputHint>
       )}
 
-      {cmdHistory.map((cmdH, index) => {
-        const commandArray = _.split(_.trim(cmdH), " ");
-        const normalizedCommand = _.toLower(commandArray[0]);
-        const validCommand = _.find(commands, { cmd: normalizedCommand });
-        const contextValue = {
-          arg: _.drop(commandArray),
-          history: cmdHistory,
-          rerender,
-          index,
-          clearHistory,
-          chat: {
-            messages: chatMessages,
-            loading: chatLoading,
-            error: chatError,
-            configured: chatConfigured,
-          },
-          setEnv: setEnvVar,
-        };
-        return (
-          <div key={_.uniqueId(`${cmdH}_`)}>
-            <div>
-              <TermInfo />
-              <MobileBr />
-              <MobileSpan>&#62;</MobileSpan>
-              <span data-testid="input-command">{cmdH}</span>
-            </div>
-            {validCommand ? (
-              <termContext.Provider value={contextValue}>
-                <Output index={index} cmd={normalizedCommand} />
-              </termContext.Provider>
-            ) : cmdH === "" ? (
-              <Empty />
-            ) : (
-              <CmdNotFound data-testid={`not-found-${index}`}>
-                command not found: {cmdH}
-              </CmdNotFound>
-            )}
-          </div>
-        );
-      })}
+      {cmdHistory.map((cmdH, index) => (
+        <CommandHistoryItem
+          key={`${cmdH}_${index}`}
+          cmdH={cmdH}
+          index={index}
+          cmdHistory={cmdHistory}
+          rerender={rerender}
+          clearHistory={clearHistory}
+          chat={chatValue}
+          setEnv={setEnvVar}
+        />
+      ))}
     </Wrapper>
   );
 };
