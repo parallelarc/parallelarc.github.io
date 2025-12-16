@@ -474,6 +474,38 @@ const Terminal = () => {
     };
   }, [isCrashed]);
 
+  // Global keyboard listener: focus input on any key press except ESC
+  useEffect(() => {
+    if (isCrashed) return;
+
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // Don't focus if ESC is pressed
+      if (e.key === "Escape") return;
+
+      // Don't interfere if user is typing in another input/textarea/contenteditable
+      const activeElement = document.activeElement;
+      const isTypingInOtherInput =
+        activeElement &&
+        (activeElement.tagName === "INPUT" ||
+          activeElement.tagName === "TEXTAREA" ||
+          activeElement.getAttribute("contenteditable") === "true");
+
+      // If user is already typing in our input, no need to refocus
+      if (activeElement === inputRef.current) return;
+
+      // If user is typing in another input field, don't interfere
+      if (isTypingInOtherInput) return;
+
+      // Focus the terminal input
+      inputRef.current?.focus();
+    };
+
+    document.addEventListener("keydown", handleGlobalKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleGlobalKeyDown);
+    };
+  }, [isCrashed]);
+
   useEffect(() => {
     return () => {
       if (crashTimerRef.current) {
