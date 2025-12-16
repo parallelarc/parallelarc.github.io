@@ -496,8 +496,33 @@ const Terminal = () => {
       // If user is typing in another input field, don't interfere
       if (isTypingInOtherInput) return;
 
-      // Focus the terminal input
-      inputRef.current?.focus();
+      // Scroll to input first, then focus
+      // This ensures the input is visible before focusing
+      if (inputRef.current) {
+        // First, ensure the container is scrolled to show the input
+        // Since input is at bottom (column-reverse), scroll container to bottom
+        if (containerRef.current) {
+          const container = containerRef.current;
+          // Scroll container to bottom to reveal input
+          container.scrollTop = container.scrollHeight;
+        }
+        
+        // Then scroll input into view (handles page-level scrolling)
+        // block: "center" ensures input is visible in viewport
+        inputRef.current.scrollIntoView({ 
+          behavior: "smooth", 
+          block: "center",
+          inline: "nearest"
+        });
+        
+        // Focus after a short delay to ensure scroll starts
+        // Using requestAnimationFrame for better performance
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            inputRef.current?.focus();
+          });
+        });
+      }
     };
 
     document.addEventListener("keydown", handleGlobalKeyDown);
