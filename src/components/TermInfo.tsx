@@ -7,7 +7,7 @@ type TermInfoProps = {
 const TermInfo = ({ isChatMode }: TermInfoProps) => {
 	return (
 		<Wrapper>
-			<User>visitor</User>@<WebsiteName>rjw.dev</WebsiteName>:
+			<User>visitor</User>@<WebsiteName>foxiv</WebsiteName>:
 			{isChatMode ? "[llm]$" : "~$"}
 		</Wrapper>
 	);
