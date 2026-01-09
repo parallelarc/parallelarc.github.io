@@ -116,7 +116,7 @@ export const DisplayText = styled.span<{ $hasText: boolean }>`
   color: ${({ theme }) => theme.colors?.text[100] || "#ffffff"};
   white-space: pre;
   ${({ $hasText, theme }) =>
-    !$hasText && `color: ${theme.colors?.text[300]};`}
+    !$hasText && `color: ${theme.colors?.text[400] || "rgba(255, 255, 255, 0.35)"};`}
 `;
 
 // 块状光标内的字符（反色显示）
@@ -146,8 +146,10 @@ export const Input = HiddenInput;
 
 export const InputHint = styled.div`
   margin-top: 0.25rem;
-  font-size: 0.75rem;
-  color: ${({ theme }) => theme.colors?.text[300]};
+  padding-left: 0.5rem;
+  font-size: 0.7rem;
+  color: ${({ theme }) => theme.colors?.text[400] || "rgba(255, 255, 255, 0.35)"};
+  opacity: 0.8;
 `;
 
 export const Hints = styled.span`

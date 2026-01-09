@@ -161,9 +161,11 @@ const Terminal = () => {
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setRerender(false);
-      setInputVal(e.target.value);
-      // 输入时将光标移到末尾
-      setCursorPosition(e.target.value.length);
+      const newValue = e.target.value;
+      setInputVal(newValue);
+      // 获取原生输入框的实际光标位置
+      const selectionStart = (e.target as HTMLInputElement).selectionStart;
+      setCursorPosition(selectionStart ?? newValue.length);
     },
     []
   );
@@ -388,7 +390,12 @@ const Terminal = () => {
             ? `${currentCmd[0]} ${currentCmd[1]} ${hintsCmds[0]}`
             : hintsCmds[0];
         setInputVal(newVal);
-        setCursorPosition(newVal.length);
+        const newLen = newVal.length;
+        setCursorPosition(newLen);
+        // 同步原生输入框的光标位置
+        if (inputRef.current) {
+          inputRef.current.setSelectionRange(newLen, newLen);
+        }
         setHints([]);
       }
     }
@@ -404,7 +411,12 @@ const Terminal = () => {
 
       const newVal = cmdHistory[pointer + 1];
       setInputVal(newVal);
-      setCursorPosition(newVal.length);
+      const newLen = newVal.length;
+      setCursorPosition(newLen);
+      // 同步原生输入框的光标位置
+      if (inputRef.current) {
+        inputRef.current.setSelectionRange(newLen, newLen);
+      }
       setPointer(prevState => prevState + 1);
       inputRef?.current?.blur();
     }
@@ -417,12 +429,21 @@ const Terminal = () => {
         setInputVal("");
         setPointer(-1);
         setCursorPosition(0);
+        // 同步原生输入框的光标位置
+        if (inputRef.current) {
+          inputRef.current.setSelectionRange(0, 0);
+        }
         return;
       }
 
       const newVal = cmdHistory[pointer - 1];
       setInputVal(newVal);
-      setCursorPosition(newVal.length);
+      const newLen = newVal.length;
+      setCursorPosition(newLen);
+      // 同步原生输入框的光标位置
+      if (inputRef.current) {
+        inputRef.current.setSelectionRange(newLen, newLen);
+      }
       setPointer(prevState => prevState - 1);
       inputRef?.current?.blur();
     }
@@ -430,35 +451,53 @@ const Terminal = () => {
     // Move cursor left
     if (e.key === "ArrowLeft" && !e.ctrlKey && !e.metaKey) {
       e.preventDefault();
-      setCursorPosition(prev => Math.max(0, prev - 1));
+      const newPos = Math.max(0, cursorPosition - 1);
+      setCursorPosition(newPos);
+      // 同步原生输入框的光标位置
+      if (inputRef.current) {
+        inputRef.current.setSelectionRange(newPos, newPos);
+      }
     }
 
     // Move cursor right
     if (e.key === "ArrowRight" && !e.ctrlKey && !e.metaKey) {
       e.preventDefault();
-      setCursorPosition(prev => Math.min(inputVal.length, prev + 1));
+      const newPos = Math.min(inputVal.length, cursorPosition + 1);
+      setCursorPosition(newPos);
+      // 同步原生输入框的光标位置
+      if (inputRef.current) {
+        inputRef.current.setSelectionRange(newPos, newPos);
+      }
     }
 
     // Handle Home key
     if (e.key === "Home") {
       e.preventDefault();
       setCursorPosition(0);
+      // 同步原生输入框的光标位置
+      if (inputRef.current) {
+        inputRef.current.setSelectionRange(0, 0);
+      }
     }
 
     // Handle End key
     if (e.key === "End") {
       e.preventDefault();
       setCursorPosition(inputVal.length);
+      // 同步原生输入框的光标位置
+      if (inputRef.current) {
+        inputRef.current.setSelectionRange(inputVal.length, inputVal.length);
+      }
     }
   };
 
-  // For caret position at the end
+  // For caret position at the end - 只在 inputRef 或 pointer 改变时 focus
   useEffect(() => {
     const timer = setTimeout(() => {
       inputRef?.current?.focus();
     }, 1);
     return () => clearTimeout(timer);
-  }, [inputRef, inputVal, pointer]);
+  }, [inputRef, pointer]);
 
   useEffect(() => {
     const handleMouseUp = () => {
@@ -566,7 +605,13 @@ const Terminal = () => {
         // Using requestAnimationFrame for better performance
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-            inputRef.current?.focus();
+            const input = inputRef.current;
+            if (input) {
+              input.focus();
+              // 恢复光标位置 - 直接从输入框读取当前光标位置
+              const currentPos = input.selectionStart || 0;
+              input.setSelectionRange(currentPos, currentPos);
+            }
           });
         });
       }
@@ -634,11 +679,15 @@ const Terminal = () => {
             >
               <DisplayText $hasText={inputVal.length > 0}>
                 {inputVal.length === 0 ? (
-                  // 空输入时显示 placeholder 或空块状光标
-                  <>
-                    {isInputFocused ? null : (isChatMode ? "share an idea with me" : "")}
-                    <BlockCursor $visible={isInputFocused} />
-                  </>
+                  // 空输入时显示 placeholder，光标覆盖第一个字符
+                  isInputFocused ? (
+                    <>
+                      <CursorChar>s</CursorChar>
+                      hare an idea with me
+                    </>
+                  ) : (
+                    "share an idea with me"
+                  )
                 ) : (
                   // 有输入时，按光标位置分割文本
                   <>
@@ -668,6 +717,9 @@ const Terminal = () => {
             />
           </ClaudeInputArea>
           <ClaudeBottomLine />
+          {!isChatMode && (
+            <InputHint aria-hidden="true">? for shortcuts</InputHint>
+          )}
         </ClaudeInputContainer>
       </Form>
       {isChatMode && (
