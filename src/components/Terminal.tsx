@@ -19,13 +19,20 @@ import {
   CrashWrapper,
   Form,
   Hints,
-  Input,
   InputHint,
-  MobileBr,
-  MobileSpan,
-  PromptBlock,
   Wrapper,
+  HiddenInput,
+  InputDisplay,
+  DisplayText,
+  BlockCursor,
+  CursorChar,
 } from "./styles/Terminal.styled";
+import {
+  ClaudeInputContainer,
+  ClaudeTopLine,
+  ClaudeInputArea,
+  ClaudeBottomLine,
+} from "./styles/TerminalInfo.styled";
 import { argTab } from "../utils/funcs";
 
 const normalizeBaseUrl = (url: string) =>
@@ -99,6 +106,8 @@ const Terminal = () => {
   const hiAbortRef = useRef<AbortController | null>(null);
 
   const [inputVal, setInputVal] = useState("");
+  const [isInputFocused, setIsInputFocused] = useState(false);
+  const [cursorPosition, setCursorPosition] = useState(0);
   const [cmdHistory, setCmdHistory] = useState<string[]>(["welcome"]);
   const [rerender, setRerender] = useState(false);
   const [hints, setHints] = useState<string[]>([]);
@@ -153,8 +162,10 @@ const Terminal = () => {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setRerender(false);
       setInputVal(e.target.value);
+      // 输入时将光标移到末尾
+      setCursorPosition(e.target.value.length);
     },
-    [inputVal]
+    []
   );
 
   const sendHiPrompt = useCallback(
@@ -248,6 +259,7 @@ const Terminal = () => {
       setInputVal("");
       setHints([]);
       setPointer(-1);
+      setCursorPosition(0);
       return;
     }
     if (trimmedInput.toLowerCase() === "sudo rm -rf /") {
@@ -260,6 +272,7 @@ const Terminal = () => {
       setInputVal("");
       setHints([]);
       setPointer(-1);
+      setCursorPosition(0);
       return;
     }
 
@@ -279,6 +292,7 @@ const Terminal = () => {
     setRerender(true);
     setHints([]);
     setPointer(-1);
+    setCursorPosition(0);
   };
 
   const clearHistory = () => {
@@ -288,6 +302,7 @@ const Terminal = () => {
     setChatError(null);
     setChatLoading(false);
     setIsChatMode(false);
+    setCursorPosition(0);
     if (hiAbortRef.current) {
       hiAbortRef.current.abort();
     }
@@ -312,6 +327,7 @@ const Terminal = () => {
     setHints([]);
     setPointer(-1);
     setIsChatMode(false);
+    setCursorPosition(0);
     if (hiAbortRef.current) {
       hiAbortRef.current.abort();
     }
@@ -337,6 +353,7 @@ const Terminal = () => {
       setInputVal("");
       setHints([]);
       setPointer(-1);
+      setCursorPosition(0);
       if (isChatMode) {
         setIsChatMode(false);
       }
@@ -366,12 +383,12 @@ const Terminal = () => {
       // if only one command to autocomplete
       else if (hintsCmds.length === 1) {
         const currentCmd = _.split(inputVal, " ");
-        setInputVal(
+        const newVal =
           currentCmd.length !== 1
             ? `${currentCmd[0]} ${currentCmd[1]} ${hintsCmds[0]}`
-            : hintsCmds[0]
-        );
-
+            : hintsCmds[0];
+        setInputVal(newVal);
+        setCursorPosition(newVal.length);
         setHints([]);
       }
     }
@@ -385,7 +402,9 @@ const Terminal = () => {
     if (e.key === "ArrowUp") {
       if (pointer + 1 >= cmdHistory.length) return;
 
-      setInputVal(cmdHistory[pointer + 1]);
+      const newVal = cmdHistory[pointer + 1];
+      setInputVal(newVal);
+      setCursorPosition(newVal.length);
       setPointer(prevState => prevState + 1);
       inputRef?.current?.blur();
     }
@@ -397,12 +416,39 @@ const Terminal = () => {
       if (pointer === 0) {
         setInputVal("");
         setPointer(-1);
+        setCursorPosition(0);
         return;
       }
 
-      setInputVal(cmdHistory[pointer - 1]);
+      const newVal = cmdHistory[pointer - 1];
+      setInputVal(newVal);
+      setCursorPosition(newVal.length);
       setPointer(prevState => prevState - 1);
       inputRef?.current?.blur();
+    }
+
+    // Move cursor left
+    if (e.key === "ArrowLeft" && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault();
+      setCursorPosition(prev => Math.max(0, prev - 1));
+    }
+
+    // Move cursor right
+    if (e.key === "ArrowRight" && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault();
+      setCursorPosition(prev => Math.min(inputVal.length, prev + 1));
+    }
+
+    // Handle Home key
+    if (e.key === "Home") {
+      e.preventDefault();
+      setCursorPosition(0);
+    }
+
+    // Handle End key
+    if (e.key === "End") {
+      e.preventDefault();
+      setCursorPosition(inputVal.length);
     }
   };
 
@@ -576,32 +622,53 @@ const Terminal = () => {
         </div>
       )}
       <Form onSubmit={handleSubmit}>
-        <label htmlFor="terminal-input">
-          {isChatMode ? (
-            // LLM chat mode: show minimal Codex-style block cursor
-            <PromptBlock aria-hidden="true">▌</PromptBlock>
-          ) : (
-            <>
-              <TermInfo />
-              <MobileBr />
-              <MobileSpan>&#62;</MobileSpan>
-            </>
-          )}
-        </label>
-        <Input
-          title="terminal-input"
-          type="text"
-          id="terminal-input"
-          placeholder={isChatMode ? "share an idea with me" : ""}
-          autoComplete="off"
-          spellCheck="false"
-          autoFocus
-          autoCapitalize="off"
-          ref={inputRef}
-          value={inputVal}
-          onKeyDown={handleKeyDown}
-          onChange={handleChange}
-        />
+        <ClaudeInputContainer>
+          <ClaudeTopLine />
+          <ClaudeInputArea>
+            <label htmlFor="terminal-input">
+              <TermInfo isChatMode={isChatMode} />
+            </label>
+            <InputDisplay
+              onClick={() => inputRef.current?.focus()}
+              data-testid="input-display"
+            >
+              <DisplayText $hasText={inputVal.length > 0}>
+                {inputVal.length === 0 ? (
+                  // 空输入时显示 placeholder 或空块状光标
+                  <>
+                    {isInputFocused ? null : (isChatMode ? "share an idea with me" : "")}
+                    <BlockCursor $visible={isInputFocused} />
+                  </>
+                ) : (
+                  // 有输入时，按光标位置分割文本
+                  <>
+                    {inputVal.slice(0, cursorPosition)}
+                    <CursorChar>
+                      {inputVal[cursorPosition] || " "}
+                    </CursorChar>
+                    {inputVal.slice(cursorPosition + 1)}
+                  </>
+                )}
+              </DisplayText>
+            </InputDisplay>
+            <HiddenInput
+              title="terminal-input"
+              type="text"
+              id="terminal-input"
+              autoComplete="off"
+              spellCheck="false"
+              autoFocus
+              autoCapitalize="off"
+              ref={inputRef}
+              value={inputVal}
+              onKeyDown={handleKeyDown}
+              onChange={handleChange}
+              onFocus={() => setIsInputFocused(true)}
+              onBlur={() => setIsInputFocused(false)}
+            />
+          </ClaudeInputArea>
+          <ClaudeBottomLine />
+        </ClaudeInputContainer>
       </Form>
       {isChatMode && (
         <InputHint aria-hidden="true">⏎ send · Ctrl+C quit</InputHint>

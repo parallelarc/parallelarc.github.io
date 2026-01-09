@@ -82,25 +82,67 @@ export const MobileBr = styled.br`
 
 export const Form = styled.form`
   display: flex;
-  align-items: baseline;
-  gap: 0.35rem;
+  flex-direction: column;
+  width: 100%;
 `;
 
 export const PromptBlock = styled.span`
   color: ${({ theme }) => theme.colors?.primary || "#3b82f6"};
 `;
 
-export const Input = styled.input`
-  flex-grow: 1;
-
-  &::placeholder {
-    color: ${({ theme }) => theme.colors?.text[300]};
-  }
-
-  @media (max-width: 550px) {
-    min-width: 85%;
-  }
+// 隐藏的原生输入框 - 用于接收键盘输入但不可见
+export const HiddenInput = styled.input`
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  top: 0;
+  left: 0;
+  height: 0;
+  width: 0;
 `;
+
+// 显示输入内容的容器
+export const InputDisplay = styled.div`
+  position: relative;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  cursor: text;
+  min-height: 1.5em;
+`;
+
+// 显示的文本内容
+export const DisplayText = styled.span<{ $hasText: boolean }>`
+  color: ${({ theme }) => theme.colors?.text[100] || "#ffffff"};
+  white-space: pre;
+  ${({ $hasText, theme }) =>
+    !$hasText && `color: ${theme.colors?.text[300]};`}
+`;
+
+// 块状光标内的字符（反色显示）
+export const CursorChar = styled.span`
+  background-color: ${({ theme }) => theme.colors?.text[100] || "#ffffff"};
+  color: ${({ theme }) => theme.colors?.body || "#000000"};
+  display: inline-block;
+  min-width: 0.6em;
+  text-align: center;
+`;
+
+// 块状光标（用于空位置时显示）
+export const BlockCursor = styled.span<{ $visible: boolean }>`
+  display: inline-block;
+  width: 0.6em;
+  height: 1em;
+  background-color: ${({ theme }) => theme.colors?.text[100] || "#ffffff"};
+  opacity: ${({ $visible }) => ($visible ? "1" : "0")};
+  transition: opacity 0.05s ease;
+  pointer-events: none;
+  flex-shrink: 0;
+  vertical-align: text-bottom;
+`;
+
+// 兼容旧的 Input 名称（用于其他地方可能的引用）
+export const Input = HiddenInput;
 
 export const InputHint = styled.div`
   margin-top: 0.25rem;
