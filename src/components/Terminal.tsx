@@ -67,6 +67,7 @@ export type Term = {
   history: string[];
   rerender: boolean;
   index: number;
+  clearHistory?: () => void;
 };
 
 export const termContext = createContext<Term>({
@@ -88,10 +89,17 @@ const Terminal = () => {
   const [hints, setHints] = useState<string[]>([]);
   const [pointer, setPointer] = useState(-1);
   const [selectedCommandIndex, setSelectedCommandIndex] = useState(0);
+  const [filteredCommands, setFilteredCommands] = useState(commands);
   const [showCopyToast, setShowCopyToast] = useState(false);
   const [isCrashed, setIsCrashed] = useState(false);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const crashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearHistory = () => {
+    setCmdHistory(["/welcome"]);
+    setHints([]);
+    setCursorPosition(0);
+  };
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -152,7 +160,7 @@ const Terminal = () => {
     }
     const ctrlI = e.ctrlKey && e.key.toLowerCase() === "i";
     const ctrlC = e.ctrlKey && e.key.toLowerCase() === "c";
-    const isSlashMode = inputVal === "/";
+    const isSlashMode = inputVal.startsWith("/");
 
     if (ctrlC) {
       e.preventDefault();
@@ -182,7 +190,7 @@ const Terminal = () => {
     // 斜杠模式下按 Enter，执行选中的命令
     if (isSlashMode && e.key === "Enter") {
       e.preventDefault();
-      const selectedCmd = commands[selectedCommandIndex]?.cmd;
+      const selectedCmd = filteredCommands[selectedCommandIndex]?.cmd;
       if (selectedCmd) {
         // 直接添加到历史记录，绕过 inputVal 的异步问题
         setCmdHistory([selectedCmd, ...cmdHistory]);
@@ -205,14 +213,14 @@ const Terminal = () => {
       // ArrowUp - 在命令列表中向上选择（循环）
       if (e.key === "ArrowUp") {
         e.preventDefault();
-        setSelectedCommandIndex(prev => prev <= 0 ? commands.length - 1 : prev - 1);
+        setSelectedCommandIndex(prev => prev <= 0 ? filteredCommands.length - 1 : prev - 1);
         return;
       }
 
       // ArrowDown - 在命令列表中向下选择（循环）
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        setSelectedCommandIndex(prev => prev >= commands.length - 1 ? 0 : prev + 1);
+        setSelectedCommandIndex(prev => prev >= filteredCommands.length - 1 ? 0 : prev + 1);
         return;
       }
 
@@ -220,7 +228,7 @@ const Terminal = () => {
       if (e.key === "Tab" || ctrlI) {
         e.preventDefault();
         if (selectedCommandIndex >= 0) {
-          const selectedCmd = commands[selectedCommandIndex]?.cmd;
+          const selectedCmd = filteredCommands[selectedCommandIndex]?.cmd;
           if (selectedCmd) {
             setInputVal(selectedCmd);
             setCursorPosition(selectedCmd.length);
@@ -237,43 +245,6 @@ const Terminal = () => {
       if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && selectedCommandIndex >= 0) {
         e.preventDefault();
         return;
-      }
-    }
-
-    // 普通模式下的 Tab 自动补全
-    if (e.key === "Tab" || ctrlI) {
-      e.preventDefault();
-      if (!inputVal) return;
-
-      let hintsCmds: string[] = [];
-      commands.forEach(({ cmd }) => {
-        if (_.startsWith(cmd, inputVal)) {
-          hintsCmds = [...hintsCmds, cmd];
-        }
-      });
-
-      const returnedHints = argTab(inputVal, setInputVal, setHints, hintsCmds);
-      hintsCmds = returnedHints ? [...hintsCmds, ...returnedHints] : hintsCmds;
-
-      // if there are many command to autocomplete
-      if (hintsCmds.length > 1) {
-        setHints(hintsCmds);
-      }
-      // if only one command to autocomplete
-      else if (hintsCmds.length === 1) {
-        const currentCmd = _.split(inputVal, " ");
-        const newVal =
-          currentCmd.length !== 1
-            ? `${currentCmd[0]} ${currentCmd[1]} ${hintsCmds[0]}`
-            : hintsCmds[0];
-        setInputVal(newVal);
-        const newLen = newVal.length;
-        setCursorPosition(newLen);
-        // 同步原生输入框的光标位置
-        if (inputRef.current) {
-          inputRef.current.setSelectionRange(newLen, newLen);
-        }
-        setHints([]);
       }
     }
 
@@ -332,6 +303,24 @@ const Terminal = () => {
   useEffect(() => {
     if (inputVal === "/") {
       setSelectedCommandIndex(0);
+    }
+  }, [inputVal]);
+
+  // 当 inputVal 以 / 开头时，过滤命令列表
+  useEffect(() => {
+    if (inputVal.startsWith("/")) {
+      if (inputVal === "/") {
+        setFilteredCommands(commands);
+        setSelectedCommandIndex(0);
+      } else {
+        const filtered = commands.filter(({ cmd }) =>
+          cmd.startsWith(inputVal)
+        );
+        setFilteredCommands(filtered);
+        setSelectedCommandIndex(0);
+      }
+    } else {
+      setFilteredCommands(commands);
     }
   }, [inputVal]);
 
@@ -548,9 +537,9 @@ const Terminal = () => {
             />
           </ClaudeInputArea>
           <ClaudeBottomLine />
-          {inputVal === "/" ? (
+          {inputVal.startsWith("/") ? (
             <CommandsList aria-hidden="true">
-              {commands.map(({ cmd, desc }, index) => (
+              {filteredCommands.map(({ cmd, desc }, index) => (
                 <CommandItem
                   key={cmd}
                   $selected={index === selectedCommandIndex}
@@ -564,7 +553,7 @@ const Terminal = () => {
             <ShortcutsGrid aria-hidden="true">
               <ShortcutItem>/ for commands</ShortcutItem>
               <ShortcutItem>? for help</ShortcutItem>
-              <ShortcutItem>tab to autocomplete</ShortcutItem>
+              <ShortcutItem>tab to complete command</ShortcutItem>
               <ShortcutItem>shift + ⏎ for newline</ShortcutItem>
               <ShortcutItem>ctrl + c to clear prompt</ShortcutItem>
             </ShortcutsGrid>
@@ -581,6 +570,7 @@ const Terminal = () => {
           index={index}
           cmdHistory={cmdHistory}
           rerender={rerender}
+          clearHistory={clearHistory}
         />
       ))}
     </Wrapper>
