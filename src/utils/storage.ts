@@ -1,12 +1,12 @@
-export const setToLS = (key: string, value: string) => {
-  // window.localStorage.setItem(key, JSON.stringify(value));
+/**
+ * Local storage utilities for theme persistence
+ */
+
+export function setToLS(key: string, value: string): void {
   window.localStorage.setItem(key, value);
-};
+}
 
-export const getFromLS = (key: string) => {
+export function getFromLS(key: string): string | undefined {
   const value = window.localStorage.getItem(key);
-
-  if (value) {
-    return value;
-  }
-};
+  return value ?? undefined;
+}

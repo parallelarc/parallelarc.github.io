@@ -47,25 +47,25 @@ const assetBase = (() => {
   return base.endsWith("/") ? base.slice(0, -1) : base;
 })();
 
-const resolveAsset = (src: string) => {
+function resolveAsset(src: string): string {
   const srcNormalized = src.startsWith("/") ? src : `/${src}`;
   return `${assetBase}${srcNormalized}`;
-};
+}
 
-const getOrientationFromSize = (
+function getOrientationFromSize(
   naturalWidth: number,
   naturalHeight: number
-): ImageOrientation => {
+): ImageOrientation {
   if (naturalWidth > naturalHeight * 1.2) return "landscape";
   if (naturalHeight > naturalWidth * 1.2) return "portrait";
   return "square";
-};
+}
 
-const detectGroupLayout = (orientations: ImageOrientation[]): GroupLayout => {
+function detectGroupLayout(orientations: ImageOrientation[]): GroupLayout {
   if (orientations.length !== 3) return "3v";
 
-  const landscapeCount = orientations.filter(o => o === "landscape").length;
-  const portraitCount = orientations.filter(o => o === "portrait").length;
+  const landscapeCount = orientations.filter((o) => o === "landscape").length;
+  const portraitCount = orientations.filter((o) => o === "portrait").length;
 
   if (landscapeCount === 3) return "3h";
   if (portraitCount === 3) return "3v";
@@ -73,17 +73,17 @@ const detectGroupLayout = (orientations: ImageOrientation[]): GroupLayout => {
   if (landscapeCount === 1 && portraitCount === 2) return "1h2v";
 
   return "3v";
-};
+}
 
-const getGridPositions = (
+function getGridPositions(
   layout: GroupLayout,
   orientations: ImageOrientation[]
-): string[] => {
+): string[] {
   if (layout === "3h") return ["1 / 1 / 2 / 2", "2 / 1 / 3 / 2", "3 / 1 / 4 / 2"];
   if (layout === "3v") return ["1 / 1 / 2 / 2", "1 / 2 / 2 / 3", "1 / 3 / 2 / 4"];
 
   if (layout === "2h1v") {
-    const portraitIndex = orientations.findIndex(o => o === "portrait");
+    const portraitIndex = orientations.findIndex((o) => o === "portrait");
     const positions = ["", "", ""];
     let hIndex = 0;
 
@@ -99,7 +99,7 @@ const getGridPositions = (
   }
 
   if (layout === "1h2v") {
-    const landscapeIndex = orientations.findIndex(o => o === "landscape");
+    const landscapeIndex = orientations.findIndex((o) => o === "landscape");
     const positions = ["", "", ""];
     let vCol = 0;
 
@@ -115,15 +115,15 @@ const getGridPositions = (
   }
 
   return ["", "", ""];
-};
+}
 
-const buildLayout = (orientations: ImageOrientation[]): AlbumLayout => {
+function buildLayout(orientations: ImageOrientation[]): AlbumLayout {
   const layout = detectGroupLayout(orientations);
   return { layout, gridAreas: getGridPositions(layout, orientations) };
-};
+}
 
-const loadImageOrientation = (src: string): Promise<ImageOrientation> =>
-  new Promise(resolve => {
+function loadImageOrientation(src: string): Promise<ImageOrientation> {
+  return new Promise((resolve) => {
     const img = new Image();
     img.onload = () => {
       resolve(getOrientationFromSize(img.naturalWidth, img.naturalHeight));
@@ -131,12 +131,13 @@ const loadImageOrientation = (src: string): Promise<ImageOrientation> =>
     img.onerror = () => resolve("square");
     img.src = resolveAsset(src);
   });
+}
 
-const useAlbumLayouts = (groups: { id: string; images: ProjectImage[] }[]) => {
+function useAlbumLayouts(groups: { id: string; images: ProjectImage[] }[]) {
   const [layouts, setLayouts] = useState<Record<string, AlbumLayout>>({});
 
   const groupsKey = useMemo(
-    () => groups.map(g => `${g.id}:${g.images.map(i => i.src).join(',')}`).join('|'),
+    () => groups.map((g) => `${g.id}:${g.images.map((i) => i.src).join(",")}`).join("|"),
     [groups]
   );
 
@@ -145,9 +146,9 @@ const useAlbumLayouts = (groups: { id: string; images: ProjectImage[] }[]) => {
 
     const loadLayouts = async () => {
       const entries = await Promise.all(
-        groups.map(async group => {
+        groups.map(async (group) => {
           const orientations = await Promise.all(
-            group.images.map(image => loadImageOrientation(image.src))
+            group.images.map((image) => loadImageOrientation(image.src))
           );
 
           return [group.id, buildLayout(orientations)] as const;
@@ -167,9 +168,97 @@ const useAlbumLayouts = (groups: { id: string; images: ProjectImage[] }[]) => {
   }, [groupsKey]);
 
   return layouts;
-};
+}
 
-const Projects: React.FC = () => {
+function getFlexRatio(layoutType: GroupLayout): number {
+  if (layoutType === "2h1v") return 3;
+  if (layoutType === "1h2v") return 2;
+  return 1;
+}
+
+const PROJECT_IMAGES: ProjectImage[] = [
+  {
+    id: "husky",
+    src: "/profile-media/project_vbot/husky.jpg",
+    alt: "Husky robot companion bounding through fresh snow",
+  },
+  {
+    id: "labrador",
+    src: "/profile-media/project_vbot/labrador.jpg",
+    alt: "Labrador-like robot strolling beside guests",
+  },
+  {
+    id: "peafowl",
+    src: "/profile-media/project_vbot/peafowl.jpg",
+    alt: "Peafowl spreading feathers in the courtyard",
+  },
+  {
+    id: "branchestower",
+    src: "/profile-media/project_vbot/branchestower.jpg",
+    alt: "Tree branches and tower wrapped in snowfall",
+  },
+  {
+    id: "deer",
+    src: "/profile-media/project_vbot/deer.jpg",
+    alt: "Deer sculpture showcasing Vbot's environmental sensors",
+  },
+  {
+    id: "dessert",
+    src: "/profile-media/project_vbot/dessert.jpg",
+    alt: "Dessert platter prepared for Vbot's guests",
+  },
+  {
+    id: "marmot",
+    src: "/profile-media/project_vbot/marmot.jpg",
+    alt: "Marmot resting near the patio heaters",
+  },
+  {
+    id: "staff",
+    src: "/profile-media/project_vbot/staff.png",
+    alt: "Staff members configuring Vbot's control tablet",
+  },
+  {
+    id: "avatar",
+    src: "/profile-media/project_vbot/avatar.jpg",
+    alt: "TV wall looping Vbot telemetry visualizations",
+  },
+];
+
+const PROJECTS: Project[] = [
+  {
+    id: 1,
+    title: "Terminal Portfolio",
+    desc: `This project. A minimalist terminal interface pretending to be a portfolio.
+No buttons, no noise — just commands, output, and a trace of how I think.`,
+    url: "https://github.com/parallelarc/parallelarc.github.io",
+  },
+  {
+    id: 2,
+    title: "Vbot",
+    desc:
+      "Vbot is a robot pet designed for family and outdoor life. During Beijing's first snow in 2025, it walked through Purple Jade Villas, meeting friends along the way.",
+    url: "https://space.bilibili.com/3546948055337693",
+    albumGroups: [
+      {
+        id: "snow-companions",
+        title: "Snow companions",
+        imageIds: ["avatar", "staff", "branchestower"],
+      },
+      {
+        id: "friends-met",
+        title: "Friends met on the walk",
+        imageIds: ["labrador", "marmot", "peafowl"],
+      },
+      {
+        id: "behind-the-scenes",
+        title: "Behind the scenes",
+        imageIds: ["dessert", "deer", "husky"],
+      },
+    ],
+  },
+];
+
+function Projects() {
   const [selectedImage, setSelectedImage] = useState<ProjectImage | null>(null);
 
   const openLightbox = (image: ProjectImage) => {
@@ -180,7 +269,6 @@ const Projects: React.FC = () => {
     setSelectedImage(null);
   }, []);
 
-  // 监听ESC键关闭灯箱
   useEffect(() => {
     if (!selectedImage) return;
 
@@ -196,14 +284,13 @@ const Projects: React.FC = () => {
     };
   }, [selectedImage, closeLightbox]);
 
-  // 准备所有项目的albumGroups数据用于布局计算
   const allGroups = useMemo(() => {
     const groups: { id: string; images: ProjectImage[] }[] = [];
-    projects.forEach((project) => {
+    PROJECTS.forEach((project) => {
       if (project.albumGroups) {
         project.albumGroups.forEach((group) => {
           const resolvedImages = group.imageIds
-            .map((id) => projectImages.find((img) => img.id === id))
+            .map((id) => PROJECT_IMAGES.find((img) => img.id === id))
             .filter(Boolean) as ProjectImage[];
           groups.push({ id: group.id, images: resolvedImages });
         });
@@ -217,10 +304,10 @@ const Projects: React.FC = () => {
   return (
     <div data-testid="projects">
       <ProjectsIntro>
-        Some things I've made, and moments they passed through.
+        Some things I&apos;ve made, and moments they passed through.
       </ProjectsIntro>
 
-      {projects.map((project) => (
+      {PROJECTS.map((project) => (
         <ProjectLayout key={project.id}>
           <TextPanel>
             <ProjectTitle>
@@ -237,22 +324,14 @@ const Projects: React.FC = () => {
               <AlbumGroups>
                 {project.albumGroups.map((group) => {
                   const resolvedImages = group.imageIds
-                    .map((id) => projectImages.find((img) => img.id === id))
+                    .map((id) => PROJECT_IMAGES.find((img) => img.id === id))
                     .filter(Boolean) as ProjectImage[];
 
                   const layout = layouts[group.id]?.layout ?? "3v";
                   const gridPositions = layouts[group.id]?.gridAreas ?? [];
 
-                  const getFlexRatio = (layoutType: GroupLayout): number => {
-                    if (layoutType === "2h1v") return 3;
-                    if (layoutType === "1h2v") return 2;
-                    return 1;
-                  };
-
-                  const flexRatio = getFlexRatio(layout);
-
                   return (
-                    <AlbumGroup key={group.id} flexRatio={flexRatio}>
+                    <AlbumGroup key={group.id} flexRatio={getFlexRatio(layout)}>
                       <AlbumGrid className={`layout-${layout}`}>
                         {resolvedImages.map((image, index) => (
                           <AlbumImage
@@ -296,88 +375,6 @@ const Projects: React.FC = () => {
       )}
     </div>
   );
-};
-
-const projectImages: ProjectImage[] = [
-  {
-    id: "husky",
-    src: "/profile-media/project_vbot/husky.jpg",
-    alt: "Husky robot companion bounding through fresh snow",
-  },
-  {
-    id: "labrador",
-    src: "/profile-media/project_vbot/labrador.jpg",
-    alt: "Labrador-like robot strolling beside guests",
-  },
-  {
-    id: "peafowl",
-    src: "/profile-media/project_vbot/peafowl.jpg",
-    alt: "Peafowl spreading feathers in the courtyard",
-  },
-  {
-    id: "branchestower",
-    src: "/profile-media/project_vbot/branchestower.jpg",
-    alt: "Tree branches and tower wrapped in snowfall",
-  },
-  {
-    id: "deer",
-    src: "/profile-media/project_vbot/deer.jpg",
-    alt: "Deer sculpture showcasing Vbot’s environmental sensors",
-  },
-  {
-    id: "dessert",
-    src: "/profile-media/project_vbot/dessert.jpg",
-    alt: "Dessert platter prepared for Vbot’s guests",
-  },
-  {
-    id: "marmot",
-    src: "/profile-media/project_vbot/marmot.jpg",
-    alt: "Marmot resting near the patio heaters",
-  },
-  {
-    id: "staff",
-    src: "/profile-media/project_vbot/staff.png",
-    alt: "Staff members configuring Vbot’s control tablet",
-  },
-  {
-    id: "avatar",
-    src: "/profile-media/project_vbot/avatar.jpg",
-    alt: "TV wall looping Vbot telemetry visualizations",
-  },
-];
-
-const projects: Project[] = [
-  {
-    id: 1,
-    title: "Terminal Portfolio",
-    desc: `This project. A minimalist terminal interface pretending to be a portfolio.
-No buttons, no noise — just commands, output, and a trace of how I think.`,
-    url: "https://github.com/parallelarc/parallelarc.github.io",
-  },
-  {
-    id: 2,
-    title: "Vbot",
-    desc:
-      "Vbot is a robot pet designed for family and outdoor life. During Beijing's first snow in 2025, it walked through Purple Jade Villas, meeting friends along the way.",
-    url: "https://space.bilibili.com/3546948055337693",
-    albumGroups: [
-      {
-        id: "snow-companions",
-        title: "Snow companions",
-        imageIds: ["avatar", "staff", "branchestower"],
-      },
-      {
-        id: "friends-met",
-        title: "Friends met on the walk",
-        imageIds: ["labrador", "marmot", "peafowl"],
-      },
-      {
-        id: "behind-the-scenes",
-        title: "Behind the scenes",
-        imageIds: ["dessert", "deer", "husky"],
-      },
-    ],
-  },
-];
+}
 
 export default Projects;

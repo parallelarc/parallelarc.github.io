@@ -4,18 +4,13 @@ type Props = {
   marginY?: boolean;
 };
 
-const arg = {
-  themes: { placeholder: "theme-name", example: "ubuntu" },
-};
-
-const Usage: React.FC<Props> = ({ marginY = false }) => {
-  const action = "set";
+function Usage({ marginY = false }: Props) {
   return (
     <UsageDiv data-testid="themes-invalid-arg" marginY={marginY}>
-      Usage: themes {action} &#60;{arg.themes.placeholder}&#62; <br />
-      eg: themes {action} {arg.themes.example}
+      Usage: themes set &lt;theme-name&gt; <br />
+      eg: themes set ubuntu
     </UsageDiv>
   );
-};
+}
 
 export default Usage;

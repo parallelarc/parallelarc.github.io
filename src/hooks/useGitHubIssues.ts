@@ -1,5 +1,5 @@
 /**
- * 自定义 Hook：获取和管理 GitHub Issues 博客数据
+ * Custom Hook: Fetch and manage GitHub Issues blog data
  */
 
 import { useState, useEffect, useCallback, useMemo } from "react";
@@ -17,17 +17,17 @@ import {
 const POSTS_PER_PAGE = 10;
 
 interface UseGitHubIssuesResult {
-  // 数据状态
+  // Data state
   posts: BlogPost[];
   loading: boolean;
   error: string | null;
   lastUpdated: Date | null;
 
-  // 列表状态
+  // List state
   listState: PostListState;
   categoryStats: CategoryStats[];
 
-  // 操作函数
+  // Operations
   refresh: () => Promise<void>;
   setActiveCategory: (category: string) => void;
   setSearchQuery: (query: string) => void;
@@ -40,22 +40,22 @@ interface UseGitHubIssuesResult {
   clearSelection: () => void;
 }
 
-export const useGitHubIssues = (
+export function useGitHubIssues(
   config: GitHubConfig,
-  initialCategory: string = "All"
-): UseGitHubIssuesResult => {
+  initialCategory = "All"
+): UseGitHubIssuesResult {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  // 列表状态
+  // List state
   const [activeCategory, setActiveCategoryState] = useState(initialCategory);
   const [searchQuery, setSearchQueryState] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // 获取数据
+  // Fetch data
   const loadPosts = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -67,38 +67,35 @@ export const useGitHubIssues = (
       setSelectedIndex(0);
       setCurrentPage(1);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "获取博客文章失败"
-      );
+      setError(err instanceof Error ? err.message : "Failed to fetch blog posts");
     } finally {
       setLoading(false);
     }
-  }, [config.owner, config.repo, config.labels?.join(",")]);
+  }, [config.owner, config.repo, config.token, config.labels?.join(",")]);
 
-  // 初始加载
+  // Initial load
   useEffect(() => {
     loadPosts();
   }, [loadPosts]);
 
-  // 计算分类统计
+  // Calculate category stats
   const categoryStats = useMemo(
     () => calculateCategoryStats(posts),
     [posts]
   );
 
-  // 过滤后的文章列表
+  // Filter posts
   const filteredPosts = useMemo(() => {
     return posts.filter((post) => {
-      // 分类过滤
+      // Category filter
       if (activeCategory !== "All") {
         const hasCategory = post.labels.some(
-          (label) =>
-            label.toLowerCase() === activeCategory.toLowerCase()
+          (label) => label.toLowerCase() === activeCategory.toLowerCase()
         );
         if (!hasCategory) return false;
       }
 
-      // 搜索过滤
+      // Search filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         const titleMatch = post.title.toLowerCase().includes(query);
@@ -113,19 +110,18 @@ export const useGitHubIssues = (
     });
   }, [posts, activeCategory, searchQuery]);
 
-  // 分页计算
+  // Pagination
   const totalPages = useMemo(
     () => Math.ceil(filteredPosts.length / POSTS_PER_PAGE),
     [filteredPosts.length]
   );
 
-  // 获取当前页的文章
   const paginatedPosts = useMemo(() => {
     const start = (currentPage - 1) * POSTS_PER_PAGE;
     return filteredPosts.slice(start, start + POSTS_PER_PAGE);
   }, [filteredPosts, currentPage]);
 
-  // 操作函数
+  // Operations
   const setActiveCategory = useCallback((category: string) => {
     setActiveCategoryState(category);
     setSelectedIndex(0);
@@ -165,7 +161,6 @@ export const useGitHubIssues = (
   }, [currentPage]);
 
   const selectPost = useCallback((post: BlogPost) => {
-    // 在完整列表中找到对应的索引
     const index = filteredPosts.findIndex((p) => p.id === post.id);
     if (index !== -1) {
       const page = Math.floor(index / POSTS_PER_PAGE) + 1;
@@ -178,7 +173,7 @@ export const useGitHubIssues = (
     setSelectedIndex(0);
   }, []);
 
-  // 列表状态汇总
+  // List state summary
   const listState: PostListState = {
     posts,
     filteredPosts,
@@ -199,7 +194,7 @@ export const useGitHubIssues = (
     refresh: loadPosts,
     setActiveCategory,
     setSearchQuery,
-    setSelectedIndex: setSelectedIndex as (index: number) => void,
+    setSelectedIndex,
     nextPost,
     prevPost,
     nextPage,
@@ -207,4 +202,4 @@ export const useGitHubIssues = (
     selectPost,
     clearSelection,
   };
-};
+}

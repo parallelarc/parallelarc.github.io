@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import About from "./commands/About";
 import Clear from "./commands/Clear";
 import Education from "./commands/Education";
@@ -9,41 +9,43 @@ import Themes from "./commands/Themes";
 import Blog from "./commands/Blog";
 import { OutputContainer, UsageDiv } from "./styles/Output.styled";
 import { termContext } from "./Terminal";
-import { useContext } from "react";
+
+const COMMANDS_WITH_ARGS = ["projects", "themes"] as const;
+
+const COMMAND_COMPONENTS = {
+  about: About,
+  clear: Clear,
+  education: Education,
+  contact: Contact,
+  projects: Projects,
+  themes: Themes,
+  welcome: Welcome,
+  blog: Blog,
+} as const;
 
 type Props = {
   index: number;
   cmd: string;
 };
 
-const Output: React.FC<Props> = ({ index, cmd }) => {
+function Output({ index, cmd }: Props) {
   const { arg } = useContext(termContext);
-  const commandsWithArgsAllowed = ["/projects", "/themes"];
 
-  // return 'Usage: <cmd>' if the command should not receive arguments
-  if (arg.length > 0 && !commandsWithArgsAllowed.includes(cmd)) {
+  // Show usage message if command doesn't accept arguments
+  if (arg.length > 0 && !COMMANDS_WITH_ARGS.includes(cmd as any)) {
     return <UsageDiv data-testid="usage-output">Usage: {cmd}</UsageDiv>;
   }
 
+  const CommandComponent = COMMAND_COMPONENTS[cmd as keyof typeof COMMAND_COMPONENTS];
+
   return (
-    <OutputContainer data-testid={index === 0 ? "latest-output" : null}>
-      {
-        {
-          "/about": <About />,
-          "/clear": <Clear />,
-          "/education": <Education />,
-          "/contact": <Contact />,
-          "/projects": <Projects />,
-          "/themes": <Themes />,
-          "/welcome": <Welcome />,
-          "/blog": <Blog />,
-        }[cmd]
-      }
+    <OutputContainer data-testid={index === 0 ? "latest-output" : undefined}>
+      {CommandComponent && <CommandComponent />}
     </OutputContainer>
   );
-};
+}
 
-// 使用React.memo优化，只有当index或cmd改变时才重新渲染
+// Memoize: only re-render when index or cmd changes
 export default React.memo(Output, (prevProps, nextProps) => {
   return prevProps.index === nextProps.index && prevProps.cmd === nextProps.cmd;
 });

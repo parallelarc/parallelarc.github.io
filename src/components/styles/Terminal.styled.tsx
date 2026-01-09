@@ -105,7 +105,7 @@ export const HiddenInput = styled.input`
 export const HiddenTextarea = styled.textarea`
   position: absolute;
   opacity: 0;
-  pointer-events: none;
+  pointer-events: auto;
   top: 0;
   left: 0;
   height: 0;

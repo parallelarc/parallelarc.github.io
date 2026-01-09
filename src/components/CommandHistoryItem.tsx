@@ -1,5 +1,4 @@
-import React, { useMemo } from "react";
-import _ from "lodash";
+import { useMemo } from "react";
 import Output from "./Output";
 import TermInfo from "./TermInfo";
 import { termContext, commands } from "./Terminal";
@@ -13,26 +12,20 @@ type CommandHistoryItemProps = {
   clearHistory?: () => void;
 };
 
-const CommandHistoryItem: React.FC<CommandHistoryItemProps> = ({
+function CommandHistoryItem({
   cmdH,
   index,
   cmdHistory,
   rerender,
   clearHistory,
-}) => {
-  const commandArray = useMemo(() => _.split(_.trim(cmdH), " "), [cmdH]);
-  const normalizedCommand = useMemo(
-    () => _.toLower(commandArray[0]),
-    [commandArray]
-  );
-  const validCommand = useMemo(
-    () => _.find(commands, { cmd: normalizedCommand }),
-    [normalizedCommand]
-  );
+}: CommandHistoryItemProps) {
+  const commandArray = cmdH.trim().split(" ");
+  const normalizedCommand = commandArray[0].toLowerCase().replace(/^\//, "");
+  const validCommand = commands.find(({ cmd }) => cmd === normalizedCommand);
 
   const contextValue = useMemo(
     () => ({
-      arg: _.drop(commandArray),
+      arg: commandArray.slice(1),
       history: cmdHistory,
       rerender,
       index,
@@ -62,16 +55,6 @@ const CommandHistoryItem: React.FC<CommandHistoryItemProps> = ({
       )}
     </div>
   );
-};
+}
 
-// 使用React.memo优化，只有当props改变时才重新渲染
-export default React.memo(CommandHistoryItem, (prevProps, nextProps) => {
-  return (
-    prevProps.cmdH === nextProps.cmdH &&
-    prevProps.index === nextProps.index &&
-    prevProps.rerender === nextProps.rerender &&
-    prevProps.cmdHistory === nextProps.cmdHistory &&
-    prevProps.clearHistory === nextProps.clearHistory
-  );
-});
-
+export default CommandHistoryItem;

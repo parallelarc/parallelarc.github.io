@@ -1,10 +1,10 @@
-import { AboutWrapper, Divider, HighlightSpan, Link } from "../styles/Commands.styled";
+import { AboutWrapper, HighlightSpan, Link } from "../styles/Commands.styled";
 
-const About: React.FC = () => {
+function About() {
   return (
     <AboutWrapper data-testid="about">
       <p>
-        Hi, my name is <HighlightSpan>Foxiv</HighlightSpan>. 
+        Hi, my name is <HighlightSpan>Foxiv</HighlightSpan>.
       </p>
       <p>
         My work focuses on robotics, algorithms, and AI systems. I am currently
@@ -24,6 +24,6 @@ const About: React.FC = () => {
       </p>
     </AboutWrapper>
   );
-};
+}
 
 export default About;

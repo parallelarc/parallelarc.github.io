@@ -1,115 +1,44 @@
-import _ from "lodash";
 import theme from "../components/styles/themes";
 
 /**
- * Generates html tabs
- * @param {number} num - The number of tabs
- * @returns {string} tabs - Tab string
+ * Check if command arguments are valid
  */
-export const generateTabs = (num = 0): string => {
-  let tabs = "\xA0\xA0";
-  for (let i = 0; i < num; i++) {
-    tabs += "\xA0";
-  }
-  return tabs;
-};
-
-/**
- * Check arg is valid
- * @param {string[]} arg - The arg array
- * @param {string} action - The action to compare | "go" | "set"
- * @param {string[]} options - Option array to compare | "dark" | "1"
- * @returns {boolean} boolean
- */
-export const isArgInvalid = (
+export function isArgInvalid(
   arg: string[],
   action: string,
   options: string[]
-) => arg[0] !== action || !_.includes(options, arg[1]) || arg.length > 2;
+): boolean {
+  return arg[0] !== action || !options.includes(arg[1]) || arg.length > 2;
+}
 
 /**
- * Transform current cmd & arg into array
- * then return back the array
- * @param {string[]} history - The history array
- * @returns {string[]} array of cmd string
+ * Parse the most recent command into an array
  */
-export const getCurrentCmdArry = (history: string[]) =>
-  _.split(history[0].trim(), " ");
+export function getCurrentCmdArry(history: string[]): string[] {
+  return history[0].trim().split(" ");
+}
 
 /**
- * Check current render makes redirect
- * @param {boolean} rerender - is submitted or not
- * @param {string[]} currentCommand - current submitted command
- * @param {string} command - the command of the function
- * @returns {boolean} redirect - true | false
+ * Check if theme should be switched based on command
  */
-/**
- * Check current render makes redirect for theme
- * @param {boolean} rerender - is submitted or not
- * @param {string[]} currentCommand - current submitted command
- * @param {string[]} themes - the command of the function
- * @returns {boolean} redirect - true | false
- */
-export const checkThemeSwitch = (
+export function checkThemeSwitch(
   rerender: boolean,
   currentCommand: string[],
   themes: string[]
-): boolean =>
-  rerender && // is submitted
-  currentCommand[0] === "/themes" && // current command starts with '/themes'
-  currentCommand[1] === "set" && // first arg is 'set'
-  currentCommand.length > 1 && // current command has arg
-  currentCommand.length < 4 && // if num of arg is valid (not `/themes set light sth`)
-  _.includes(themes, currentCommand[2]); // arg last part is one of id
+): boolean {
+  return (
+    rerender &&
+    currentCommand[0] === "themes" &&
+    currentCommand[1] === "set" &&
+    currentCommand.length > 1 &&
+    currentCommand.length < 4 &&
+    themes.includes(currentCommand[2])
+  );
+}
 
 /**
- * Perform advanced tab actions
- * @param {string} inputVal - current input value
- * @param {(value: React.SetStateAction<string>) => void} setInputVal - setInputVal setState
- * @param {(value: React.SetStateAction<string[]>) => void} setHints - setHints setState
- * @param {hintsCmds} hintsCmds - hints command array
- * @returns {string[] | undefined} hints command or setState action(undefined)
+ * Get all theme names
  */
-export const argTab = (
-  inputVal: string,
-  setInputVal: (value: React.SetStateAction<string>) => void,
-  setHints: (value: React.SetStateAction<string[]>) => void,
-  hintsCmds: string[]
-): string[] | undefined => {
-  // 1) if input is '/themes '
-  if (inputVal === "/themes ") {
-    setInputVal(`/themes set`);
-    return [];
-  }
-
-  // 2) if input is '/themes s'
-  else if (
-    _.startsWith("/themes", _.split(inputVal, " ")[0]) &&
-    _.split(inputVal, " ")[1] !== "set" &&
-    _.startsWith("set", _.split(inputVal, " ")[1])
-  ) {
-    setInputVal(`/themes set`);
-    return [];
-  }
-
-  // 3) if input is '/themes set '
-  else if (inputVal === "/themes set ") {
-    setHints(_.keys(theme));
-    return [];
-  }
-
-  // 4) if input starts with '/themes set ' + theme
-  else if (_.startsWith(inputVal, "/themes set ")) {
-    _.keys(theme).forEach(t => {
-      if (_.startsWith(t, _.split(inputVal, " ")[2])) {
-        hintsCmds = [...hintsCmds, t];
-      }
-    });
-    return hintsCmds;
-  }
-
-  // 5) if input is '/projects go '
-  else if (_.startsWith(inputVal, "/projects go ")) {
-    return [];
-  }
-};
+export function getThemeNames(): string[] {
+  return Object.keys(theme);
+}

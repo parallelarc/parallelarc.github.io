@@ -1,13 +1,18 @@
 import { EduIntro, EduList } from "../styles/Commands.styled";
 import { Wrapper } from "../styles/Output.styled";
 
-const Education: React.FC = () => {
+const EDUCATION_DATA = [
+  {
+    title: "B.Eng. & M.Eng. in Information and Communication Engineering",
+    desc: "Beijing University of Posts and Telecommunications (BUPT) | 2017 ~ 2024",
+  },
+];
+
+function Education() {
   return (
     <Wrapper data-testid="education">
-      <EduIntro>
-        I rarely showed up in class.
-      </EduIntro>
-      {eduBg.map(({ title, desc }) => (
+      <EduIntro>I rarely showed up in class.</EduIntro>
+      {EDUCATION_DATA.map(({ title, desc }) => (
         <EduList key={title}>
           <div className="title">{title}</div>
           <div className="desc">{desc}</div>
@@ -15,13 +20,6 @@ const Education: React.FC = () => {
       ))}
     </Wrapper>
   );
-};
-
-const eduBg = [
-  {
-    title: "B.Eng. & M.Eng. in Information and Communication Engineering",
-    desc: "Beijing University of Posts and Telecommunications (BUPT) | 2017 ~ 2024",
-  },
-];
+}
 
 export default Education;

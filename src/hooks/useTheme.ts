@@ -3,20 +3,22 @@ import themes from "../components/styles/themes";
 import { setToLS, getFromLS } from "../utils/storage";
 import { DefaultTheme } from "styled-components";
 
-export const useTheme = () => {
+export function useTheme() {
   const [theme, setTheme] = useState<DefaultTheme>(themes.dark);
   const [themeLoaded, setThemeLoaded] = useState(false);
 
-  const setMode = (mode: DefaultTheme) => {
+  function setMode(mode: DefaultTheme): void {
     setToLS("tsn-theme", mode.name);
     setTheme(mode);
-  };
+  }
 
   useEffect(() => {
     const localThemeName = getFromLS("tsn-theme");
-    localThemeName ? setTheme(themes[localThemeName]) : setTheme(themes.dark);
+    if (localThemeName && themes[localThemeName]) {
+      setTheme(themes[localThemeName]);
+    }
     setThemeLoaded(true);
   }, []);
 
   return { theme, themeLoaded, setMode };
-};
+}

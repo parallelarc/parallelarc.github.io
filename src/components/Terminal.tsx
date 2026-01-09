@@ -1,12 +1,10 @@
-import React, {
+import {
   createContext,
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
-import _ from "lodash";
 import CommandHistoryItem from "./CommandHistoryItem";
 import TermInfo from "./TermInfo";
 import {
@@ -24,11 +22,9 @@ import {
   ShortcutItem,
   CommandsList,
   Wrapper,
-  HiddenInput,
   HiddenTextarea,
   InputDisplay,
   DisplayText,
-  BlockCursor,
   CursorChar,
   CommandItem,
   CommandName,
@@ -39,27 +35,22 @@ import {
   ClaudeInputArea,
   ClaudeBottomLine,
 } from "./styles/TerminalInfo.styled";
-import { argTab } from "../utils/funcs";
 
 type Command = {
   cmd: string;
   desc: string;
   tab: number;
-}[];
+};
 
-export const commands: Command = [
-  { cmd: "/about", desc: "about me", tab: 8 },
-  { cmd: "/blog", desc: "open blog interface", tab: 8 },
-  { cmd: "/clear", desc: "clear the terminal", tab: 8 },
-  { cmd: "/education", desc: "my education background", tab: 4 },
-  {
-    cmd: "/contact",
-    desc: "feel free to reach out",
-    tab: 6
-  },
-  { cmd: "/projects", desc: "some work, in no particular order", tab: 5 },
-  { cmd: "/themes", desc: "check available themes", tab: 7 },
-  { cmd: "/welcome", desc: "display hero section", tab: 6 },
+export const commands: Command[] = [
+  { cmd: "about", desc: "about me", tab: 8 },
+  { cmd: "blog", desc: "open blog interface", tab: 8 },
+  { cmd: "clear", desc: "clear the terminal", tab: 8 },
+  { cmd: "education", desc: "my education background", tab: 4 },
+  { cmd: "contact", desc: "feel free to reach out", tab: 6 },
+  { cmd: "projects", desc: "some work, in no particular order", tab: 5 },
+  { cmd: "themes", desc: "check available themes", tab: 7 },
+  { cmd: "welcome", desc: "display hero section", tab: 6 },
 ];
 
 export type Term = {
@@ -77,38 +68,45 @@ export const termContext = createContext<Term>({
   index: 0,
 });
 
-const Terminal = () => {
-  const containerRef = useRef<HTMLDivElement | null>(null);
+function Terminal() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [inputVal, setInputVal] = useState("");
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [cursorPosition, setCursorPosition] = useState(0);
-  const [cmdHistory, setCmdHistory] = useState<string[]>(["/welcome"]);
+  const [cmdHistory, setCmdHistory] = useState<string[]>(["welcome"]);
   const [rerender, setRerender] = useState(false);
-  const [hints, setHints] = useState<string[]>([]);
-  const [pointer, setPointer] = useState(-1);
   const [selectedCommandIndex, setSelectedCommandIndex] = useState(0);
   const [filteredCommands, setFilteredCommands] = useState(commands);
   const [showCopyToast, setShowCopyToast] = useState(false);
   const [isCrashed, setIsCrashed] = useState(false);
-  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const crashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const clearHistory = () => {
-    setCmdHistory(["/welcome"]);
-    setHints([]);
+  const resetInputState = useCallback(() => {
+    setInputVal("");
+    setSelectedCommandIndex(0);
     setCursorPosition(0);
-  };
+  }, []);
+
+  const syncCursorPosition = useCallback((position: number) => {
+    setCursorPosition(position);
+    if (inputRef.current) {
+      inputRef.current.setSelectionRange(position, position);
+    }
+  }, []);
+
+  const clearHistory = useCallback(() => {
+    setCmdHistory(["welcome"]);
+    resetInputState();
+  }, [resetInputState]);
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       setRerender(false);
       const newValue = e.target.value;
       setInputVal(newValue);
-      // 获取原生输入框的实际光标位置
-      const selectionStart = (e.target as HTMLTextAreaElement).selectionStart;
-      setCursorPosition(selectionStart ?? newValue.length);
+      setCursorPosition(e.target.selectionStart ?? newValue.length);
     },
     []
   );
@@ -116,83 +114,61 @@ const Terminal = () => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (isCrashed) return;
-    const trimmedInput = _.trim(inputVal);
+
+    const trimmedInput = inputVal.trim();
     if (!trimmedInput) {
-      setInputVal("");
-      setHints([]);
-      setPointer(-1);
-      setCursorPosition(0);
+      resetInputState();
       return;
     }
+
     if (trimmedInput.toLowerCase() === "sudo rm -rf /") {
-      triggerCrash();
+      setIsCrashed(true);
+      resetInputState();
       return;
     }
 
     setCmdHistory([trimmedInput, ...cmdHistory]);
     setInputVal("");
     setRerender(true);
-    setHints([]);
-    setPointer(-1);
-    setSelectedCommandIndex(-1);
+    setSelectedCommandIndex(0);
     setCursorPosition(0);
   };
 
-  const triggerCrash = () => {
-    setIsCrashed(true);
-    setInputVal("");
-    setHints([]);
-    setPointer(-1);
-    setSelectedCommandIndex(-1);
-    setCursorPosition(0);
-    crashTimerRef.current = setTimeout(() => {
-      setShowCopyToast(false);
-    }, 0);
-  };
-
-
-  // Keyboard Press
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     setRerender(false);
     if (isCrashed) {
       e.preventDefault();
       return;
     }
+
     const ctrlI = e.ctrlKey && e.key.toLowerCase() === "i";
     const ctrlC = e.ctrlKey && e.key.toLowerCase() === "c";
     const isSlashMode = inputVal.startsWith("/");
 
+    // Ctrl+C - Clear input
     if (ctrlC) {
       e.preventDefault();
-      setInputVal("");
-      setHints([]);
-      setPointer(-1);
+      resetInputState();
+      return;
+    }
+
+    // Escape - Exit command selection mode
+    if (e.key === "Escape" && isSlashMode && selectedCommandIndex >= 0) {
+      e.preventDefault();
       setSelectedCommandIndex(-1);
-      setCursorPosition(0);
       return;
     }
 
-    // Escape - 退出命令选择模式
-    if (e.key === "Escape") {
-      if (isSlashMode && selectedCommandIndex >= 0) {
-        e.preventDefault();
-        setSelectedCommandIndex(-1);
-        return;
-      }
-    }
-
-    // Shift + Enter - 让 textarea 默认处理换行
+    // Shift + Enter - Allow default newline behavior
     if (e.key === "Enter" && e.shiftKey) {
-      // 不阻止默认行为，让 textarea 自然换行
       return;
     }
 
-    // 斜杠模式下按 Enter，执行选中的命令
+    // Enter in slash mode - Execute selected command
     if (isSlashMode && e.key === "Enter") {
       e.preventDefault();
       const selectedCmd = filteredCommands[selectedCommandIndex]?.cmd;
       if (selectedCmd) {
-        // 直接添加到历史记录，绕过 inputVal 的异步问题
         setCmdHistory([selectedCmd, ...cmdHistory]);
         setInputVal("");
         setRerender(true);
@@ -201,129 +177,94 @@ const Terminal = () => {
       return;
     }
 
-    // Enter - 提交表单（阻止默认换行行为）
+    // Enter - Submit form
     if (e.key === "Enter") {
       e.preventDefault();
       handleSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
       return;
     }
 
-    // 命令列表导航模式
+    // Slash mode navigation
     if (isSlashMode) {
-      // ArrowUp - 在命令列表中向上选择（循环）
+      // ArrowUp - Navigate up (cyclic)
       if (e.key === "ArrowUp") {
         e.preventDefault();
-        setSelectedCommandIndex(prev => prev <= 0 ? filteredCommands.length - 1 : prev - 1);
+        setSelectedCommandIndex((prev) =>
+          prev <= 0 ? filteredCommands.length - 1 : prev - 1
+        );
         return;
       }
 
-      // ArrowDown - 在命令列表中向下选择（循环）
+      // ArrowDown - Navigate down (cyclic)
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        setSelectedCommandIndex(prev => prev >= filteredCommands.length - 1 ? 0 : prev + 1);
+        setSelectedCommandIndex((prev) =>
+          prev >= filteredCommands.length - 1 ? 0 : prev + 1
+        );
         return;
       }
 
-      // Tab - 补全选中的命令
+      // Tab - Autocomplete selected command
       if (e.key === "Tab" || ctrlI) {
         e.preventDefault();
         if (selectedCommandIndex >= 0) {
           const selectedCmd = filteredCommands[selectedCommandIndex]?.cmd;
           if (selectedCmd) {
             setInputVal(selectedCmd);
-            setCursorPosition(selectedCmd.length);
+            syncCursorPosition(selectedCmd.length);
             setSelectedCommandIndex(-1);
-            if (inputRef.current) {
-              inputRef.current.setSelectionRange(selectedCmd.length, selectedCmd.length);
-            }
           }
         }
         return;
       }
 
-      // ArrowLeft/Right - 在有选中命令时禁用
+      // ArrowLeft/Right - Disable when command is selected
       if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && selectedCommandIndex >= 0) {
         e.preventDefault();
         return;
       }
     }
 
-    // Move cursor left
-    if (e.key === "ArrowLeft" && !e.ctrlKey && !e.metaKey) {
-      e.preventDefault();
-      const newPos = Math.max(0, cursorPosition - 1);
-      setCursorPosition(newPos);
-      // 同步原生输入框的光标位置
-      if (inputRef.current) {
-        inputRef.current.setSelectionRange(newPos, newPos);
+    // Cursor movement keys (only when not using modifiers)
+    if (!e.ctrlKey && !e.metaKey) {
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        syncCursorPosition(Math.max(0, cursorPosition - 1));
+        return;
       }
-    }
 
-    // Move cursor right
-    if (e.key === "ArrowRight" && !e.ctrlKey && !e.metaKey) {
-      e.preventDefault();
-      const newPos = Math.min(inputVal.length, cursorPosition + 1);
-      setCursorPosition(newPos);
-      // 同步原生输入框的光标位置
-      if (inputRef.current) {
-        inputRef.current.setSelectionRange(newPos, newPos);
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        syncCursorPosition(Math.min(inputVal.length, cursorPosition + 1));
+        return;
       }
-    }
 
-    // Handle Home key
-    if (e.key === "Home") {
-      e.preventDefault();
-      setCursorPosition(0);
-      // 同步原生输入框的光标位置
-      if (inputRef.current) {
-        inputRef.current.setSelectionRange(0, 0);
+      if (e.key === "Home") {
+        e.preventDefault();
+        syncCursorPosition(0);
+        return;
       }
-    }
 
-    // Handle End key
-    if (e.key === "End") {
-      e.preventDefault();
-      setCursorPosition(inputVal.length);
-      // 同步原生输入框的光标位置
-      if (inputRef.current) {
-        inputRef.current.setSelectionRange(inputVal.length, inputVal.length);
+      if (e.key === "End") {
+        e.preventDefault();
+        syncCursorPosition(inputVal.length);
+        return;
       }
     }
   };
 
-  // For caret position at the end - 只在 inputRef 或 pointer 改变时 focus
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      inputRef?.current?.focus();
-    }, 1);
-    return () => clearTimeout(timer);
-  }, [inputRef, pointer]);
-
-  // 监听 inputVal 变化，输入 "/" 时选中第一条命令
-  useEffect(() => {
-    if (inputVal === "/") {
-      setSelectedCommandIndex(0);
-    }
-  }, [inputVal]);
-
-  // 当 inputVal 以 / 开头时，过滤命令列表
+  // Filter commands when input changes
   useEffect(() => {
     if (inputVal.startsWith("/")) {
-      if (inputVal === "/") {
-        setFilteredCommands(commands);
-        setSelectedCommandIndex(0);
-      } else {
-        const filtered = commands.filter(({ cmd }) =>
-          cmd.startsWith(inputVal)
-        );
-        setFilteredCommands(filtered);
-        setSelectedCommandIndex(0);
-      }
+      const filtered = commands.filter(({ cmd }) => cmd.startsWith(inputVal.slice(1)));
+      setFilteredCommands(filtered);
+      setSelectedCommandIndex(0);
     } else {
       setFilteredCommands(commands);
     }
   }, [inputVal]);
 
+  // Copy to clipboard handler
   useEffect(() => {
     const handleMouseUp = () => {
       if (isCrashed) return;
@@ -355,25 +296,14 @@ const Terminal = () => {
         }, 2200);
       };
 
-      const tryLegacyCopy = () => {
-        try {
-          return document.execCommand("copy");
-        } catch {
-          return false;
-        }
-      };
-
       if (navigator?.clipboard?.writeText) {
         navigator.clipboard
           .writeText(selectedText)
           .then(triggerToast)
           .catch(() => {
-            if (tryLegacyCopy()) triggerToast();
+            // Silently fail if clipboard API doesn't work
           });
-        return;
       }
-
-      if (tryLegacyCopy()) triggerToast();
     };
 
     document.addEventListener("mouseup", handleMouseUp);
@@ -390,10 +320,8 @@ const Terminal = () => {
     if (isCrashed) return;
 
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      // Don't focus if ESC is pressed
       if (e.key === "Escape") return;
 
-      // Don't interfere if user is typing in another input/textarea/contenteditable
       const activeElement = document.activeElement;
       const isTypingInOtherInput =
         activeElement &&
@@ -401,39 +329,21 @@ const Terminal = () => {
           activeElement.tagName === "TEXTAREA" ||
           activeElement.getAttribute("contenteditable") === "true");
 
-      // If user is already typing in our input, no need to refocus
-      if (activeElement === inputRef.current) return;
+      if (activeElement === inputRef.current || isTypingInOtherInput) return;
 
-      // If user is typing in another input field, don't interfere
-      if (isTypingInOtherInput) return;
-
-      // Scroll to input first, then focus
-      // This ensures the input is visible before focusing
-      if (inputRef.current) {
-        // First, ensure the container is scrolled to show the input
-        // Since input is at bottom (column-reverse), scroll container to bottom
-        if (containerRef.current) {
-          const container = containerRef.current;
-          // Scroll container to bottom to reveal input
-          container.scrollTop = container.scrollHeight;
-        }
-        
-        // Then scroll input into view (handles page-level scrolling)
-        // block: "center" ensures input is visible in viewport
-        inputRef.current.scrollIntoView({ 
-          behavior: "smooth", 
+      if (inputRef.current && containerRef.current) {
+        containerRef.current.scrollTop = containerRef.current.scrollHeight;
+        inputRef.current.scrollIntoView({
+          behavior: "smooth",
           block: "center",
-          inline: "nearest"
+          inline: "nearest",
         });
-        
-        // Focus after a short delay to ensure scroll starts
-        // Using requestAnimationFrame for better performance
+
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             const input = inputRef.current;
             if (input) {
               input.focus();
-              // 恢复光标位置 - 直接从输入框读取当前光标位置
               const currentPos = input.selectionStart || 0;
               input.setSelectionRange(currentPos, currentPos);
             }
@@ -448,10 +358,11 @@ const Terminal = () => {
     };
   }, [isCrashed]);
 
+  // Cleanup toast timer on unmount
   useEffect(() => {
     return () => {
-      if (crashTimerRef.current) {
-        clearTimeout(crashTimerRef.current);
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
       }
     };
   }, []);
@@ -481,13 +392,6 @@ const Terminal = () => {
           <span aria-hidden="true">✨</span> Copied to clipboard
         </CopyToast>
       )}
-      {hints.length > 1 && (
-        <div>
-          {hints.map(hCmd => (
-            <Hints key={hCmd}>{hCmd}</Hints>
-          ))}
-        </div>
-      )}
       <Form onSubmit={handleSubmit}>
         <ClaudeInputContainer>
           <ClaudeTopLine />
@@ -501,7 +405,6 @@ const Terminal = () => {
             >
               <DisplayText $hasText={inputVal.length > 0}>
                 {inputVal.length === 0 ? (
-                  // 空输入时显示 placeholder，光标覆盖第一个字符
                   isInputFocused ? (
                     <>
                       <CursorChar>s</CursorChar>
@@ -511,12 +414,9 @@ const Terminal = () => {
                     "share an idea with me"
                   )
                 ) : (
-                  // 有输入时，按光标位置分割文本
                   <>
                     {inputVal.slice(0, cursorPosition)}
-                    <CursorChar>
-                      {inputVal[cursorPosition] || " "}
-                    </CursorChar>
+                    <CursorChar>{inputVal[cursorPosition] || " "}</CursorChar>
                     {inputVal.slice(cursorPosition + 1)}
                   </>
                 )}
@@ -575,6 +475,6 @@ const Terminal = () => {
       ))}
     </Wrapper>
   );
-};
+}
 
 export default Terminal;

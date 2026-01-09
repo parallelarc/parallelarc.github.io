@@ -1,7 +1,5 @@
-import { createElement, useCallback, useEffect, useState } from "react";
-import type { ComponentType } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FaEnvelope, FaGithub, FaSteam } from "react-icons/fa6";
-import type { IconBaseProps } from "react-icons";
 import styled from "styled-components";
 import {
   ContactGallery,
@@ -19,29 +17,29 @@ type ContactLink = {
   title: string;
   url: string;
   desc?: string;
-  icon: ComponentType<IconBaseProps>;
+  icon: any;
   gallery?: {
     src: string;
     alt: string;
   }[];
 };
 
-const contacts: ContactLink[] = [
+const CONTACTS: ContactLink[] = [
   {
     title: "Email",
     url: "mailto:jvren42@gmail.com",
     desc: "ping me",
-    icon: FaEnvelope as ComponentType<IconBaseProps>,
+    icon: FaEnvelope,
   },
   {
     title: "GitHub",
     url: "https://github.com/parallelarc",
-    icon: FaGithub as ComponentType<IconBaseProps>,
+    icon: FaGithub,
   },
   {
     title: "Steam",
     url: "https://steamcommunity.com/id/parallelarc",
-    icon: FaSteam as ComponentType<IconBaseProps>,
+    icon: FaSteam,
     gallery: [
       {
         src: "/profile-media/steam_mosaic.jpg",
@@ -51,7 +49,21 @@ const contacts: ContactLink[] = [
   },
 ];
 
-const Contact: React.FC = () => {
+const IconBubble = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.65rem;
+  vertical-align: middle;
+
+  svg {
+    width: 1.1rem;
+    height: 1.1rem;
+    display: block;
+  }
+`;
+
+function Contact() {
   const [selectedImage, setSelectedImage] = useState<{ src: string; alt: string } | null>(null);
 
   const openLightbox = (image: { src: string; alt: string }) => {
@@ -62,7 +74,6 @@ const Contact: React.FC = () => {
     setSelectedImage(null);
   }, []);
 
-  // 监听ESC键关闭灯箱
   useEffect(() => {
     if (!selectedImage) return;
 
@@ -81,35 +92,33 @@ const Contact: React.FC = () => {
   return (
     <HelpWrapper data-testid="contact">
       <ProjectsIntro>Ping me via email or find me online</ProjectsIntro>
-      {contacts.map(({ title, url, desc, gallery, icon }) => {
-        return (
-          <div key={title}>
-            <CmdList>
-              <IconBubble aria-hidden="true">
-                {createElement(icon, { "aria-hidden": true })}
-              </IconBubble>
-              <CmdLink href={url} target="_blank" rel="noopener noreferrer">
-                {title}
-              </CmdLink>
-              {desc && <CmdDesc> – {desc}</CmdDesc>}
-            </CmdList>
-            {gallery && (
-              <ContactGallery aria-label={`${title} collection preview`}>
-                {gallery.map(image => (
-                  <ContactGalleryItem key={image.src} onClick={() => openLightbox(image)}>
-                    <img
-                      src={image.src}
-                      alt={image.alt}
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </ContactGalleryItem>
-                ))}
-              </ContactGallery>
-            )}
-          </div>
-        );
-      })}
+      {CONTACTS.map(({ title, url, desc, gallery, icon: Icon }) => (
+        <div key={title}>
+          <CmdList>
+            <IconBubble aria-hidden="true">
+              <Icon />
+            </IconBubble>
+            <CmdLink href={url} target="_blank" rel="noopener noreferrer">
+              {title}
+            </CmdLink>
+            {desc && <CmdDesc> – {desc}</CmdDesc>}
+          </CmdList>
+          {gallery && (
+            <ContactGallery aria-label={`${title} collection preview`}>
+              {gallery.map((image) => (
+                <ContactGalleryItem key={image.src} onClick={() => openLightbox(image)}>
+                  <img
+                    src={image.src}
+                    alt={image.alt}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </ContactGalleryItem>
+              ))}
+            </ContactGallery>
+          )}
+        </div>
+      ))}
 
       {selectedImage && (
         <LightboxOverlay onClick={closeLightbox}>
@@ -122,20 +131,6 @@ const Contact: React.FC = () => {
       )}
     </HelpWrapper>
   );
-};
-
-const IconBubble = styled.span`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 0.65rem;
-  vertical-align: middle;
-
-  svg {
-    width: 1.1rem;
-    height: 1.1rem;
-    display: block;
-  }
-`;
+}
 
 export default Contact;

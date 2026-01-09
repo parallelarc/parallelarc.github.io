@@ -1,9 +1,9 @@
 /**
- * 博客 TUI 组件
- * 类 Claude Code /status 风格的交互式博客界面
+ * Blog TUI Component
+ * Claude Code /status style interactive blog interface
  */
 
-import React, {
+import {
   useState,
   useEffect,
   useCallback,
@@ -63,17 +63,13 @@ import {
   PageInfo,
 } from "../styles/Blog.styled";
 
-// GitHub 配置
-// Token 可通过环境变量 VITE_GITHUB_TOKEN 设置（推荐）
-// 获取 Token: https://github.com/settings/tokens
 const GITHUB_CONFIG = {
   owner: "parallelarc",
   repo: "parallelarc.github.io",
-  token: import.meta.env.VITE_GITHUB_TOKEN || undefined,
+  token: import.meta.env.VITE_GITHUB_TOKEN ?? undefined,
   labels: ["blog"],
 };
 
-// 菜单项配置
 const MENU_ITEMS = [
   { id: "blog", label: "Blog", shortcut: "1" },
   { id: "posts", label: "Posts", shortcut: "2" },
@@ -82,8 +78,7 @@ const MENU_ITEMS = [
   { id: "usage", label: "Usage", shortcut: "5" },
 ];
 
-// 获取标签颜色
-const getLabelColor = (labelName: string): string => {
+function getLabelColor(labelName: string): string {
   const colors: Record<string, string> = {
     技术: "#1f6feb",
     tech: "#1f6feb",
@@ -94,10 +89,9 @@ const getLabelColor = (labelName: string): string => {
     默认: "#8b949e",
   };
   return colors[labelName] || colors["默认"];
-};
+}
 
-// 格式化分类显示名称
-const formatCategoryName = (name: string): string => {
+function formatCategoryName(name: string): string {
   const displayNames: Record<string, string> = {
     All: "All Posts",
     技术: "技术",
@@ -108,55 +102,41 @@ const formatCategoryName = (name: string): string => {
     notes: "Notes",
   };
   return displayNames[name] || name;
-};
+}
 
-// 加载状态组件
-const LoadingView: React.FC = () => (
-  <LoadingContainer>
-    <LoadingSpinner />
-    <LoadingText>Loading blog posts...</LoadingText>
-  </LoadingContainer>
-);
+function LoadingView() {
+  return (
+    <LoadingContainer>
+      <LoadingSpinner />
+      <LoadingText>Loading blog posts...</LoadingText>
+    </LoadingContainer>
+  );
+}
 
-// 错误状态组件
-const ErrorView: React.FC<{
-  error: string;
-  onRetry: () => void;
-}> = ({ error, onRetry }) => (
-  <ErrorContainer>
-    <ErrorIcon>X</ErrorIcon>
-    <ErrorText>{error}</ErrorText>
-    <RetryButton onClick={onRetry}>Retry</RetryButton>
-  </ErrorContainer>
-);
+function ErrorView({ error, onRetry }: { error: string; onRetry: () => void }) {
+  return (
+    <ErrorContainer>
+      <ErrorIcon>X</ErrorIcon>
+      <ErrorText>{error}</ErrorText>
+      <RetryButton onClick={onRetry}>Retry</RetryButton>
+    </ErrorContainer>
+  );
+}
 
-// 空状态组件
-const EmptyView: React.FC<{ searchQuery: string }> = ({ searchQuery }) => (
-  <EmptyContainer>
-    <EmptyIcon>📝</EmptyIcon>
-    <EmptyText>
-      {searchQuery
-        ? `No posts found for "${searchQuery}"`
-        : "No blog posts yet"}
-    </EmptyText>
-  </EmptyContainer>
-);
+function EmptyView({ searchQuery }: { searchQuery: string }) {
+  return (
+    <EmptyContainer>
+      <EmptyIcon>📝</EmptyIcon>
+      <EmptyText>
+        {searchQuery
+          ? `No posts found for "${searchQuery}"`
+          : "No blog posts yet"}
+      </EmptyText>
+    </EmptyContainer>
+  );
+}
 
-// 文章列表视图
-const PostListView: React.FC<{
-  posts: BlogPost[];
-  selectedIndex: number;
-  categoryStats: { name: string; count: number; isActive: boolean }[];
-  activeCategory: string;
-  searchQuery: string;
-  onSelectCategory: (category: string) => void;
-  onSelectPost: (post: BlogPost) => void;
-  onSearchChange: (query: string) => void;
-  onNext: () => void;
-  onPrev: () => void;
-  currentPage: number;
-  totalPages: number;
-}> = ({
+function PostListView({
   posts,
   selectedIndex,
   categoryStats,
@@ -169,10 +149,22 @@ const PostListView: React.FC<{
   onPrev,
   currentPage,
   totalPages,
-}) => {
+}: {
+  posts: BlogPost[];
+  selectedIndex: number;
+  categoryStats: { name: string; count: number; isActive: boolean }[];
+  activeCategory: string;
+  searchQuery: string;
+  onSelectCategory: (category: string) => void;
+  onSelectPost: (post: BlogPost) => void;
+  onSearchChange: (query: string) => void;
+  onNext: () => void;
+  onPrev: () => void;
+  currentPage: number;
+  totalPages: number;
+}) {
   const searchRef = useRef<HTMLInputElement>(null);
 
-  // 聚焦搜索框
   useEffect(() => {
     const handleSlash = (e: KeyboardEvent) => {
       if (e.key === "/") {
@@ -187,7 +179,6 @@ const PostListView: React.FC<{
 
   return (
     <>
-      {/* 分类 Tab */}
       <TabContainer>
         {categoryStats.map((stat) => (
           <Tab
@@ -202,7 +193,6 @@ const PostListView: React.FC<{
       </TabContainer>
 
       <MainContent>
-        {/* 搜索栏 */}
         <SearchContainer>
           <SearchInput
             ref={searchRef}
@@ -213,7 +203,6 @@ const PostListView: React.FC<{
           />
         </SearchContainer>
 
-        {/* 文章列表 */}
         {posts.length > 0 ? (
           <>
             <PostList>
@@ -243,28 +232,20 @@ const PostListView: React.FC<{
               ))}
             </PostList>
 
-            {/* 分页 */}
             {totalPages > 1 && (
               <Pagination>
-                <PageButton
-                  onClick={onPrev}
-                  disabled={currentPage <= 1}
-                >
+                <PageButton onClick={onPrev} disabled={currentPage <= 1}>
                   Prev
                 </PageButton>
                 <PageInfo>
                   {currentPage} / {totalPages}
                 </PageInfo>
-                <PageButton
-                  onClick={onNext}
-                  disabled={currentPage >= totalPages}
-                >
+                <PageButton onClick={onNext} disabled={currentPage >= totalPages}>
                   Next
                 </PageButton>
               </Pagination>
             )}
 
-            {/* 统计信息 */}
             <StatsContainer>
               {categoryStats.slice(1).map((stat) => (
                 <StatItem key={stat.name}>
@@ -282,14 +263,15 @@ const PostListView: React.FC<{
       </MainContent>
     </>
   );
-};
+}
 
-// 文章详情视图
-const PostDetailView: React.FC<{
+function PostDetailView({
+  post,
+  onBack,
+}: {
   post: BlogPost;
   onBack: () => void;
-}> = ({ post, onBack }) => {
-  // ESC 返回
+}) {
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -303,7 +285,6 @@ const PostDetailView: React.FC<{
 
   return (
     <MainContent>
-      {/* 头部 */}
       <DetailHeader>
         <BackButton onClick={onBack}>← Back</BackButton>
         <OpenLinkButton
@@ -315,10 +296,8 @@ const PostDetailView: React.FC<{
         </OpenLinkButton>
       </DetailHeader>
 
-      {/* 标题 */}
       <ArticleTitle>{post.title}</ArticleTitle>
 
-      {/* 元信息 */}
       <ArticleMeta>
         <MetaItem>
           <span>By</span>
@@ -335,7 +314,6 @@ const PostDetailView: React.FC<{
         <MetaItem>{post.commentsCount} comments</MetaItem>
       </ArticleMeta>
 
-      {/* 标签 */}
       {post.labels.length > 0 && (
         <div style={{ marginBottom: 16, display: "flex", gap: 8 }}>
           {post.labels.map((label) => (
@@ -348,17 +326,14 @@ const PostDetailView: React.FC<{
 
       <Divider />
 
-      {/* 文章内容 */}
       <ArticleContent>
         <ReactMarkdown>{post.content}</ReactMarkdown>
       </ArticleContent>
     </MainContent>
   );
-};
+}
 
-// 主组件
-const Blog: React.FC = () => {
-  // 使用自定义 Hook 获取数据
+function Blog() {
   const {
     posts,
     loading,
@@ -377,22 +352,15 @@ const Blog: React.FC = () => {
     clearSelection,
   } = useGitHubIssues(GITHUB_CONFIG);
 
-  // 视图状态
   const [view, setView] = useState<BlogView>("list");
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
-  const [activeMenu, setActiveMenu] = useState("posts");
 
-  // 当前显示的文章列表（根据分页）
   const displayPosts = useMemo(() => {
     const POSTS_PER_PAGE = 10;
     const start = (listState.currentPage - 1) * POSTS_PER_PAGE;
-    return listState.filteredPosts.slice(
-      start,
-      start + POSTS_PER_PAGE
-    );
+    return listState.filteredPosts.slice(start, start + POSTS_PER_PAGE);
   }, [listState.filteredPosts, listState.currentPage]);
 
-  // 选择文章
   const handleSelectPost = useCallback(
     (post: BlogPost) => {
       setSelectedPost(post);
@@ -401,19 +369,16 @@ const Blog: React.FC = () => {
     []
   );
 
-  // 返回列表
   const handleBack = useCallback(() => {
     setView("list");
     setSelectedPost(null);
     clearSelection();
   }, [clearSelection]);
 
-  // 键盘导航
   useEffect(() => {
     if (view !== "list") return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // 忽略输入框中的按键
       if (
         e.target instanceof HTMLInputElement ||
         e.target instanceof HTMLTextAreaElement
@@ -433,31 +398,27 @@ const Blog: React.FC = () => {
           prevPost();
           break;
         case "ArrowRight":
-        case "l":
+        case "l": {
           e.preventDefault();
-          {
-            const currentIndex = categoryStats.findIndex(
-              (s) => s.name === listState.activeCategory
-            );
-            if (
-              currentIndex < categoryStats.length - 1
-            ) {
-              setActiveCategory(categoryStats[currentIndex + 1].name);
-            }
+          const currentIndex = categoryStats.findIndex(
+            (s) => s.name === listState.activeCategory
+          );
+          if (currentIndex < categoryStats.length - 1) {
+            setActiveCategory(categoryStats[currentIndex + 1].name);
           }
           break;
+        }
         case "ArrowLeft":
-        case "h":
+        case "h": {
           e.preventDefault();
-          {
-            const currentIndex = categoryStats.findIndex(
-              (s) => s.name === listState.activeCategory
-            );
-            if (currentIndex > 0) {
-              setActiveCategory(categoryStats[currentIndex - 1].name);
-            }
+          const currentIndex = categoryStats.findIndex(
+            (s) => s.name === listState.activeCategory
+          );
+          if (currentIndex > 0) {
+            setActiveCategory(categoryStats[currentIndex - 1].name);
           }
           break;
+        }
         case "n":
           e.preventDefault();
           nextPage();
@@ -480,8 +441,7 @@ const Blog: React.FC = () => {
     };
 
     document.addEventListener("keydown", handleKeyDown);
-    return () =>
-      document.removeEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [
     view,
     listState.selectedIndex,
@@ -497,7 +457,6 @@ const Blog: React.FC = () => {
     handleBack,
   ]);
 
-  // 渲染加载状态
   if (loading) {
     return (
       <BlogContainer>
@@ -506,7 +465,6 @@ const Blog: React.FC = () => {
     );
   }
 
-  // 渲染错误状态
   if (error) {
     return (
       <BlogContainer>
@@ -517,13 +475,12 @@ const Blog: React.FC = () => {
 
   return (
     <BlogContainer>
-      {/* 顶部菜单栏 */}
       <MenuBar>
         {MENU_ITEMS.map((item) => (
           <MenuItem
             key={item.id}
-            $isActive={activeMenu === item.id}
-            onClick={() => setActiveMenu(item.id)}
+            $isActive={false}
+            onClick={() => {}}
           >
             {item.label}
             {item.shortcut && (
@@ -535,7 +492,6 @@ const Blog: React.FC = () => {
         ))}
       </MenuBar>
 
-      {/* 根据视图显示不同内容 */}
       {view === "detail" && selectedPost ? (
         <PostDetailView post={selectedPost} onBack={handleBack} />
       ) : (
@@ -555,12 +511,9 @@ const Blog: React.FC = () => {
         />
       )}
 
-      {/* 底部状态栏 */}
       <StatusBar>
         <StatusBarLeft>
-          <StatusItem>
-            Total: {posts.length} posts
-          </StatusItem>
+          <StatusItem>Total: {posts.length} posts</StatusItem>
           <StatusItem>
             Updated:{" "}
             {lastUpdated
@@ -573,7 +526,6 @@ const Blog: React.FC = () => {
         </StatusBarRight>
       </StatusBar>
 
-      {/* 快捷键提示 */}
       {view === "list" && (
         <ShortcutHint>
           <span>
@@ -615,6 +567,6 @@ const Blog: React.FC = () => {
       )}
     </BlogContainer>
   );
-};
+}
 
 export default Blog;
