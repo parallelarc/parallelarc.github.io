@@ -7,7 +7,6 @@ import {
   PreNameMobile,
   PreWrapper,
   RainbowText,
-  Seperator,
 } from "../styles/Commands.styled";
 
 const Welcome: React.FC = () => {
@@ -43,17 +42,12 @@ const Welcome: React.FC = () => {
           </PreNameMobile>
         </PreWrapper>
         <RainbowText>
-          I’m a friend of AI.
+          I'm a friend of AI.
           <br />
           Welcome to my terminal portfolio.
           <br />I enjoy philosophy and games, and care more about brain–computer
           interfaces and immortality than about living on Mars.
         </RainbowText>
-        <Seperator>----</Seperator>
-        <Instruction>
-          For a list of available commands, type `<Cmd>help</Cmd>`. <br />
-          Use `<Cmd>Tab</Cmd>` to autocomplete commands.
-        </Instruction>
       </div>
       <div className="illu-section">
         <PreImg>

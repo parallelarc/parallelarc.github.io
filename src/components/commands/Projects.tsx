@@ -12,6 +12,7 @@ import {
   AlbumImage,
   LightboxOverlay,
   LightboxImage,
+  Link,
 } from "../styles/Commands.styled";
 
 type ImageOrientation = "landscape" | "portrait" | "square";
@@ -29,13 +30,11 @@ type Project = {
   title: string;
   desc: string;
   url: string;
-  images?: ProjectImage[];
-};
-
-type AlbumGroup = {
-  id: string;
-  title: string;
-  imageIds: string[];
+  albumGroups?: {
+    id: string;
+    title: string;
+    imageIds: string[];
+  }[];
 };
 
 type AlbumLayout = {
@@ -84,17 +83,14 @@ const getGridPositions = (
   if (layout === "3v") return ["1 / 1 / 2 / 2", "1 / 2 / 2 / 3", "1 / 3 / 2 / 4"];
 
   if (layout === "2h1v") {
-    // 左侧2横图竖直堆叠, 右侧1竖图跨2行
     const portraitIndex = orientations.findIndex(o => o === "portrait");
     const positions = ["", "", ""];
     let hIndex = 0;
 
     orientations.forEach((_, idx) => {
       if (idx === portraitIndex) {
-        // 竖图: 第1行开始, 第2列, 跨2行
         positions[idx] = "1 / 2 / 3 / 3";
       } else {
-        // 横图: 第1或2行, 第1列
         hIndex++;
         positions[idx] = `${hIndex} / 1 / ${hIndex + 1} / 2`;
       }
@@ -103,17 +99,14 @@ const getGridPositions = (
   }
 
   if (layout === "1h2v") {
-    // 上方1横图占满宽度, 下方2竖图并排
     const landscapeIndex = orientations.findIndex(o => o === "landscape");
     const positions = ["", "", ""];
     let vCol = 0;
 
     orientations.forEach((_, idx) => {
       if (idx === landscapeIndex) {
-        // 横图: 第1行, 跨2列
         positions[idx] = "1 / 1 / 2 / 3";
       } else {
-        // 竖图: 第2行, 第1或2列
         vCol++;
         positions[idx] = `2 / ${vCol} / 3 / ${vCol + 1}`;
       }
@@ -142,7 +135,6 @@ const loadImageOrientation = (src: string): Promise<ImageOrientation> =>
 const useAlbumLayouts = (groups: { id: string; images: ProjectImage[] }[]) => {
   const [layouts, setLayouts] = useState<Record<string, AlbumLayout>>({});
 
-  // Create a stable key based on group IDs and image sources to prevent unnecessary reloads
   const groupsKey = useMemo(
     () => groups.map(g => `${g.id}:${g.images.map(i => i.src).join(',')}`).join('|'),
     [groups]
@@ -172,37 +164,13 @@ const useAlbumLayouts = (groups: { id: string; images: ProjectImage[] }[]) => {
     return () => {
       cancelled = true;
     };
-  }, [groupsKey]); // Use stable key instead of groups object
+  }, [groupsKey]);
 
   return layouts;
 };
 
 const Projects: React.FC = () => {
-  const project = projects[0];
   const [selectedImage, setSelectedImage] = useState<ProjectImage | null>(null);
-
-  const resolvedImages = useMemo(
-    () => projectImages.map(image => ({ ...image, src: resolveAsset(image.src) })),
-    [] // eslint-disable-line react-hooks/exhaustive-deps
-  );
-
-  const imageMap = useMemo(
-    () => Object.fromEntries(resolvedImages.map(image => [image.id, image])),
-    [] // eslint-disable-line react-hooks/exhaustive-deps
-  );
-
-  const resolvedGroups = useMemo(
-    () =>
-      albumGroups.map(group => ({
-        ...group,
-        images: group.imageIds
-          .map(id => imageMap[id])
-          .filter(Boolean) as ProjectImage[],
-      })),
-    [] // eslint-disable-line react-hooks/exhaustive-deps
-  );
-
-  const layouts = useAlbumLayouts(resolvedGroups);
 
   const openLightbox = (image: ProjectImage) => {
     setSelectedImage(image);
@@ -228,66 +196,94 @@ const Projects: React.FC = () => {
     };
   }, [selectedImage, closeLightbox]);
 
+  // 准备所有项目的albumGroups数据用于布局计算
+  const allGroups = useMemo(() => {
+    const groups: { id: string; images: ProjectImage[] }[] = [];
+    projects.forEach((project) => {
+      if (project.albumGroups) {
+        project.albumGroups.forEach((group) => {
+          const resolvedImages = group.imageIds
+            .map((id) => projectImages.find((img) => img.id === id))
+            .filter(Boolean) as ProjectImage[];
+          groups.push({ id: group.id, images: resolvedImages });
+        });
+      }
+    });
+    return groups;
+  }, []);
+
+  const layouts = useAlbumLayouts(allGroups);
+
   return (
     <div data-testid="projects">
       <ProjectsIntro>
         Some things I've made, and moments they passed through.
       </ProjectsIntro>
 
-      <ProjectLayout>
-        <TextPanel>
-          <ProjectTitle>{`${project.id}. ${project.title}`}</ProjectTitle>
-          <ProjectDesc>{project.desc}</ProjectDesc>
-        </TextPanel>
+      {projects.map((project) => (
+        <ProjectLayout key={project.id}>
+          <TextPanel>
+            <ProjectTitle>
+              {`${project.id}. `}
+              <Link href={project.url} target="_blank" rel="noopener noreferrer">
+                {project.title}
+              </Link>
+            </ProjectTitle>
+            <ProjectDesc>{project.desc}</ProjectDesc>
+          </TextPanel>
 
-        <AlbumSection>
-          <AlbumGroups>
-            {resolvedGroups.map(group => {
-              const layout = layouts[group.id]?.layout ?? "3v";
-              const gridPositions = layouts[group.id]?.gridAreas ?? [];
-              
-              // 根据布局类型设置宽度比例
-              // 2h1v: 3份宽度 (2个横图 + 1个竖图)
-              // 1h2v: 2份宽度 (1个横图 + 2个竖图)
-              // 3h 和 3v: 1份宽度 (基础宽度)
-              const getFlexRatio = (layoutType: GroupLayout): number => {
-                if (layoutType === "2h1v") {
-                  return 3; // 3份宽度
-                }
-                if (layoutType === "1h2v") {
-                  return 2; // 2份宽度
-                }
-                return 1; // 基础宽度 (3h 和 3v)
-              };
-              
-              const flexRatio = getFlexRatio(layout);
+          {project.albumGroups && project.albumGroups.length > 0 && (
+            <AlbumSection>
+              <AlbumGroups>
+                {project.albumGroups.map((group) => {
+                  const resolvedImages = group.imageIds
+                    .map((id) => projectImages.find((img) => img.id === id))
+                    .filter(Boolean) as ProjectImage[];
 
-              return (
-                <AlbumGroup key={group.id} flexRatio={flexRatio}>
-                  <AlbumGrid className={`layout-${layout}`}>
-                    {group.images.map((image, index) => (
-                      <AlbumImage
-                        key={image.src}
-                        style={{
-                          gridArea: gridPositions[index] || "auto",
-                        }}
-                        onClick={() => openLightbox(image)}
-                      >
-                        <img
-                          src={image.src}
-                          alt={image.alt}
-                          loading="lazy"
-                          decoding="async"
-                        />
-                      </AlbumImage>
-                    ))}
-                  </AlbumGrid>
-                </AlbumGroup>
-              );
-            })}
-          </AlbumGroups>
-        </AlbumSection>
-      </ProjectLayout>
+                  const layout = layouts[group.id]?.layout ?? "3v";
+                  const gridPositions = layouts[group.id]?.gridAreas ?? [];
+
+                  const getFlexRatio = (layoutType: GroupLayout): number => {
+                    if (layoutType === "2h1v") return 3;
+                    if (layoutType === "1h2v") return 2;
+                    return 1;
+                  };
+
+                  const flexRatio = getFlexRatio(layout);
+
+                  return (
+                    <AlbumGroup key={group.id} flexRatio={flexRatio}>
+                      <AlbumGrid className={`layout-${layout}`}>
+                        {resolvedImages.map((image, index) => (
+                          <AlbumImage
+                            key={image.id}
+                            style={{
+                              gridArea: gridPositions[index] || "auto",
+                            }}
+                            onClick={() =>
+                              openLightbox({
+                                ...image,
+                                src: resolveAsset(image.src),
+                              })
+                            }
+                          >
+                            <img
+                              src={resolveAsset(image.src)}
+                              alt={image.alt}
+                              loading="lazy"
+                              decoding="async"
+                            />
+                          </AlbumImage>
+                        ))}
+                      </AlbumGrid>
+                    </AlbumGroup>
+                  );
+                })}
+              </AlbumGroups>
+            </AlbumSection>
+          )}
+        </ProjectLayout>
+      ))}
 
       {selectedImage && (
         <LightboxOverlay onClick={closeLightbox}>
@@ -353,29 +349,33 @@ const projectImages: ProjectImage[] = [
 const projects: Project[] = [
   {
     id: 1,
+    title: "Terminal Portfolio",
+    desc: "A terminal-style personal portfolio website built with React + TypeScript. Visitors interact through commands like 'about', 'projects', and 'themes', turning a portfolio into a CLI session.",
+    url: "https://github.com/parallelarc/parallelarc.github.io",
+  },
+  {
+    id: 2,
     title: "Vbot",
     desc:
-      "Vbot is a robot pet designed for family and outdoor life. During Beijing’s first snow in 2025, it walked through Purple Jade Villas, meeting friends along the way.",
-    url: "https://example.com/vbot",
-    images: projectImages,
-  },
-];
-
-const albumGroups: AlbumGroup[] = [
-  {
-    id: "snow-companions",
-    title: "Snow companions",
-    imageIds: ["avatar", "staff", "branchestower"],
-  },
-  {
-    id: "friends-met",
-    title: "Friends met on the walk",
-    imageIds: ["labrador", "marmot", "peafowl"],
-  },
-  {
-    id: "behind-the-scenes",
-    title: "Behind the scenes",
-    imageIds: ["dessert", "deer", "husky"],
+      "Vbot is a robot pet designed for family and outdoor life. During Beijing's first snow in 2025, it walked through Purple Jade Villas, meeting friends along the way.",
+    url: "https://space.bilibili.com/3546948055337693",
+    albumGroups: [
+      {
+        id: "snow-companions",
+        title: "Snow companions",
+        imageIds: ["avatar", "staff", "branchestower"],
+      },
+      {
+        id: "friends-met",
+        title: "Friends met on the walk",
+        imageIds: ["labrador", "marmot", "peafowl"],
+      },
+      {
+        id: "behind-the-scenes",
+        title: "Behind the scenes",
+        imageIds: ["dessert", "deer", "husky"],
+      },
+    ],
   },
 ];
 

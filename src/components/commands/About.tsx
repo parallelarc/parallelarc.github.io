@@ -22,14 +22,6 @@ const About: React.FC = () => {
         at IIIS, Tsinghua University, working with Prof. Hang Zhao. I
         collaborated with Xiaomi Auto and Li Auto.
       </p>
-      <Divider />
-      <p>
-        This project's source code can be found in {" "}
-        <Link href="https://github.com/foxiv/terminal-portfolio">
-          GitHub repo
-        </Link>
-        .
-      </p>
     </AboutWrapper>
   );
 };

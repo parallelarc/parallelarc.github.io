@@ -32,22 +32,15 @@ const GlobalStyle = createGlobalStyle<{ theme: DefaultTheme }>`
     color: ${({ theme }) => theme.colors?.text[100]};
   }
 
-  /* ===== Custom Scroll Bar ===== */
-  /* width */
+  /* ===== Hide Scroll Bars ===== */
+  * {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+  /* Chrome, Safari, Opera */
   ::-webkit-scrollbar {
-    width: 15px;
-  }
-  /* Track */
-  ::-webkit-scrollbar-track {
-    background: ${({ theme }) => theme.colors?.body};
-  }
-  /* Handle */
-  ::-webkit-scrollbar-thumb {
-    background: ${({ theme }) => theme.colors?.scrollHandle};
-  }
-  /* Handle on hover */
-  ::-webkit-scrollbar-thumb:hover {
-    background: ${({ theme }) => theme.colors?.scrollHandleHover};
+    display: none;
+    width: 0;
   }
 
   input[type=text] {

@@ -118,10 +118,9 @@ export const InputDisplay = styled.div`
   position: relative;
   flex-grow: 1;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   cursor: text;
   min-height: 1.5em;
-  padding-top: 0.1em;
 `;
 
 // 显示的文本内容
