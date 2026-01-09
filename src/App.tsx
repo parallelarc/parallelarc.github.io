@@ -53,9 +53,9 @@ function App() {
     <>
       <h1
         className="sr-only"
-        aria-label="whoami — an interactive terminal portfolio"
+        aria-label="Foxiv's terminal portfolio"
       >
-        whoami — an interactive terminal portfolio
+        Foxiv's terminal portfolio
       </h1>
       {themeLoaded && (
         <ThemeProvider theme={selectedTheme}>
