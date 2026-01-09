@@ -20,6 +20,8 @@ import {
   Form,
   Hints,
   InputHint,
+  ShortcutsGrid,
+  ShortcutItem,
   Wrapper,
   HiddenInput,
   InputDisplay,
@@ -718,7 +720,17 @@ const Terminal = () => {
           </ClaudeInputArea>
           <ClaudeBottomLine />
           {!isChatMode && (
-            <InputHint aria-hidden="true">? for shortcuts</InputHint>
+            inputVal === "?" ? (
+              <ShortcutsGrid aria-hidden="true">
+                <ShortcutItem>/ for commands</ShortcutItem>
+                <ShortcutItem>? for help</ShortcutItem>
+                <ShortcutItem>tab to autocomplete</ShortcutItem>
+                <ShortcutItem>shift + ⏎ for newline</ShortcutItem>
+                <ShortcutItem>ctrl + c to clear prompt</ShortcutItem>
+              </ShortcutsGrid>
+            ) : (
+              <InputHint aria-hidden="true">? for shortcuts</InputHint>
+            )
           )}
         </ClaudeInputContainer>
       </Form>

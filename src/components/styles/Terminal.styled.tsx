@@ -7,7 +7,7 @@ export const Wrapper = styled.div`
 
   display: flex;
   flex-direction: column-reverse;
-  max-height: calc(100vh - 2rem);
+  height: calc(100vh - 2rem);
   overflow-y: auto;
 `;
 
@@ -147,9 +147,29 @@ export const Input = HiddenInput;
 export const InputHint = styled.div`
   margin-top: 0.25rem;
   padding-left: 0.5rem;
-  font-size: 0.7rem;
+  font-size: 0.9rem;
   color: ${({ theme }) => theme.colors?.text[400] || "rgba(255, 255, 255, 0.35)"};
   opacity: 0.8;
+`;
+
+// 快捷键网格布局
+export const ShortcutsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.25rem 1.5rem;
+  margin-top: 0.25rem;
+  padding-left: 0.5rem;
+  font-size: 0.85rem;
+  color: ${({ theme }) => theme.colors?.text[400] || "rgba(255, 255, 255, 0.35)"};
+  opacity: 0.8;
+
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+`;
+
+export const ShortcutItem = styled.div`
+  white-space: nowrap;
 `;
 
 export const Hints = styled.span`
