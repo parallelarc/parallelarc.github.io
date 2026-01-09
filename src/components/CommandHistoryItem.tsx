@@ -4,7 +4,6 @@ import Output from "./Output";
 import TermInfo from "./TermInfo";
 import { termContext, commands } from "./Terminal";
 import { CmdNotFound, Empty, MobileBr, MobileSpan } from "./styles/Terminal.styled";
-import type { Term } from "./Terminal";
 
 type CommandHistoryItemProps = {
   cmdH: string;
@@ -12,7 +11,6 @@ type CommandHistoryItemProps = {
   cmdHistory: string[];
   rerender: boolean;
   clearHistory: () => void;
-  chat: Term["chat"];
   setEnv: (name: string, value: string) => void;
 };
 
@@ -22,7 +20,6 @@ const CommandHistoryItem: React.FC<CommandHistoryItemProps> = ({
   cmdHistory,
   rerender,
   clearHistory,
-  chat,
   setEnv,
 }) => {
   const commandArray = useMemo(() => _.split(_.trim(cmdH), " "), [cmdH]);
@@ -42,10 +39,9 @@ const CommandHistoryItem: React.FC<CommandHistoryItemProps> = ({
       rerender,
       index,
       clearHistory,
-      chat,
       setEnv,
     }),
-    [commandArray, cmdHistory, rerender, index, clearHistory, chat, setEnv]
+    [commandArray, cmdHistory, rerender, index, clearHistory, setEnv]
   );
 
   return (
@@ -77,11 +73,7 @@ export default React.memo(CommandHistoryItem, (prevProps, nextProps) => {
     prevProps.cmdH === nextProps.cmdH &&
     prevProps.index === nextProps.index &&
     prevProps.rerender === nextProps.rerender &&
-    prevProps.cmdHistory === nextProps.cmdHistory &&
-    prevProps.chat.messages === nextProps.chat.messages &&
-    prevProps.chat.loading === nextProps.chat.loading &&
-    prevProps.chat.error === nextProps.chat.error &&
-    prevProps.chat.configured === nextProps.chat.configured
+    prevProps.cmdHistory === nextProps.cmdHistory
   );
 });
 

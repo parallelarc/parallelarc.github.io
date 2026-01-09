@@ -24,6 +24,7 @@ import {
   ShortcutItem,
   Wrapper,
   HiddenInput,
+  HiddenTextarea,
   InputDisplay,
   DisplayText,
   BlockCursor,
@@ -37,14 +38,6 @@ import {
 } from "./styles/TerminalInfo.styled";
 import { argTab } from "../utils/funcs";
 
-const normalizeBaseUrl = (url: string) =>
-  url.endsWith("/") ? url.slice(0, -1) : url;
-
-type ChatMessage = {
-  role: "assistant" | "user";
-  content: string;
-};
-
 type Command = {
   cmd: string;
   desc: string;
@@ -53,11 +46,8 @@ type Command = {
 
 export const commands: Command = [
   { cmd: "about", desc: "about me", tab: 8 },
-  { cmd: "hi", desc: "chat with my AI copilot", tab: 11 },
-  { cmd: "hello", desc: "chat with my AI copilot", tab: 11 },
   { cmd: "blog", desc: "open blog interface", tab: 8 },
   { cmd: "clear", desc: "clear the terminal", tab: 8 },
-  { cmd: "echo", desc: "print out anything", tab: 9 },
   { cmd: "education", desc: "my education background", tab: 4 },
   {
     cmd: "contact",
@@ -79,12 +69,6 @@ export type Term = {
   rerender: boolean;
   index: number;
   clearHistory?: () => void;
-  chat: {
-    messages: ChatMessage[];
-    loading: boolean;
-    error: string | null;
-    configured: boolean;
-  };
   setEnv?: (name: string, value: string) => void;
 };
 
@@ -93,19 +77,12 @@ export const termContext = createContext<Term>({
   history: [],
   rerender: false,
   index: 0,
-  chat: {
-    messages: [],
-    loading: false,
-    error: null,
-    configured: false,
-  },
   setEnv: undefined,
 });
 
 const Terminal = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const hiAbortRef = useRef<AbortController | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const [inputVal, setInputVal] = useState("");
   const [isInputFocused, setIsInputFocused] = useState(false);
@@ -116,143 +93,19 @@ const Terminal = () => {
   const [pointer, setPointer] = useState(-1);
   const [showCopyToast, setShowCopyToast] = useState(false);
   const [isCrashed, setIsCrashed] = useState(false);
-  const [isChatMode, setIsChatMode] = useState(false);
-  const defaultChatGreeting =
-    "╭────────────────────────────────────────────╮\n" +
-    "│ >_ OpenAI Compatible (0.42.0)              │\n" +
-    "│                                            │\n" +
-    "│ model:     Qwen3-Next-80B-A3B-Instruct     │\n" +
-    "│ directory: ~                               │\n" +
-    "╰────────────────────────────────────────────╯\n" +
-    "\nPress Ctrl+C to exit chat mode.";
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
-    { role: "assistant", content: defaultChatGreeting },
-  ]);
-  const [chatLoading, setChatLoading] = useState(false);
-  const [chatError, setChatError] = useState<string | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const crashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [openAiApiKey, setOpenAiApiKey] = useState(
-    import.meta.env.OPENAI_API_KEY || ""
-  );
-  const [openAiBaseUrl, setOpenAiBaseUrl] = useState(
-    normalizeBaseUrl(
-      import.meta.env.OPENAI_BASE_URL || "https://api.openai.com/v1"
-    )
-  );
-  const [openAiModel, setOpenAiModel] = useState(
-    import.meta.env.OPENAI_MODEL || "gpt-4o-mini"
-  );
-  const [systemPrompt, setSystemPrompt] = useState(
-    import.meta.env.OPENAI_SYSTEM_PROMPT ||
-      "You are an enthusiastic yet concise AI concierge for Foxiv's interactive terminal portfolio. Keep answers grounded in Foxiv's work and experience."
-  );
-  const chatConfigured = Boolean(openAiApiKey);
-
-  // 记忆化chat对象，避免每次渲染时创建新对象
-  const chatValue = useMemo(
-    () => ({
-      messages: chatMessages,
-      loading: chatLoading,
-      error: chatError,
-      configured: chatConfigured,
-    }),
-    [chatMessages, chatLoading, chatError, chatConfigured]
-  );
 
   const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       setRerender(false);
       const newValue = e.target.value;
       setInputVal(newValue);
       // 获取原生输入框的实际光标位置
-      const selectionStart = (e.target as HTMLInputElement).selectionStart;
+      const selectionStart = (e.target as HTMLTextAreaElement).selectionStart;
       setCursorPosition(selectionStart ?? newValue.length);
     },
     []
-  );
-
-  const sendHiPrompt = useCallback(
-    async (prompt: string) => {
-      if (!chatConfigured) {
-        setChatError(
-          "Missing API key. Please set OPENAI_API_KEY in your environment and try again."
-        );
-        return;
-      }
-
-      const userMessage = prompt.trim() ? prompt : "hi";
-      const nextConversation = [
-        ...chatMessages,
-        { role: "user", content: userMessage } as ChatMessage,
-      ];
-
-      setChatMessages(nextConversation);
-      setChatLoading(true);
-      setChatError(null);
-
-      if (hiAbortRef.current) {
-        hiAbortRef.current.abort();
-      }
-      const controller = new AbortController();
-      hiAbortRef.current = controller;
-
-      try {
-        const response = await fetch(`${openAiBaseUrl}/chat/completions`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${openAiApiKey}`,
-          },
-          body: JSON.stringify({
-            model: openAiModel,
-            messages: [
-              { role: "system", content: systemPrompt },
-              ...nextConversation.map(message => ({
-                role: message.role,
-                content: message.content,
-              })),
-            ],
-            temperature: 0.7,
-          }),
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          const text = await response.text();
-          throw new Error(text || "LLM request failed");
-        }
-
-        const payload = await response.json();
-        const assistantReply =
-          payload?.choices?.[0]?.message?.content?.trim() ??
-          "No response was returned by the model.";
-
-        setChatMessages(prev => [
-          ...prev,
-          { role: "assistant", content: assistantReply },
-        ]);
-      } catch (error) {
-        if (error instanceof DOMException && error.name === "AbortError") {
-          return;
-        }
-        setChatError(
-          error instanceof Error
-            ? error.message
-            : "Failed to send request. Please try again later."
-        );
-      } finally {
-        setChatLoading(false);
-      }
-    },
-    [
-      chatConfigured,
-      chatMessages,
-      openAiApiKey,
-      openAiBaseUrl,
-      openAiModel,
-      systemPrompt,
-    ]
   );
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -271,26 +124,6 @@ const Terminal = () => {
       return;
     }
 
-    if (isChatMode) {
-      void sendHiPrompt(trimmedInput);
-      setInputVal("");
-      setHints([]);
-      setPointer(-1);
-      setCursorPosition(0);
-      return;
-    }
-
-    const commandArray = _.split(trimmedInput, " ");
-    const normalizedCommand = _.toLower(commandArray[0]);
-    const args = _.drop(commandArray);
-
-    if (
-      (normalizedCommand === "hi" || normalizedCommand === "hello") &&
-      args.length === 0
-    ) {
-      setIsChatMode(true);
-    }
-
     setCmdHistory([trimmedInput, ...cmdHistory]);
     setInputVal("");
     setRerender(true);
@@ -302,27 +135,11 @@ const Terminal = () => {
   const clearHistory = () => {
     setCmdHistory([]);
     setHints([]);
-    setChatMessages([{ role: "assistant", content: defaultChatGreeting }]);
-    setChatError(null);
-    setChatLoading(false);
-    setIsChatMode(false);
     setCursorPosition(0);
-    if (hiAbortRef.current) {
-      hiAbortRef.current.abort();
-    }
   };
 
   const setEnvVar = (name: string, value: string) => {
-    const key = name.toUpperCase();
-    if (key === "OPENAI_API_KEY") {
-      setOpenAiApiKey(value);
-    } else if (key === "OPENAI_BASE_URL") {
-      setOpenAiBaseUrl(normalizeBaseUrl(value));
-    } else if (key === "OPENAI_MODEL") {
-      setOpenAiModel(value);
-    } else if (key === "OPENAI_SYSTEM_PROMPT") {
-      setSystemPrompt(value);
-    }
+    // Environment variable setting is no longer supported
   };
 
   const triggerCrash = () => {
@@ -330,11 +147,7 @@ const Terminal = () => {
     setInputVal("");
     setHints([]);
     setPointer(-1);
-    setIsChatMode(false);
     setCursorPosition(0);
-    if (hiAbortRef.current) {
-      hiAbortRef.current.abort();
-    }
     crashTimerRef.current = setTimeout(() => {
       setShowCopyToast(false);
     }, 0);
@@ -342,7 +155,7 @@ const Terminal = () => {
 
 
   // Keyboard Press
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     setRerender(false);
     if (isCrashed) {
       e.preventDefault();
@@ -358,9 +171,19 @@ const Terminal = () => {
       setHints([]);
       setPointer(-1);
       setCursorPosition(0);
-      if (isChatMode) {
-        setIsChatMode(false);
-      }
+      return;
+    }
+
+    // Shift + Enter - 让 textarea 默认处理换行
+    if (e.key === "Enter" && e.shiftKey) {
+      // 不阻止默认行为，让 textarea 自然换行
+      return;
+    }
+
+    // Enter - 提交表单（阻止默认换行行为）
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
       return;
     }
 
@@ -371,7 +194,6 @@ const Terminal = () => {
 
       let hintsCmds: string[] = [];
       commands.forEach(({ cmd }) => {
-        if (cmd === "hi" || cmd === "hello") return;
         if (_.startsWith(cmd, inputVal)) {
           hintsCmds = [...hintsCmds, cmd];
         }
@@ -630,9 +452,6 @@ const Terminal = () => {
       if (crashTimerRef.current) {
         clearTimeout(crashTimerRef.current);
       }
-      if (hiAbortRef.current) {
-        hiAbortRef.current.abort();
-      }
     };
   }, []);
 
@@ -673,7 +492,7 @@ const Terminal = () => {
           <ClaudeTopLine />
           <ClaudeInputArea>
             <label htmlFor="terminal-input">
-              <TermInfo isChatMode={isChatMode} />
+              <TermInfo />
             </label>
             <InputDisplay
               onClick={() => inputRef.current?.focus()}
@@ -702,14 +521,12 @@ const Terminal = () => {
                 )}
               </DisplayText>
             </InputDisplay>
-            <HiddenInput
+            <HiddenTextarea
               title="terminal-input"
-              type="text"
               id="terminal-input"
               autoComplete="off"
               spellCheck="false"
               autoFocus
-              autoCapitalize="off"
               ref={inputRef}
               value={inputVal}
               onKeyDown={handleKeyDown}
@@ -719,24 +536,19 @@ const Terminal = () => {
             />
           </ClaudeInputArea>
           <ClaudeBottomLine />
-          {!isChatMode && (
-            inputVal === "?" ? (
-              <ShortcutsGrid aria-hidden="true">
-                <ShortcutItem>/ for commands</ShortcutItem>
-                <ShortcutItem>? for help</ShortcutItem>
-                <ShortcutItem>tab to autocomplete</ShortcutItem>
-                <ShortcutItem>shift + ⏎ for newline</ShortcutItem>
-                <ShortcutItem>ctrl + c to clear prompt</ShortcutItem>
-              </ShortcutsGrid>
-            ) : (
-              <InputHint aria-hidden="true">? for shortcuts</InputHint>
-            )
+          {inputVal === "?" ? (
+            <ShortcutsGrid aria-hidden="true">
+              <ShortcutItem>/ for commands</ShortcutItem>
+              <ShortcutItem>? for help</ShortcutItem>
+              <ShortcutItem>tab to autocomplete</ShortcutItem>
+              <ShortcutItem>shift + ⏎ for newline</ShortcutItem>
+              <ShortcutItem>ctrl + c to clear prompt</ShortcutItem>
+            </ShortcutsGrid>
+          ) : (
+            <InputHint aria-hidden="true">? for shortcuts</InputHint>
           )}
         </ClaudeInputContainer>
       </Form>
-      {isChatMode && (
-        <InputHint aria-hidden="true">⏎ send · Ctrl+C quit</InputHint>
-      )}
 
       {cmdHistory.map((cmdH, index) => (
         <CommandHistoryItem
@@ -746,7 +558,6 @@ const Terminal = () => {
           cmdHistory={cmdHistory}
           rerender={rerender}
           clearHistory={clearHistory}
-          chat={chatValue}
           setEnv={setEnvVar}
         />
       ))}

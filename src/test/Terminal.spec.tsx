@@ -75,33 +75,6 @@ describe("Terminal Component", () => {
       expect(screen.getByTestId("terminal-wrapper").children.length).toBe(1);
     });
 
-    it("should return `hello world` when user type `echo hello world` cmd", async () => {
-      await user.type(terminalInput, "echo hello world{enter}");
-      expect(screen.getByTestId("latest-output").firstChild?.textContent).toBe(
-        "hello world"
-      );
-    });
-
-    it("should return `hello world` without quotes when user type `echo 'hello world'` cmd", async () => {
-      // omit single quotes
-      await user.type(terminalInput, "echo 'hello world'{enter}");
-      expect(screen.getByTestId("latest-output").firstChild?.textContent).toBe(
-        "hello world"
-      );
-
-      // omit double quotes
-      await user.type(terminalInput, 'echo "hello world"{enter}');
-      expect(screen.getByTestId("latest-output").firstChild?.textContent).toBe(
-        "hello world"
-      );
-
-      // omit backtick
-      await user.type(terminalInput, "echo `hello world`{enter}");
-      expect(screen.getByTestId("latest-output").firstChild?.textContent).toBe(
-        "hello world"
-      );
-    });
-
     it("should render Welcome component when user type 'welcome' cmd", async () => {
       await user.type(terminalInput, "clear{enter}");
       await user.type(terminalInput, "welcome{enter}");
@@ -180,7 +153,7 @@ describe("Terminal Component", () => {
   describe("Invalid Arguments", () => {
     const specialUsageCmds = ["themes"];
     const usageCmds = allCmds.filter(
-      cmd => !["echo", "export", ...specialUsageCmds].includes(cmd)
+      cmd => !["export", ...specialUsageCmds].includes(cmd)
     );
 
     usageCmds.forEach(cmd => {
@@ -211,10 +184,7 @@ describe("Terminal Component", () => {
   });
 
   describe("Keyboard shortcuts", () => {
-    const noAutocompleteCmds = ["hi", "hello"];
-    const autocompleteCmds = allCmds.filter(
-      cmd => !noAutocompleteCmds.includes(cmd)
-    );
+    const autocompleteCmds = allCmds;
 
     autocompleteCmds.forEach(cmd => {
       it(`should autocomplete '${cmd}' when 'Tab' is pressed`, async () => {

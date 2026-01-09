@@ -101,20 +101,34 @@ export const HiddenInput = styled.input`
   width: 0;
 `;
 
+// 隐藏的 textarea - 支持多行输入
+export const HiddenTextarea = styled.textarea`
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  top: 0;
+  left: 0;
+  height: 0;
+  width: 0;
+  resize: none;
+`;
+
 // 显示输入内容的容器
 export const InputDisplay = styled.div`
   position: relative;
   flex-grow: 1;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   cursor: text;
   min-height: 1.5em;
+  padding-top: 0.1em;
 `;
 
 // 显示的文本内容
 export const DisplayText = styled.span<{ $hasText: boolean }>`
   color: ${({ theme }) => theme.colors?.text[100] || "#ffffff"};
-  white-space: pre;
+  white-space: pre-wrap;
+  word-break: break-word;
   ${({ $hasText, theme }) =>
     !$hasText && `color: ${theme.colors?.text[400] || "rgba(255, 255, 255, 0.35)"};`}
 `;

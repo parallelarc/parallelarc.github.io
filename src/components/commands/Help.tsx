@@ -12,7 +12,6 @@ const Help: React.FC = () => {
   return (
     <HelpWrapper data-testid="help">
       {commands
-        .filter(({ cmd }) => cmd !== "hi" && cmd !== "hello")
         .map(({ cmd, desc, tab }) => (
         <CmdList key={cmd}>
           <Cmd>{cmd}</Cmd>

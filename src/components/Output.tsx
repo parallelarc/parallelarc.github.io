@@ -1,7 +1,6 @@
 import React from "react";
 import About from "./commands/About";
 import Clear from "./commands/Clear";
-import Echo from "./commands/Echo";
 import Education from "./commands/Education";
 import Contact from "./commands/Contact";
 import Help from "./commands/Help";
@@ -9,7 +8,6 @@ import Welcome from "./commands/Welcome";
 import History from "./commands/History";
 import Projects from "./commands/Projects";
 import Themes from "./commands/Themes";
-import Hi from "./commands/Hi";
 import ExportCmd from "./commands/Export";
 import Env from "./commands/Env";
 import Blog from "./commands/Blog";
@@ -24,7 +22,7 @@ type Props = {
 
 const Output: React.FC<Props> = ({ index, cmd }) => {
   const { arg } = useContext(termContext);
-  const commandsWithArgsAllowed = ["projects", "themes", "echo", "export"];
+  const commandsWithArgsAllowed = ["projects", "themes", "export"];
 
   // return 'Usage: <cmd>' if the command should not receive arguments
   if (arg.length > 0 && !commandsWithArgsAllowed.includes(cmd)) {
@@ -37,15 +35,12 @@ const Output: React.FC<Props> = ({ index, cmd }) => {
         {
           about: <About />,
           clear: <Clear />,
-          echo: <Echo />,
           education: <Education />,
           contact: <Contact />,
           help: <Help />,
           history: <History />,
           projects: <Projects />,
           themes: <Themes />,
-          hi: <Hi />,
-          hello: <Hi />,
           export: <ExportCmd />,
           env: <Env />,
           welcome: <Welcome />,
