@@ -56,10 +56,10 @@ export const checkThemeSwitch = (
   themes: string[]
 ): boolean =>
   rerender && // is submitted
-  currentCommand[0] === "themes" && // current command starts with 'themes'
+  currentCommand[0] === "/themes" && // current command starts with '/themes'
   currentCommand[1] === "set" && // first arg is 'set'
   currentCommand.length > 1 && // current command has arg
-  currentCommand.length < 4 && // if num of arg is valid (not `themes set light sth`)
+  currentCommand.length < 4 && // if num of arg is valid (not `/themes set light sth`)
   _.includes(themes, currentCommand[2]); // arg last part is one of id
 
 /**
@@ -76,30 +76,30 @@ export const argTab = (
   setHints: (value: React.SetStateAction<string[]>) => void,
   hintsCmds: string[]
 ): string[] | undefined => {
-  // 1) if input is 'themes '
-  if (inputVal === "themes ") {
-    setInputVal(`themes set`);
+  // 1) if input is '/themes '
+  if (inputVal === "/themes ") {
+    setInputVal(`/themes set`);
     return [];
   }
 
-  // 2) if input is 'themes s'
+  // 2) if input is '/themes s'
   else if (
-    _.startsWith("themes", _.split(inputVal, " ")[0]) &&
+    _.startsWith("/themes", _.split(inputVal, " ")[0]) &&
     _.split(inputVal, " ")[1] !== "set" &&
     _.startsWith("set", _.split(inputVal, " ")[1])
   ) {
-    setInputVal(`themes set`);
+    setInputVal(`/themes set`);
     return [];
   }
 
-  // 3) if input is 'themes set '
-  else if (inputVal === "themes set ") {
+  // 3) if input is '/themes set '
+  else if (inputVal === "/themes set ") {
     setHints(_.keys(theme));
     return [];
   }
 
-  // 4) if input starts with 'themes set ' + theme
-  else if (_.startsWith(inputVal, "themes set ")) {
+  // 4) if input starts with '/themes set ' + theme
+  else if (_.startsWith(inputVal, "/themes set ")) {
     _.keys(theme).forEach(t => {
       if (_.startsWith(t, _.split(inputVal, " ")[2])) {
         hintsCmds = [...hintsCmds, t];
@@ -108,8 +108,8 @@ export const argTab = (
     return hintsCmds;
   }
 
-  // 5) if input is 'projects go '
-  else if (_.startsWith(inputVal, "projects go ")) {
+  // 5) if input is '/projects go '
+  else if (_.startsWith(inputVal, "/projects go ")) {
     return [];
   }
 };

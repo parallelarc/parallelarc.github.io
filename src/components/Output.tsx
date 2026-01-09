@@ -3,13 +3,9 @@ import About from "./commands/About";
 import Clear from "./commands/Clear";
 import Education from "./commands/Education";
 import Contact from "./commands/Contact";
-import Help from "./commands/Help";
 import Welcome from "./commands/Welcome";
-import History from "./commands/History";
 import Projects from "./commands/Projects";
 import Themes from "./commands/Themes";
-import ExportCmd from "./commands/Export";
-import Env from "./commands/Env";
 import Blog from "./commands/Blog";
 import { OutputContainer, UsageDiv } from "./styles/Output.styled";
 import { termContext } from "./Terminal";
@@ -22,7 +18,7 @@ type Props = {
 
 const Output: React.FC<Props> = ({ index, cmd }) => {
   const { arg } = useContext(termContext);
-  const commandsWithArgsAllowed = ["projects", "themes", "export"];
+  const commandsWithArgsAllowed = ["/projects", "/themes"];
 
   // return 'Usage: <cmd>' if the command should not receive arguments
   if (arg.length > 0 && !commandsWithArgsAllowed.includes(cmd)) {
@@ -33,18 +29,14 @@ const Output: React.FC<Props> = ({ index, cmd }) => {
     <OutputContainer data-testid={index === 0 ? "latest-output" : null}>
       {
         {
-          about: <About />,
-          clear: <Clear />,
-          education: <Education />,
-          contact: <Contact />,
-          help: <Help />,
-          history: <History />,
-          projects: <Projects />,
-          themes: <Themes />,
-          export: <ExportCmd />,
-          env: <Env />,
-          welcome: <Welcome />,
-          blog: <Blog />,
+          "/about": <About />,
+          "/clear": <Clear />,
+          "/education": <Education />,
+          "/contact": <Contact />,
+          "/projects": <Projects />,
+          "/themes": <Themes />,
+          "/welcome": <Welcome />,
+          "/blog": <Blog />,
         }[cmd]
       }
     </OutputContainer>

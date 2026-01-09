@@ -10,8 +10,6 @@ type CommandHistoryItemProps = {
   index: number;
   cmdHistory: string[];
   rerender: boolean;
-  clearHistory: () => void;
-  setEnv: (name: string, value: string) => void;
 };
 
 const CommandHistoryItem: React.FC<CommandHistoryItemProps> = ({
@@ -19,8 +17,6 @@ const CommandHistoryItem: React.FC<CommandHistoryItemProps> = ({
   index,
   cmdHistory,
   rerender,
-  clearHistory,
-  setEnv,
 }) => {
   const commandArray = useMemo(() => _.split(_.trim(cmdH), " "), [cmdH]);
   const normalizedCommand = useMemo(
@@ -38,10 +34,8 @@ const CommandHistoryItem: React.FC<CommandHistoryItemProps> = ({
       history: cmdHistory,
       rerender,
       index,
-      clearHistory,
-      setEnv,
     }),
-    [commandArray, cmdHistory, rerender, index, clearHistory, setEnv]
+    [commandArray, cmdHistory, rerender, index]
   );
 
   return (

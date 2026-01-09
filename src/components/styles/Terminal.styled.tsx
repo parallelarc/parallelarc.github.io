@@ -189,6 +189,38 @@ export const Hints = styled.span`
   margin-right: 0.875rem;
 `;
 
+// 命令列表容器（垂直布局，与 ShortcutsGrid 相同样式）
+export const CommandsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-top: 0.25rem;
+  padding-left: 0.5rem;
+  font-size: 0.85rem;
+  color: ${({ theme }) => theme.colors?.text[400] || "rgba(255, 255, 255, 0.35)"};
+  opacity: 0.8;
+`;
+
+// 命令项（用于斜杠命令列表）
+export const CommandItem = styled.div<{ $selected: boolean }>`
+  white-space: nowrap;
+  color: ${({ $selected }) => $selected ? "rgb(168, 85, 247)" : "rgba(255, 255, 255, 0.35)"};
+  display: flex;
+  align-items: center;
+
+  &:hover {
+    color: "rgba(255, 255, 255, 0.5)";
+  }
+`;
+
+// 命令名
+export const CommandName = styled.span`
+  display: inline-block;
+  min-width: 6rem;
+  color: inherit;
+  margin-right: 1rem;
+`;
+
 const scanline = keyframes`
   0% {
     opacity: 0.4;

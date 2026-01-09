@@ -22,6 +22,7 @@ import {
   InputHint,
   ShortcutsGrid,
   ShortcutItem,
+  CommandsList,
   Wrapper,
   HiddenInput,
   HiddenTextarea,
@@ -29,6 +30,8 @@ import {
   DisplayText,
   BlockCursor,
   CursorChar,
+  CommandItem,
+  CommandName,
 } from "./styles/Terminal.styled";
 import {
   ClaudeInputContainer,
@@ -45,22 +48,18 @@ type Command = {
 }[];
 
 export const commands: Command = [
-  { cmd: "about", desc: "about me", tab: 8 },
-  { cmd: "blog", desc: "open blog interface", tab: 8 },
-  { cmd: "clear", desc: "clear the terminal", tab: 8 },
-  { cmd: "education", desc: "my education background", tab: 4 },
+  { cmd: "/about", desc: "about me", tab: 8 },
+  { cmd: "/blog", desc: "open blog interface", tab: 8 },
+  { cmd: "/clear", desc: "clear the terminal", tab: 8 },
+  { cmd: "/education", desc: "my education background", tab: 4 },
   {
-    cmd: "contact",
+    cmd: "/contact",
     desc: "feel free to reach out",
     tab: 6
   },
-  { cmd: "help", desc: "check available commands", tab: 9 },
-  { cmd: "history", desc: "view command history", tab: 6 },
-  { cmd: "export", desc: "set environment variables", tab: 7 },
-  { cmd: "env", desc: "view environment variables", tab: 10 },
-  { cmd: "projects", desc: "some work, in no particular order", tab: 5 },
-  { cmd: "themes", desc: "check available themes", tab: 7 },
-  { cmd: "welcome", desc: "display hero section", tab: 6 },
+  { cmd: "/projects", desc: "some work, in no particular order", tab: 5 },
+  { cmd: "/themes", desc: "check available themes", tab: 7 },
+  { cmd: "/welcome", desc: "display hero section", tab: 6 },
 ];
 
 export type Term = {
@@ -68,8 +67,6 @@ export type Term = {
   history: string[];
   rerender: boolean;
   index: number;
-  clearHistory?: () => void;
-  setEnv?: (name: string, value: string) => void;
 };
 
 export const termContext = createContext<Term>({
@@ -77,7 +74,6 @@ export const termContext = createContext<Term>({
   history: [],
   rerender: false,
   index: 0,
-  setEnv: undefined,
 });
 
 const Terminal = () => {
@@ -87,10 +83,11 @@ const Terminal = () => {
   const [inputVal, setInputVal] = useState("");
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [cursorPosition, setCursorPosition] = useState(0);
-  const [cmdHistory, setCmdHistory] = useState<string[]>(["welcome"]);
+  const [cmdHistory, setCmdHistory] = useState<string[]>(["/welcome"]);
   const [rerender, setRerender] = useState(false);
   const [hints, setHints] = useState<string[]>([]);
   const [pointer, setPointer] = useState(-1);
+  const [selectedCommandIndex, setSelectedCommandIndex] = useState(0);
   const [showCopyToast, setShowCopyToast] = useState(false);
   const [isCrashed, setIsCrashed] = useState(false);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -129,17 +126,8 @@ const Terminal = () => {
     setRerender(true);
     setHints([]);
     setPointer(-1);
+    setSelectedCommandIndex(-1);
     setCursorPosition(0);
-  };
-
-  const clearHistory = () => {
-    setCmdHistory([]);
-    setHints([]);
-    setCursorPosition(0);
-  };
-
-  const setEnvVar = (name: string, value: string) => {
-    // Environment variable setting is no longer supported
   };
 
   const triggerCrash = () => {
@@ -147,6 +135,7 @@ const Terminal = () => {
     setInputVal("");
     setHints([]);
     setPointer(-1);
+    setSelectedCommandIndex(-1);
     setCursorPosition(0);
     crashTimerRef.current = setTimeout(() => {
       setShowCopyToast(false);
@@ -162,21 +151,45 @@ const Terminal = () => {
       return;
     }
     const ctrlI = e.ctrlKey && e.key.toLowerCase() === "i";
-    const ctrlL = e.ctrlKey && e.key.toLowerCase() === "l";
     const ctrlC = e.ctrlKey && e.key.toLowerCase() === "c";
+    const isSlashMode = inputVal === "/";
 
     if (ctrlC) {
       e.preventDefault();
       setInputVal("");
       setHints([]);
       setPointer(-1);
+      setSelectedCommandIndex(-1);
       setCursorPosition(0);
       return;
+    }
+
+    // Escape - 退出命令选择模式
+    if (e.key === "Escape") {
+      if (isSlashMode && selectedCommandIndex >= 0) {
+        e.preventDefault();
+        setSelectedCommandIndex(-1);
+        return;
+      }
     }
 
     // Shift + Enter - 让 textarea 默认处理换行
     if (e.key === "Enter" && e.shiftKey) {
       // 不阻止默认行为，让 textarea 自然换行
+      return;
+    }
+
+    // 斜杠模式下按 Enter，执行选中的命令
+    if (isSlashMode && e.key === "Enter") {
+      e.preventDefault();
+      const selectedCmd = commands[selectedCommandIndex]?.cmd;
+      if (selectedCmd) {
+        // 直接添加到历史记录，绕过 inputVal 的异步问题
+        setCmdHistory([selectedCmd, ...cmdHistory]);
+        setInputVal("");
+        setRerender(true);
+        setSelectedCommandIndex(0);
+      }
       return;
     }
 
@@ -187,7 +200,47 @@ const Terminal = () => {
       return;
     }
 
-    // if Tab or Ctrl + I
+    // 命令列表导航模式
+    if (isSlashMode) {
+      // ArrowUp - 在命令列表中向上选择（循环）
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setSelectedCommandIndex(prev => prev <= 0 ? commands.length - 1 : prev - 1);
+        return;
+      }
+
+      // ArrowDown - 在命令列表中向下选择（循环）
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setSelectedCommandIndex(prev => prev >= commands.length - 1 ? 0 : prev + 1);
+        return;
+      }
+
+      // Tab - 补全选中的命令
+      if (e.key === "Tab" || ctrlI) {
+        e.preventDefault();
+        if (selectedCommandIndex >= 0) {
+          const selectedCmd = commands[selectedCommandIndex]?.cmd;
+          if (selectedCmd) {
+            setInputVal(selectedCmd);
+            setCursorPosition(selectedCmd.length);
+            setSelectedCommandIndex(-1);
+            if (inputRef.current) {
+              inputRef.current.setSelectionRange(selectedCmd.length, selectedCmd.length);
+            }
+          }
+        }
+        return;
+      }
+
+      // ArrowLeft/Right - 在有选中命令时禁用
+      if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && selectedCommandIndex >= 0) {
+        e.preventDefault();
+        return;
+      }
+    }
+
+    // 普通模式下的 Tab 自动补全
     if (e.key === "Tab" || ctrlI) {
       e.preventDefault();
       if (!inputVal) return;
@@ -222,54 +275,6 @@ const Terminal = () => {
         }
         setHints([]);
       }
-    }
-
-    // if Ctrl + L
-    if (ctrlL) {
-      clearHistory();
-    }
-
-    // Go previous cmd
-    if (e.key === "ArrowUp") {
-      if (pointer + 1 >= cmdHistory.length) return;
-
-      const newVal = cmdHistory[pointer + 1];
-      setInputVal(newVal);
-      const newLen = newVal.length;
-      setCursorPosition(newLen);
-      // 同步原生输入框的光标位置
-      if (inputRef.current) {
-        inputRef.current.setSelectionRange(newLen, newLen);
-      }
-      setPointer(prevState => prevState + 1);
-      inputRef?.current?.blur();
-    }
-
-    // Go next cmd
-    if (e.key === "ArrowDown") {
-      if (pointer < 0) return;
-
-      if (pointer === 0) {
-        setInputVal("");
-        setPointer(-1);
-        setCursorPosition(0);
-        // 同步原生输入框的光标位置
-        if (inputRef.current) {
-          inputRef.current.setSelectionRange(0, 0);
-        }
-        return;
-      }
-
-      const newVal = cmdHistory[pointer - 1];
-      setInputVal(newVal);
-      const newLen = newVal.length;
-      setCursorPosition(newLen);
-      // 同步原生输入框的光标位置
-      if (inputRef.current) {
-        inputRef.current.setSelectionRange(newLen, newLen);
-      }
-      setPointer(prevState => prevState - 1);
-      inputRef?.current?.blur();
     }
 
     // Move cursor left
@@ -322,6 +327,13 @@ const Terminal = () => {
     }, 1);
     return () => clearTimeout(timer);
   }, [inputRef, pointer]);
+
+  // 监听 inputVal 变化，输入 "/" 时选中第一条命令
+  useEffect(() => {
+    if (inputVal === "/") {
+      setSelectedCommandIndex(0);
+    }
+  }, [inputVal]);
 
   useEffect(() => {
     const handleMouseUp = () => {
@@ -536,7 +548,19 @@ const Terminal = () => {
             />
           </ClaudeInputArea>
           <ClaudeBottomLine />
-          {inputVal === "?" ? (
+          {inputVal === "/" ? (
+            <CommandsList aria-hidden="true">
+              {commands.map(({ cmd, desc }, index) => (
+                <CommandItem
+                  key={cmd}
+                  $selected={index === selectedCommandIndex}
+                >
+                  <CommandName>{cmd}</CommandName>
+                  <span>{desc}</span>
+                </CommandItem>
+              ))}
+            </CommandsList>
+          ) : inputVal === "?" ? (
             <ShortcutsGrid aria-hidden="true">
               <ShortcutItem>/ for commands</ShortcutItem>
               <ShortcutItem>? for help</ShortcutItem>
@@ -557,8 +581,6 @@ const Terminal = () => {
           index={index}
           cmdHistory={cmdHistory}
           rerender={rerender}
-          clearHistory={clearHistory}
-          setEnv={setEnvVar}
         />
       ))}
     </Wrapper>

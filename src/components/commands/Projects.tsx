@@ -350,7 +350,8 @@ const projects: Project[] = [
   {
     id: 1,
     title: "Terminal Portfolio",
-    desc: "A terminal-style personal portfolio website built with React + TypeScript. Visitors interact through commands like 'about', 'projects', and 'themes', turning a portfolio into a CLI session.",
+    desc: `This project. A minimalist terminal interface pretending to be a portfolio.
+No buttons, no noise — just commands, output, and a trace of how I think.`,
     url: "https://github.com/parallelarc/parallelarc.github.io",
   },
   {
