@@ -2,7 +2,7 @@ import { useContext, useEffect } from "react";
 import _ from "lodash";
 import { themeContext } from "../../App";
 import { Wrapper } from "../styles/Output.styled";
-import { ThemeSpan, ThemesWrapper } from "../styles/Themes.styled";
+import { ThemeSpan, ThemesWrapper } from "../styles/Commands.styled";
 import {
   checkThemeSwitch,
   getCurrentCmdArry,
@@ -30,10 +30,9 @@ const Themes: React.FC = () => {
   }, [arg, rerender, currentCommand]);
 
   /* ===== check arg is valid ===== */
-  const checkArg = () =>
-    isArgInvalid(arg, "set", myThemes) ? <Usage cmd="themes" /> : null;
+  const checkArg = () => (isArgInvalid(arg, "set", myThemes) ? <Usage /> : null);
 
-  return arg.length > 0 || arg.length > 2 ? (
+  return arg.length > 0 ? (
     checkArg()
   ) : (
     <Wrapper data-testid="themes">
@@ -42,7 +41,7 @@ const Themes: React.FC = () => {
           <ThemeSpan key={myTheme}>{myTheme}</ThemeSpan>
         ))}
       </ThemesWrapper>
-      <Usage cmd="themes" marginY />
+      <Usage marginY />
     </Wrapper>
   );
 };

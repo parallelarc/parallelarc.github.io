@@ -1,78 +1,97 @@
 import {
   Cmd,
   HeroContainer,
-  Link,
+  Instruction,
   PreImg,
   PreName,
   PreNameMobile,
   PreWrapper,
+  RainbowText,
   Seperator,
-} from "../styles/Welcome.styled";
+} from "../styles/Commands.styled";
 
 const Welcome: React.FC = () => {
   return (
     <HeroContainer data-testid="welcome">
       <div className="info-section">
         <PreName>
-          {`        
-    _____       __     _   __      _            
-   / ___/____ _/ /_   / | / /___ _(_)___  ____ _
-   \\__ \\/ __ \`/ __/  /  |/ / __ \`/ / __  / __ \`/
-  ___/ / /_/ / /_   / /|  / /_/ / / / / / /_/ / 
- /____/\\__,_/\\___/ /_/ |_/\\__,_/_/_/ /_/\\__, /  
-                                       /____/   
-          `}
+          {String.raw`
+      ___         ___           ___     
+     /  /\       /  /\         /__/|    
+    /  /:/_     /  /::\       |  |:|    
+   /  /:/ /\   /  /:/\:\      |  |:|    
+  /  /:/ /:/  /  /:/  \:\   __|__|:|    
+ /__/:/ /:/  /__/:/ \__\:\ /__/::::\____
+ \  \:\/:/   \  \:\ /  /:/    ~\~~\::::/
+  \  \::/     \  \:\  /:/      |~~|:|~~ 
+   \  \:\      \  \:\/:/       |  |:|   
+    \  \:\      \  \::/        |  |:|   
+     \__\/       \__\/         |__|/    
+
+`}
         </PreName>
         <PreWrapper>
           <PreNameMobile>
-            {`
-    ____     __          
-   / __/__ _/ /_         
-  _\\ \\/ _ \`/ __/         
- /___/\\_,_/\\__/          
-    _  __     _          
-   / |/ /__ _(_)__  ___ _
-  /    / _ \`/ / _ \\/ _ \`/
- /_/|_/\\_,_/_/_//_/\\_, / 
-                  /___/  
- 
+            {String.raw`
+   __          
+  / _|         
+ | |_ _____  __
+ |  _/ _ \ \/ /
+ | || (_) >  < 
+ |_| \___/_/\_\
           `}
           </PreNameMobile>
         </PreWrapper>
-        <div>Welcome to my terminal portfolio. (Version 1.3.1)</div>
+        <RainbowText>
+          I’m a friend of AI.
+          <br />
+          Welcome to my terminal portfolio.
+          <br />I enjoy philosophy and games, and care more about brain–computer
+          interfaces and immortality than about living on Mars.
+        </RainbowText>
         <Seperator>----</Seperator>
-        <div>
-          This project's source code can be found in this project's{" "}
-          <Link href="https://github.com/satnaing/terminal-portfolio">
-            GitHub repo
-          </Link>
-          .
-        </div>
-        <Seperator>----</Seperator>
-        <div>
-          For a list of available commands, type `<Cmd>help</Cmd>`.
-        </div>
+        <Instruction>
+          For a list of available commands, type `<Cmd>help</Cmd>`. <br />
+          Use `<Cmd>Tab</Cmd>` to autocomplete commands.
+        </Instruction>
       </div>
       <div className="illu-section">
         <PreImg>
           {`
-                       ,##,,eew,
-                     ,##############C
-                  a###############@##
-                 7####^\`^"7W7^"@####
-                 @#@b\`         ^@#@^
-                  ##^,,,,   ,,,,^#^
-                 ,,@######"#######=
-                  .''555"\` '5555b|
-                  T"@  ,,,^,mg,@,*
-                     %p||\`~~'.#\`
-                      ^Wp  ,#T
-                     :b''@@b^}
-                  ,^     \` 'b 3-
-              .<\` 'p   ^v   #   b   *.
-            {      }   #"GpGb   [
-            C      3 * @#######Nl      \`
-           '            ^@##b     ($    !
+          .:.                                               
+         JB#BGJ^                             .~7YGP~        
+        7&GPG####Y:                        ^5##GG&@#^       
+        B#7!P&&@&&&P^                   .7B&&&&&GY#@Y       
+        B#J^^P&&&&&##P^.              .?#&&&&&&P!7#&P       
+        ?&P^~P&&@&&#GBBJ7J5YYYYJJJY5P?G&#&&&&&B?^Y&&!       
+         P#?!5#&&&&&P5GBJYGGPPPPPPPG5G#B#&&&&#G7!G&G        
+         ^BBYYPB&&&#Y7GBYPGPPPPPPPGPG#Y5B&&&#G?~?P#!        
+         :&&B?!7JPB#BY5#PGPPGGPPGGGBBYPB###&&BJ!?#&.        
+         .&&#Y7?Y5GB##GGBPPPGGGPGGGGPGBBBG5PJ!~!5&P         
+          !#GYY5PPPPPPGGPPPPPPPPPPPPPGGGGBGPJ77J#&^         
+          :JJJ55YY55555PGPPPPPP55PPPPPPGGGP55YYPB7          
+         .J5YY5555P55555PPPPP555PPPPPPPGPPP5YYYYJ7.         
+         ?YYYYYYYJ?JJ!JJ5PPP5555YJYJ5YY5P55P5Y555YJ^        
+       .!YY5PPGPPPP5PJ!?5PPPPPP577JJ5JYYPPP55YY55555!       
+       ?55PB&&&&&&##GPJ5GPPPPGPJ?YPGPG#######GP55Y5557      
+       :YG&&&&&&&&&&&#BBGGGGGBG5?JP#&&@&@@@@@&#P555557      
+       :G&&&&&&&&&&&&&##BBBB#B##GP#&&&&&&&&&&&&#PY555^      
+       ^!5B&&&&&&&&&#&&#&#####&&&#&&&&&&&&&&&&&&#G55Y7      
+      .!!!7YB&&&&&&&&&&BPPPGB&&&B#&&&&&&&&&&&&&&#GYJ7!      
+       :77!!?5B&&&&&&&#7!~!~7#&#JG&&&&&&&&&&&&#GPJ77J~      
+        .7777?YB&&&&&&&5?~7JG&#PPB#&&&&&&&&&&#G5?7??J.      
+         .777!!?Y5#&&&&&#GB#&&&#&&&&#BPJY5JJ?7!!7????       
+          .~!!!!~~75#@&&&&&&&&&&&#PJ!~^^~^^~!!!77?7~.       
+            ^!!!!~~~!5GBB55GGBGY7~^~~~^~~~^~!!7!7.          
+             .~!!~~~~~~~~^^~~~^^^~^~^^^~~^~~!!7!7           
+               .~~!!!~~~~^^~~^^~~~^^^^^~~^~!!!7!7           
+                  .:^^~~^^~~~^~^~^~~^^^~~~~!!!!!~           
+                         .!^~~^~~~~~^^^^~~~~!!!!^           
+                         ^!~~~~~~~~~^^^^~~~~~!!!:           
+                         7~~~~~~~~~~~~~~~~~~~!!!.           
+                        .7!!~~~~~~~^^~~~~~~~~!~!.           
+                         ^!!!!!!~~~~~~~~~!!!!!!~            
+                             .:^^~!~!~!!!!!~~~^.            
          `}
         </PreImg>
       </div>

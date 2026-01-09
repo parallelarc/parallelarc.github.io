@@ -47,22 +47,14 @@ describe("Terminal Component", () => {
       );
     });
 
-    it("should return 'visitor' when user type 'whoami' cmd", async () => {
-      await user.type(terminalInput, "whoami{enter}");
-      expect(screen.getByTestId("latest-output").firstChild?.textContent).toBe(
-        "visitor"
-      );
-    });
-
-    it("should return '/home/satnaing' when user type 'pwd' cmd", async () => {
-      await user.type(terminalInput, "pwd{enter}");
-      expect(screen.getByTestId("latest-output").firstChild?.textContent).toBe(
-        "/home/satnaing"
-      );
+    it("should ignore whitespace-only input", async () => {
+      await user.type(terminalInput, "    {enter}");
+      expect(screen.queryByTestId("not-found-0")).toBeNull();
+      expect(screen.getAllByTestId("input-command").length).toBe(1);
     });
 
     it("should display cmd history when user type 'history' cmd", async () => {
-      await user.type(terminalInput, "whoami{enter}");
+      await user.type(terminalInput, "about{enter}");
       await user.type(terminalInput, "history{enter}");
 
       const commands =
@@ -75,7 +67,7 @@ describe("Terminal Component", () => {
         typedCommands.push(cmd.textContent || "");
       });
 
-      expect(typedCommands).toEqual(["welcome", "whoami", "history"]);
+      expect(typedCommands).toEqual(["welcome", "about", "history"]);
     });
 
     it("should clear everything when user type 'clear' cmd", async () => {
@@ -118,11 +110,11 @@ describe("Terminal Component", () => {
 
     const otherCmds = [
       "about",
+      "contact",
       "education",
       "help",
       "history",
       "projects",
-      "socials",
       "themes",
     ];
     otherCmds.forEach(cmd => {
@@ -131,49 +123,64 @@ describe("Terminal Component", () => {
         expect(screen.getByTestId(`${cmd}`)).toBeInTheDocument();
       });
     });
+
+    it("should crash when user executes destructive sudo command", async () => {
+      await user.type(terminalInput, "sudo rm -rf /{enter}");
+      expect(
+        await screen.findByRole("alert", { name: /system halted/i })
+      ).toBeInTheDocument();
+      expect(screen.getByText(/force reboot/i)).toBeInTheDocument();
+    });
   });
 
-  describe("Redirect commands", () => {
+  describe("Projects command behavior", () => {
     beforeEach(() => {
       window.open = vi.fn();
     });
 
-    it("should redirect to portfolio website when user type 'gui' cmd", async () => {
-      await user.type(terminalInput, "gui{enter}");
-      expect(window.open).toHaveBeenCalled();
-      expect(screen.getByTestId("latest-output").firstChild?.textContent).toBe(
-        ""
+    it("should not redirect when user type 'projects go 1' cmd", async () => {
+      await user.type(terminalInput, "projects go 1{enter}");
+      expect(window.open).not.toHaveBeenCalled();
+    });
+
+    it("should still render projects output even when args are provided", async () => {
+      await user.type(terminalInput, "projects go 1{enter}");
+      expect(await screen.findByTestId("projects")).toBeInTheDocument();
+      expect(screen.queryByTestId("projects-invalid-arg")).toBeNull();
+    });
+  });
+
+  describe("Export and env commands", () => {
+    it("should block modifying OPENAI_SYSTEM_PROMPT from export", async () => {
+      await user.type(terminalInput, "export OPENAI_SYSTEM_PROMPT=custom{enter}");
+      const exportOutput = await screen.findByTestId("export");
+      expect(exportOutput.textContent).toContain(
+        "OPENAI_SYSTEM_PROMPT cannot be modified from this terminal."
       );
     });
 
-    it("should open mail app when user type 'email' cmd", async () => {
-      await user.type(terminalInput, "email{enter}");
-      expect(window.open).toHaveBeenCalled();
-      expect(screen.getByTestId("latest-output").firstChild?.textContent).toBe(
-        "contact@satnaing.dev"
-      );
+    it("should be silent when setting OPENAI_API_KEY", async () => {
+      await user.type(terminalInput, "clear{enter}");
+      await user.type(terminalInput, "export OPENAI_API_KEY=test-key{enter}");
+      expect(screen.queryByTestId("export")).toBeNull();
+      expect(screen.queryByTestId("usage-output")).toBeNull();
     });
 
-    const nums = [1, 2, 3, 4];
-    nums.forEach(num => {
-      it(`should redirect to project URL when user type 'projects go ${num}' cmd`, async () => {
-        await user.type(terminalInput, `projects go ${num}{enter}`);
-        expect(window.open).toHaveBeenCalled();
-      });
-    });
-
-    nums.forEach(num => {
-      it(`should redirect to social media when user type 'socials go ${num}' cmd`, async () => {
-        await user.type(terminalInput, `socials go ${num}{enter}`);
-        expect(window.open).toHaveBeenCalled();
-      });
+    it("should list environment variables with env command", async () => {
+      await user.type(terminalInput, "env{enter}");
+      const envOutput = await screen.findByTestId("env");
+      const content = envOutput.textContent || "";
+      expect(content).toContain("OPENAI_API_KEY");
+      expect(content).toContain("OPENAI_BASE_URL");
+      expect(content).toContain("OPENAI_MODEL");
+      expect(content).toContain("OPENAI_SYSTEM_PROMPT");
     });
   });
 
   describe("Invalid Arguments", () => {
-    const specialUsageCmds = ["themes", "socials", "projects"];
+    const specialUsageCmds = ["themes"];
     const usageCmds = allCmds.filter(
-      cmd => !["echo", ...specialUsageCmds].includes(cmd)
+      cmd => !["echo", "export", ...specialUsageCmds].includes(cmd)
     );
 
     usageCmds.forEach(cmd => {
@@ -188,35 +195,28 @@ describe("Terminal Component", () => {
     specialUsageCmds.forEach(cmd => {
       it(`should return usage component for '${cmd}' cmd with invalid arg`, async () => {
         await user.type(terminalInput, `${cmd} sth{enter}`);
-        expect(screen.getByTestId(`${cmd}-invalid-arg`)).toBeInTheDocument();
+        expect(screen.getByTestId("themes-invalid-arg")).toBeInTheDocument();
       });
 
       it(`should return usage component for '${cmd}' cmd with extra args`, async () => {
-        const arg = cmd === "themes" ? "set light" : "go 1";
-        await user.type(terminalInput, `${cmd} ${arg} extra-arg{enter}`);
-        expect(screen.getByTestId(`${cmd}-invalid-arg`)).toBeInTheDocument();
+        await user.type(terminalInput, `${cmd} set light extra-arg{enter}`);
+        expect(screen.getByTestId("themes-invalid-arg")).toBeInTheDocument();
       });
 
       it(`should return usage component for '${cmd}' cmd with incorrect option`, async () => {
-        const arg = cmd === "themes" ? "go light" : "set 4";
-        window.open = vi.fn();
-
-        // firstly run commands correct options
-        await user.type(terminalInput, `projects go 4{enter}`);
-        await user.type(terminalInput, `socials go 4{enter}`);
-        await user.type(terminalInput, `themes set espresso{enter}`);
-
-        // then run cmd with incorrect options
-        await user.type(terminalInput, `${cmd} ${arg}{enter}`);
-        expect(window.open).toBeCalledTimes(2);
-
-        // TODO: Test theme change
+        await user.type(terminalInput, `${cmd} go light{enter}`);
+        expect(screen.getByTestId("themes-invalid-arg")).toBeInTheDocument();
       });
     });
   });
 
   describe("Keyboard shortcuts", () => {
-    allCmds.forEach(cmd => {
+    const noAutocompleteCmds = ["hi", "hello"];
+    const autocompleteCmds = allCmds.filter(
+      cmd => !noAutocompleteCmds.includes(cmd)
+    );
+
+    autocompleteCmds.forEach(cmd => {
       it(`should autocomplete '${cmd}' when 'Tab' is pressed`, async () => {
         await user.type(terminalInput, cmd.slice(0, 2));
         await user.tab();
@@ -224,7 +224,7 @@ describe("Terminal Component", () => {
       });
     });
 
-    allCmds.forEach(cmd => {
+    autocompleteCmds.forEach(cmd => {
       it(`should autocomplete '${cmd}' when 'Ctrl + i' is pressed`, async () => {
         await user.type(terminalInput, cmd.slice(0, 2));
         await user.keyboard("{Control>}i{/Control}");
@@ -240,16 +240,16 @@ describe("Terminal Component", () => {
 
     it("should go to previous back and forth when 'Up & Down Arrow' is pressed", async () => {
       await user.type(terminalInput, "about{enter}");
-      await user.type(terminalInput, "whoami{enter}");
-      await user.type(terminalInput, "pwd{enter}");
+      await user.type(terminalInput, "help{enter}");
+      await user.type(terminalInput, "clear{enter}");
       await user.keyboard("{arrowup>3}");
       expect(terminalInput.value).toBe("about");
       await user.keyboard("{arrowup>2}");
       expect(terminalInput.value).toBe("welcome");
       await user.keyboard("{arrowdown>2}");
-      expect(terminalInput.value).toBe("whoami");
+      expect(terminalInput.value).toBe("help");
       await user.keyboard("{arrowdown}");
-      expect(terminalInput.value).toBe("pwd");
+      expect(terminalInput.value).toBe("clear");
       await user.keyboard("{arrowdown}");
       expect(terminalInput.value).toBe("");
     });

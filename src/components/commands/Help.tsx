@@ -4,20 +4,22 @@ import {
   CmdList,
   HelpWrapper,
   KeyContainer,
-} from "../styles/Help.styled";
+} from "../styles/Commands.styled";
 import { commands } from "../Terminal";
 import { generateTabs } from "../../utils/funcs";
 
 const Help: React.FC = () => {
   return (
     <HelpWrapper data-testid="help">
-      {commands.map(({ cmd, desc, tab }) => (
+      {commands
+        .filter(({ cmd }) => cmd !== "hi" && cmd !== "hello")
+        .map(({ cmd, desc, tab }) => (
         <CmdList key={cmd}>
           <Cmd>{cmd}</Cmd>
           {generateTabs(tab)}
           <CmdDesc>- {desc}</CmdDesc>
         </CmdList>
-      ))}
+        ))}
       <KeyContainer>
         <div>Tab or Ctrl + i&nbsp; =&gt; autocompletes the command</div>
         <div>Up Arrow {generateTabs(5)} =&gt; go back to previous command</div>

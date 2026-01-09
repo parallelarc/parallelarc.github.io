@@ -1,7 +1,7 @@
 {
-  "name": "Terminal Portfolio by SN",
-  "short_name": "Terminal",
-  "description": "Sat Naing's terminal portfolio website coded with ReactJS.",
+  "name": "whoami — an interactive terminal portfolio",
+  "short_name": "whoami",
+  "description": "Foxiv's terminal-style portfolio for robotics, algorithms, and AI explorations.",
   "start_url": "/",
   "icons": [
     {
