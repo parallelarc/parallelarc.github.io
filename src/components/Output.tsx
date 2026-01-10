@@ -1,4 +1,8 @@
 import React, { useContext } from "react";
+import { OutputContainer, UsageDiv } from "./styles/Output.styled";
+import { termContext } from "./Terminal";
+
+// Import existing command components (will be migrated in Phase 3)
 import About from "./commands/About";
 import Clear from "./commands/Clear";
 import Education from "./commands/Education";
@@ -7,12 +11,9 @@ import Welcome from "./commands/Welcome";
 import Projects from "./commands/Projects";
 import Themes from "./commands/Themes";
 import Blog from "./commands/Blog";
-import { OutputContainer, UsageDiv } from "./styles/Output.styled";
-import { termContext } from "./Terminal";
 
-const COMMANDS_WITH_ARGS = ["projects", "themes"] as const;
-
-const COMMAND_COMPONENTS = {
+// Legacy command components mapping (will be replaced by registry in Phase 3)
+const LEGACY_COMMAND_COMPONENTS = {
   about: About,
   clear: Clear,
   education: Education,
@@ -22,6 +23,9 @@ const COMMAND_COMPONENTS = {
   welcome: Welcome,
   blog: Blog,
 } as const;
+
+// Commands that accept arguments
+const COMMANDS_WITH_ARGS = ["projects", "themes"] as const;
 
 type Props = {
   index: number;
@@ -36,7 +40,7 @@ function Output({ index, cmd }: Props) {
     return <UsageDiv data-testid="usage-output">Usage: {cmd}</UsageDiv>;
   }
 
-  const CommandComponent = COMMAND_COMPONENTS[cmd as keyof typeof COMMAND_COMPONENTS];
+  const CommandComponent = LEGACY_COMMAND_COMPONENTS[cmd as keyof typeof LEGACY_COMMAND_COMPONENTS];
 
   return (
     <OutputContainer data-testid={index === 0 ? "latest-output" : undefined}>
