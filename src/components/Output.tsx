@@ -2,15 +2,15 @@ import React, { useContext } from "react";
 import { OutputContainer, UsageDiv } from "./styles/Output.styled";
 import { termContext } from "./Terminal";
 
-// Import existing command components (will be migrated in Phase 3)
-import About from "./commands/About";
-import Clear from "./commands/Clear";
-import Education from "./commands/Education";
-import Contact from "./commands/Contact";
-import Welcome from "./commands/Welcome";
-import Projects from "./commands/Projects";
-import Themes from "./commands/Themes";
-import Blog from "./commands/Blog";
+// Import existing command components
+import About from "../commands/about/index";
+import Clear from "../commands/clear/index";
+import Education from "../commands/education/index";
+import Contact from "../commands/contact/index";
+import Welcome from "../commands/welcome/index";
+import Projects from "../commands/projects/index";
+import Themes from "../commands/themes/index";
+import Blog from "../commands/blog/index";
 
 // Legacy command components mapping (will be replaced by registry in Phase 3)
 const LEGACY_COMMAND_COMPONENTS = {

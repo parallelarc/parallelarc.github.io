@@ -80,7 +80,7 @@ export const MobileBr = styled.br`
 export const CommandBlock = styled.div`
   display: inline-flex;
   align-items: center;
-  padding: 0.35rem 0.6rem;
+  padding: 0.35rem 0.4rem 0.35rem 0.15rem;
   border-radius: 2px;
   background: rgba(148, 163, 184, 0.15);
   margin-bottom: 0.1rem;
