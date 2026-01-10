@@ -46,8 +46,8 @@ export const commands: Command[] = [
   { cmd: "about", desc: "about me", tab: 8 },
   { cmd: "blog", desc: "open blog interface", tab: 8 },
   { cmd: "clear", desc: "clear the terminal", tab: 8 },
-  { cmd: "education", desc: "my education background", tab: 4 },
   { cmd: "contact", desc: "feel free to reach out", tab: 6 },
+  { cmd: "education", desc: "my education background", tab: 4 },
   { cmd: "projects", desc: "some work, in no particular order", tab: 5 },
   { cmd: "themes", desc: "check available themes", tab: 7 },
   { cmd: "welcome", desc: "display hero section", tab: 6 },
@@ -169,7 +169,7 @@ function Terminal() {
       e.preventDefault();
       const selectedCmd = filteredCommands[selectedCommandIndex]?.cmd;
       if (selectedCmd) {
-        setCmdHistory([selectedCmd, ...cmdHistory]);
+        setCmdHistory(["/" + selectedCmd, ...cmdHistory]);
         setInputVal("");
         setRerender(true);
         setSelectedCommandIndex(0);
@@ -210,8 +210,8 @@ function Terminal() {
         if (selectedCommandIndex >= 0) {
           const selectedCmd = filteredCommands[selectedCommandIndex]?.cmd;
           if (selectedCmd) {
-            setInputVal(selectedCmd);
-            syncCursorPosition(selectedCmd.length);
+            setInputVal("/" + selectedCmd);
+            syncCursorPosition(selectedCmd.length + 1);
             setSelectedCommandIndex(-1);
           }
         }
@@ -444,7 +444,7 @@ function Terminal() {
                   key={cmd}
                   $selected={index === selectedCommandIndex}
                 >
-                  <CommandName>{cmd}</CommandName>
+                  <CommandName>/{cmd}</CommandName>
                   <span>{desc}</span>
                 </CommandItem>
               ))}

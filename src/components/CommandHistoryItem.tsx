@@ -1,8 +1,9 @@
 import { useMemo } from "react";
 import Output from "./Output";
-import TermInfo from "./TermInfo";
 import { termContext, commands } from "./Terminal";
-import { CmdNotFound, Empty, MobileBr, MobileSpan } from "./styles/Terminal.styled";
+import { Empty, MobileBr, MobileSpan, CommandBlock } from "./styles/Terminal.styled";
+import { HistoryPrompt } from "./styles/TerminalInfo.styled";
+import { OutputContainer } from "./styles/Output.styled";
 
 type CommandHistoryItemProps = {
   cmdH: string;
@@ -36,12 +37,12 @@ function CommandHistoryItem({
 
   return (
     <div>
-      <div>
-        <TermInfo />
+      <CommandBlock>
+        <HistoryPrompt>❯</HistoryPrompt>
         <MobileBr />
         <MobileSpan>&#62;</MobileSpan>
         <span data-testid="input-command">{cmdH}</span>
-      </div>
+      </CommandBlock>
       {validCommand ? (
         <termContext.Provider value={contextValue}>
           <Output index={index} cmd={normalizedCommand} />
@@ -49,9 +50,9 @@ function CommandHistoryItem({
       ) : cmdH === "" ? (
         <Empty />
       ) : (
-        <CmdNotFound data-testid={`not-found-${index}`}>
+        <OutputContainer data-testid={`not-found-${index}`}>
           command not found: {cmdH}
-        </CmdNotFound>
+        </OutputContainer>
       )}
     </div>
   );

@@ -44,6 +44,14 @@ export const ClaudePrompt = styled.span`
   margin-right: 0.5rem;
 `;
 
+// 历史命令中的提示符 - 暗淡的绿色
+export const HistoryPrompt = styled.span`
+  color: rgba(5, 206, 145, 0.5);
+  font-weight: 500;
+  user-select: none;
+  margin-right: 0.5rem;
+`;
+
 // 下横线
 export const ClaudeBottomLine = styled.div`
   height: 1px;

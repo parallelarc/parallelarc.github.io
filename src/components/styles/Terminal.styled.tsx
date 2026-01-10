@@ -1,4 +1,5 @@
 import styled, { keyframes } from "styled-components";
+import { BaseOutputStyle } from "./Output.styled";
 
 export const Wrapper = styled.div`
   position: relative;
@@ -56,11 +57,6 @@ export const CopyToast = styled.div`
   }
 `;
 
-export const CmdNotFound = styled.div`
-  margin-top: 0.25rem;
-  margin-bottom: 1rem;
-`;
-
 export const Empty = styled.div`
   margin-bottom: 0.25rem;
 `;
@@ -78,6 +74,17 @@ export const MobileBr = styled.br`
   @media (min-width: 550px) {
     display: none;
   }
+`;
+
+// 历史命令块样式 - 用于区分命令和输出
+export const CommandBlock = styled.div`
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.6rem;
+  border-radius: 2px;
+  background: rgba(148, 163, 184, 0.15);
+  margin-bottom: 0.1rem;
+  font-family: inherit;
 `;
 
 export const Form = styled.form`
