@@ -26,7 +26,14 @@ export const Wrapper = styled.div`
   margin-bottom: 0.75rem;
 `;
 
-export const UsageDiv = styled(BaseOutputStyle)``;
+export const UsageDiv = styled(BaseOutputStyle)<{ marginY?: boolean }>`
+  ${({ marginY }) =>
+    marginY &&
+    `
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+  `}
+`;
 
 // 导出基础样式供其他文件复用
 export { BaseOutputStyle };

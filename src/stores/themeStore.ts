@@ -7,13 +7,6 @@ import themes from '../components/styles/themes';
 
 type ThemeName = keyof typeof themes;
 
-type SetState<T> = (
-  partial:
-    | Partial<T>
-    | ((state: T) => Partial<T>),
-  replace?: boolean
-) => void;
-
 interface ThemeState {
   theme: DefaultTheme;
   themeLoaded: boolean;
@@ -22,7 +15,7 @@ interface ThemeState {
   initTheme: () => void;
 }
 
-export const useThemeStore = create<ThemeState>((set: SetState<ThemeState>) => ({
+export const useThemeStore = create<ThemeState>((set) => ({
   theme: themes.dark,
   themeLoaded: false,
 

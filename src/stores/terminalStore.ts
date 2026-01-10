@@ -1,16 +1,6 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
-// Type definitions
-type SetState = (
-  partial:
-    | Partial<TerminalState>
-    | ((state: TerminalState) => Partial<TerminalState>),
-  replace?: boolean
-) => void;
-
-type GetState = () => TerminalState;
-
 export interface CommandHistory {
   command: string;
   args: string[];
@@ -49,7 +39,7 @@ export interface TerminalState {
 }
 
 export const useTerminalStore = create<TerminalState>()(
-  subscribeWithSelector((set: SetState, get: GetState) => ({
+  subscribeWithSelector((set, get) => ({
     // Input state
     input: '',
     cursorPosition: 0,
