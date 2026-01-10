@@ -59,9 +59,6 @@ export const EduList = styled.div`
     margin-bottom: 0.275rem;
   }
 
-  .desc {
-    color: ${({ theme }) => theme.colors?.text[200]};
-  }
 `;
 
 // --- Help ---
@@ -131,9 +128,9 @@ export const ChatLine = styled.div<{ $role: "assistant" | "user" }>`
     $role === "assistant" ? "rgba(255, 255, 255, 0.02)" : "transparent"};
   border-left: 2px solid
     ${({ $role, theme }) =>
-      $role === "user"
-        ? theme.colors?.primary || theme.colors?.text[100]
-        : theme.colors?.text[300]};
+    $role === "user"
+      ? theme.colors?.primary || theme.colors?.text[100]
+      : theme.colors?.text[300]};
 `;
 
 export const RoleTag = styled.span<{ role: "assistant" | "user" }>`

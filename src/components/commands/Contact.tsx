@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { FaEnvelope, FaGithub, FaSteam } from "react-icons/fa6";
+import { FaEnvelope, FaGithub, FaSteam, FaXTwitter } from "react-icons/fa6";
 import styled from "styled-components";
 import {
   ContactGallery,
@@ -35,6 +35,11 @@ const CONTACTS: ContactLink[] = [
     title: "GitHub",
     url: "https://github.com/parallelarc",
     icon: FaGithub,
+  },
+  {
+    title: "X (Twitter)",
+    url: "https://x.com/jvren42",
+    icon: FaXTwitter,
   },
   {
     title: "Steam",
