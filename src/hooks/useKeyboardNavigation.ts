@@ -187,13 +187,17 @@ export function useKeyboardNavigation({
               });
             }
           }
-          // ↓ - move down in posts or cycle to search if at last
+          // ↓ - move down in posts or to tags if at last
           else if (e.key === "ArrowDown") {
             e.preventDefault();
             if (postIndex < currentPagePosts - 1) {
               setFocusState({ ...focusState, postIndex: postIndex + 1 });
             } else {
-              setFocusState({ section: "search", tagsIndex: 0, postIndex: 0 });
+              setFocusState({
+                section: "tags",
+                tagsIndex: activeCategoryIndex ?? 0,
+                postIndex: 0
+              });
             }
           }
           // ← - previous page (cycle)
