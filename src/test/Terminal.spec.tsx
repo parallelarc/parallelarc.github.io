@@ -88,21 +88,12 @@ describe("Terminal Component", () => {
       "help",
       "history",
       "projects",
-      "themes",
     ];
     otherCmds.forEach(cmd => {
       it(`should render ${cmd} component when user type '${cmd}' cmd`, async () => {
         await user.type(terminalInput, `${cmd}{enter}`);
         expect(screen.getByTestId(`${cmd}`)).toBeInTheDocument();
       });
-    });
-
-    it("should crash when user executes destructive sudo command", async () => {
-      await user.type(terminalInput, "sudo rm -rf /{enter}");
-      expect(
-        await screen.findByRole("alert", { name: /system halted/i })
-      ).toBeInTheDocument();
-      expect(screen.getByText(/force reboot/i)).toBeInTheDocument();
     });
   });
 
@@ -151,9 +142,8 @@ describe("Terminal Component", () => {
   });
 
   describe("Invalid Arguments", () => {
-    const specialUsageCmds = ["themes"];
     const usageCmds = allCmds.filter(
-      cmd => !["export", ...specialUsageCmds].includes(cmd)
+      cmd => !["export"].includes(cmd)
     );
 
     usageCmds.forEach(cmd => {
@@ -162,23 +152,6 @@ describe("Terminal Component", () => {
         expect(screen.getByTestId("usage-output").innerHTML).toBe(
           `Usage: ${cmd}`
         );
-      });
-    });
-
-    specialUsageCmds.forEach(cmd => {
-      it(`should return usage component for '${cmd}' cmd with invalid arg`, async () => {
-        await user.type(terminalInput, `${cmd} sth{enter}`);
-        expect(screen.getByTestId("themes-invalid-arg")).toBeInTheDocument();
-      });
-
-      it(`should return usage component for '${cmd}' cmd with extra args`, async () => {
-        await user.type(terminalInput, `${cmd} set light extra-arg{enter}`);
-        expect(screen.getByTestId("themes-invalid-arg")).toBeInTheDocument();
-      });
-
-      it(`should return usage component for '${cmd}' cmd with incorrect option`, async () => {
-        await user.type(terminalInput, `${cmd} go light{enter}`);
-        expect(screen.getByTestId("themes-invalid-arg")).toBeInTheDocument();
       });
     });
   });

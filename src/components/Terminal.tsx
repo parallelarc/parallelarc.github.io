@@ -3,18 +3,20 @@ import {
   useCallback,
   useEffect,
   useRef,
-  useState,
 } from "react";
+import { terminalConfig } from "../config/terminal";
+import { commandRegistry } from "../core/CommandRegistry";
+import { useTerminalStore } from "../stores/terminalStore";
+import { useClipboardHandler } from "../hooks/useClipboardHandler";
+import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
+import { useCommandSubmission } from "../hooks/useCommandSubmission";
+import { useGlobalFocus } from "../hooks/useGlobalFocus";
 import CommandHistoryItem from "./CommandHistoryItem";
 import TermInfo from "./TermInfo";
+// Import commands FIRST to ensure registration before using registry
+import "../commands";
 import {
   CopyToast,
-  CrashBadge,
-  CrashButton,
-  CrashHint,
-  CrashMessage,
-  CrashTitle,
-  CrashWrapper,
   Form,
   Hints,
   InputHint,
@@ -42,16 +44,13 @@ type Command = {
   tab: number;
 };
 
-export const commands: Command[] = [
-  { cmd: "about", desc: "about me", tab: 8 },
-  { cmd: "blog", desc: "open blog interface", tab: 8 },
-  { cmd: "clear", desc: "clear the terminal", tab: 8 },
-  { cmd: "contact", desc: "feel free to reach out", tab: 6 },
-  { cmd: "education", desc: "my education background", tab: 4 },
-  { cmd: "projects", desc: "some work, in no particular order", tab: 5 },
-  { cmd: "themes", desc: "check available themes", tab: 7 },
-  { cmd: "welcome", desc: "display hero section", tab: 6 },
-];
+// Get commands from registry (safe to call at runtime after command registration)
+export const getCommands = (): Command[] => commandRegistry.getLegacyCommands();
+
+// Note: 'commands' export is evaluated at module load time,
+// but commands are registered by the `import "../commands"` above.
+// If this causes issues, use getCommands() instead.
+export const commands = getCommands();
 
 export type Term = {
   arg: string[];
@@ -71,319 +70,90 @@ export const termContext = createContext<Term>({
 function Terminal() {
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [inputVal, setInputVal] = useState("");
-  const [isInputFocused, setIsInputFocused] = useState(false);
-  const [cursorPosition, setCursorPosition] = useState(0);
-  const [cmdHistory, setCmdHistory] = useState<string[]>(["welcome"]);
-  const [rerender, setRerender] = useState(false);
-  const [selectedCommandIndex, setSelectedCommandIndex] = useState(0);
-  const [filteredCommands, setFilteredCommands] = useState(commands);
-  const [showCopyToast, setShowCopyToast] = useState(false);
-  const [isCrashed, setIsCrashed] = useState(false);
+  // State from store (using selectors for precise subscriptions)
+  const inputVal = useTerminalStore((s) => s.input);
+  const cursorPosition = useTerminalStore((s) => s.cursorPosition);
+  const cmdHistory = useTerminalStore((s) => s.history);
+  const rerender = useTerminalStore((s) => s.rerender);
+  const selectedCommandIndex = useTerminalStore((s) => s.selectedCommandIndex);
+  const filteredCommands = useTerminalStore((s) => s.filteredCommands);
+  const showCopyToast = useTerminalStore((s) => s.showCopyToast);
+  const isInputFocused = useTerminalStore((s) => s.isInputFocused);
 
-  const resetInputState = useCallback(() => {
-    setInputVal("");
-    setSelectedCommandIndex(0);
-    setCursorPosition(0);
-  }, []);
+  // Actions (stable references, won't cause re-renders)
+  const setInput = useTerminalStore((s) => s.setInput);
+  const setCursorPosition = useTerminalStore((s) => s.setCursorPosition);
+  const resetInputState = useTerminalStore((s) => s.resetInputState);
+  const syncCursorPosition = useTerminalStore((s) => s.syncCursorPosition);
+  const clearHistory = useTerminalStore((s) => s.clearHistory);
+  const addToHistory = useTerminalStore((s) => s.addToHistory);
+  const setSelectedCommandIndex = useTerminalStore((s) => s.setSelectedCommandIndex);
+  const setFilteredCommands = useTerminalStore((s) => s.setFilteredCommands);
+  const setRerender = useTerminalStore((s) => s.setRerender);
+  const setShowCopyToast = useTerminalStore((s) => s.setShowCopyToast);
+  const setInputFocused = useTerminalStore((s) => s.setInputFocused);
 
-  const syncCursorPosition = useCallback((position: number) => {
-    setCursorPosition(position);
-    if (inputRef.current) {
-      inputRef.current.setSelectionRange(position, position);
-    }
-  }, []);
+  // Custom hooks
+  useClipboardHandler({
+    containerRef,
+    setShowCopyToast,
+  });
 
-  const clearHistory = useCallback(() => {
-    setCmdHistory(["welcome"]);
-    resetInputState();
-  }, [resetInputState]);
+  useGlobalFocus({
+    containerRef,
+    inputRef,
+  });
 
+  // Command submission hook
+  const { handleSubmit } = useCommandSubmission({
+    inputVal,
+    onAddToHistory: addToHistory,
+    onResetInputState: resetInputState,
+    onSetRerender: setRerender,
+  });
+
+  // Keyboard shortcuts hook
+  const { handleKeyDown } = useKeyboardShortcuts({
+    inputVal,
+    cursorPosition,
+    filteredCommands,
+    selectedCommandIndex,
+    onResetInput: resetInputState,
+    handleSubmit,
+    onAddToHistory: addToHistory,
+    onSetSelectedIndex: setSelectedCommandIndex,
+    onSetInput: setInput,
+    onSyncCursorPosition: syncCursorPosition,
+    onSetRerender: setRerender,
+  });
+
+  // Input change handler
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setRerender(false);
       const newValue = e.target.value;
-      setInputVal(newValue);
+      setInput(newValue);
       setCursorPosition(e.target.selectionStart ?? newValue.length);
-    },
-    []
-  );
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (isCrashed) return;
-
-    const trimmedInput = inputVal.trim();
-    if (!trimmedInput) {
-      resetInputState();
-      return;
-    }
-
-    if (trimmedInput.toLowerCase() === "sudo rm -rf /") {
-      setIsCrashed(true);
-      resetInputState();
-      return;
-    }
-
-    setCmdHistory([trimmedInput, ...cmdHistory]);
-    setInputVal("");
-    setRerender(true);
-    setSelectedCommandIndex(0);
-    setCursorPosition(0);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    setRerender(false);
-    if (isCrashed) {
-      e.preventDefault();
-      return;
-    }
-
-    const ctrlI = e.ctrlKey && e.key.toLowerCase() === "i";
-    const ctrlC = e.ctrlKey && e.key.toLowerCase() === "c";
-    const isSlashMode = inputVal.startsWith("/");
-
-    // Ctrl+C - Clear input
-    if (ctrlC) {
-      e.preventDefault();
-      resetInputState();
-      return;
-    }
-
-    // Escape - Exit command selection mode
-    if (e.key === "Escape" && isSlashMode && selectedCommandIndex >= 0) {
-      e.preventDefault();
-      setSelectedCommandIndex(-1);
-      return;
-    }
-
-    // Shift + Enter - Allow default newline behavior
-    if (e.key === "Enter" && e.shiftKey) {
-      return;
-    }
-
-    // Enter in slash mode - Execute selected command
-    if (isSlashMode && e.key === "Enter") {
-      e.preventDefault();
-      const selectedCmd = filteredCommands[selectedCommandIndex]?.cmd;
-      if (selectedCmd) {
-        setCmdHistory(["/" + selectedCmd, ...cmdHistory]);
-        setInputVal("");
-        setRerender(true);
+      // Update filtered commands based on input
+      const allCommands = getCommands();
+      if (newValue.startsWith(terminalConfig.autocompleteTrigger)) {
+        const filtered = allCommands.filter(({ cmd }) =>
+          cmd.startsWith(newValue.slice(1))
+        );
+        setFilteredCommands(filtered);
         setSelectedCommandIndex(0);
+      } else {
+        setFilteredCommands(allCommands);
       }
-      return;
-    }
-
-    // Enter - Submit form
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
-      return;
-    }
-
-    // Slash mode navigation
-    if (isSlashMode) {
-      // ArrowUp - Navigate up (cyclic)
-      if (e.key === "ArrowUp") {
-        e.preventDefault();
-        setSelectedCommandIndex((prev) =>
-          prev <= 0 ? filteredCommands.length - 1 : prev - 1
-        );
-        return;
-      }
-
-      // ArrowDown - Navigate down (cyclic)
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        setSelectedCommandIndex((prev) =>
-          prev >= filteredCommands.length - 1 ? 0 : prev + 1
-        );
-        return;
-      }
-
-      // Tab - Autocomplete selected command
-      if (e.key === "Tab" || ctrlI) {
-        e.preventDefault();
-        if (selectedCommandIndex >= 0) {
-          const selectedCmd = filteredCommands[selectedCommandIndex]?.cmd;
-          if (selectedCmd) {
-            setInputVal("/" + selectedCmd);
-            syncCursorPosition(selectedCmd.length + 1);
-            setSelectedCommandIndex(-1);
-          }
-        }
-        return;
-      }
-
-      // ArrowLeft/Right - Disable when command is selected
-      if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && selectedCommandIndex >= 0) {
-        e.preventDefault();
-        return;
-      }
-    }
-
-    // Cursor movement keys (only when not using modifiers)
-    if (!e.ctrlKey && !e.metaKey) {
-      if (e.key === "ArrowLeft") {
-        e.preventDefault();
-        syncCursorPosition(Math.max(0, cursorPosition - 1));
-        return;
-      }
-
-      if (e.key === "ArrowRight") {
-        e.preventDefault();
-        syncCursorPosition(Math.min(inputVal.length, cursorPosition + 1));
-        return;
-      }
-
-      if (e.key === "Home") {
-        e.preventDefault();
-        syncCursorPosition(0);
-        return;
-      }
-
-      if (e.key === "End") {
-        e.preventDefault();
-        syncCursorPosition(inputVal.length);
-        return;
-      }
-    }
-  };
-
-  // Filter commands when input changes
-  useEffect(() => {
-    if (inputVal.startsWith("/")) {
-      const filtered = commands.filter(({ cmd }) => cmd.startsWith(inputVal.slice(1)));
-      setFilteredCommands(filtered);
-      setSelectedCommandIndex(0);
-    } else {
-      setFilteredCommands(commands);
-    }
-  }, [inputVal]);
-
-  // Copy to clipboard handler
-  useEffect(() => {
-    const handleMouseUp = () => {
-      if (isCrashed) return;
-      const containerEl = containerRef.current;
-      const selection = window.getSelection();
-
-      if (
-        !containerEl ||
-        !selection ||
-        selection.isCollapsed ||
-        !selection.anchorNode ||
-        !selection.focusNode ||
-        !containerEl.contains(selection.anchorNode) ||
-        !containerEl.contains(selection.focusNode)
-      ) {
-        return;
-      }
-
-      const selectedText = selection.toString();
-      if (!selectedText.trim()) return;
-
-      const triggerToast = () => {
-        setShowCopyToast(true);
-        if (toastTimerRef.current) {
-          clearTimeout(toastTimerRef.current);
-        }
-        toastTimerRef.current = setTimeout(() => {
-          setShowCopyToast(false);
-        }, 2200);
-      };
-
-      if (navigator?.clipboard?.writeText) {
-        navigator.clipboard
-          .writeText(selectedText)
-          .then(triggerToast)
-          .catch(() => {
-            // Silently fail if clipboard API doesn't work
-          });
-      }
-    };
-
-    document.addEventListener("mouseup", handleMouseUp);
-    return () => {
-      document.removeEventListener("mouseup", handleMouseUp);
-      if (toastTimerRef.current) {
-        clearTimeout(toastTimerRef.current);
-      }
-    };
-  }, [isCrashed]);
-
-  // Global keyboard listener: focus input on any key press except ESC
-  useEffect(() => {
-    if (isCrashed) return;
-
-    const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") return;
-
-      const activeElement = document.activeElement;
-      const isTypingInOtherInput =
-        activeElement &&
-        (activeElement.tagName === "INPUT" ||
-          activeElement.tagName === "TEXTAREA" ||
-          activeElement.getAttribute("contenteditable") === "true");
-
-      if (activeElement === inputRef.current || isTypingInOtherInput) return;
-
-      if (inputRef.current && containerRef.current) {
-        containerRef.current.scrollTop = containerRef.current.scrollHeight;
-        inputRef.current.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-          inline: "nearest",
-        });
-
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            const input = inputRef.current;
-            if (input) {
-              input.focus();
-              const currentPos = input.selectionStart || 0;
-              input.setSelectionRange(currentPos, currentPos);
-            }
-          });
-        });
-      }
-    };
-
-    document.addEventListener("keydown", handleGlobalKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleGlobalKeyDown);
-    };
-  }, [isCrashed]);
-
-  // Cleanup toast timer on unmount
-  useEffect(() => {
-    return () => {
-      if (toastTimerRef.current) {
-        clearTimeout(toastTimerRef.current);
-      }
-    };
-  }, []);
-
-  if (isCrashed) {
-    return (
-      <CrashWrapper role="alert" aria-live="assertive">
-        <CrashBadge>kernel panic</CrashBadge>
-        <CrashTitle data-glitch="SYSTEM HALTED">SYSTEM HALTED</CrashTitle>
-        <CrashMessage>
-          You tried to execute <strong>sudo rm -rf /</strong>. The filesystem
-          fought back, and the terminal went dark. A full reboot (refresh) is
-          now required.
-        </CrashMessage>
-        <CrashHint>Press ⌘ + R / Ctrl + R to recover</CrashHint>
-        <CrashButton type="button" onClick={() => window.location.reload()}>
-          force reboot
-        </CrashButton>
-      </CrashWrapper>
-    );
-  }
+    },
+    [
+      setInput,
+      setCursorPosition,
+      setFilteredCommands,
+      setSelectedCommandIndex,
+    ]
+  );
 
   return (
     <Wrapper data-testid="terminal-wrapper" ref={containerRef}>
@@ -432,33 +202,42 @@ function Terminal() {
               value={inputVal}
               onKeyDown={handleKeyDown}
               onChange={handleChange}
-              onFocus={() => setIsInputFocused(true)}
-              onBlur={() => setIsInputFocused(false)}
+              onFocus={() => setInputFocused(true)}
+              onBlur={() => setInputFocused(false)}
             />
           </ClaudeInputArea>
           <ClaudeBottomLine />
-          {inputVal.startsWith("/") ? (
+          {inputVal.startsWith(terminalConfig.autocompleteTrigger) ? (
             <CommandsList aria-hidden="true">
               {filteredCommands.map(({ cmd, desc }, index) => (
                 <CommandItem
                   key={cmd}
                   $selected={index === selectedCommandIndex}
                 >
-                  <CommandName>/{cmd}</CommandName>
+                  <CommandName>
+                    {terminalConfig.autocompleteTrigger}
+                    {cmd}
+                  </CommandName>
                   <span>{desc}</span>
                 </CommandItem>
               ))}
             </CommandsList>
-          ) : inputVal === "?" ? (
+          ) : inputVal === terminalConfig.helpTrigger ? (
             <ShortcutsGrid aria-hidden="true">
-              <ShortcutItem>/ for commands</ShortcutItem>
-              <ShortcutItem>? for help</ShortcutItem>
+              <ShortcutItem>
+                {terminalConfig.autocompleteTrigger} for commands
+              </ShortcutItem>
+              <ShortcutItem>
+                {terminalConfig.helpTrigger} for help
+              </ShortcutItem>
               <ShortcutItem>tab to complete command</ShortcutItem>
               <ShortcutItem>shift + ⏎ for newline</ShortcutItem>
               <ShortcutItem>ctrl + c to clear prompt</ShortcutItem>
             </ShortcutsGrid>
           ) : (
-            <InputHint aria-hidden="true">? for shortcuts</InputHint>
+            <InputHint aria-hidden="true">
+              {terminalConfig.helpTrigger} for shortcuts
+            </InputHint>
           )}
         </ClaudeInputContainer>
       </Form>

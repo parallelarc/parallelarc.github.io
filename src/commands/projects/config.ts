@@ -5,5 +5,6 @@ export const config: Command = {
   name: 'projects',
   description: 'some work, in no particular order',
   category: 'info',
+  acceptsArgs: true,
   component: () => import('./index'),
 };

@@ -1,4 +1,5 @@
 import { Command } from './command';
+import { TerminalConfig } from '../config/terminal';
 
 /**
  * Plugin interface
@@ -28,7 +29,25 @@ export interface Plugin {
 }
 
 /**
+ * Terminal state accessible to plugins
+ */
+export interface TerminalState {
+  /** Command history */
+  history: string[];
+  /** Current input value (readonly) */
+  input?: string;
+  /** Cursor position (readonly) */
+  cursorPosition?: number;
+}
+
+/**
+ * Event handler function type
+ */
+export type EventHandler = (...args: unknown[]) => void;
+
+/**
  * Plugin context - provided to plugins during initialization
+ * Enhanced with input state access, config access, and event system
  */
 export interface PluginContext {
   /** Register a new command */
@@ -38,10 +57,25 @@ export interface PluginContext {
   unregisterCommand: (name: string) => void;
 
   /** Get terminal state (readonly) */
-  getTerminalState: () => {
-    history: string[];
-    isCrashed: boolean;
-  };
+  getTerminalState: () => TerminalState;
+
+  /** Get terminal configuration */
+  getConfig: () => TerminalConfig;
+
+  /** Subscribe to an event */
+  on: (event: string, handler: EventHandler) => void;
+
+  /** Unsubscribe from an event */
+  off: (event: string, handler: EventHandler) => void;
+
+  /** Emit an event */
+  emit: (event: string, ...args: unknown[]) => void;
+
+  /** Send a message to another plugin */
+  sendMessage: (targetPlugin: string, message: unknown) => void;
+
+  /** Register a handler for incoming messages from other plugins */
+  onMessage: (handler: (from: string, message: unknown) => void) => void;
 }
 
 /**

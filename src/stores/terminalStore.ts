@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
+import { commandRegistry } from '../core/CommandRegistry';
+import { terminalConfig } from '../config/terminal';
 
 export interface CommandHistory {
   command: string;
@@ -21,13 +23,22 @@ export interface TerminalState {
   clearHistory: () => void;
   navigateHistory: (direction: 'up' | 'down') => void;
 
-  // UI state
-  isCrashed: boolean;
-  setCrashed: (crashed: boolean) => void;
-
   // Autocomplete state
   selectedCommandIndex: number;
   setSelectedCommandIndex: (index: number) => void;
+
+  // Focus state
+  isInputFocused: boolean;
+  setInputFocused: (focused: boolean) => void;
+
+  // Toast state
+  showCopyToast: boolean;
+  setShowCopyToast: (show: boolean) => void;
+
+  // Filtered commands for autocomplete
+  filteredCommands: Array<{ cmd: string; desc: string; tab: number }>;
+  setFilteredCommands: (commands: TerminalState['filteredCommands']) => void;
+  updateFilteredCommands: (input: string) => void;
 
   // Misc state
   rerender: boolean;
@@ -47,13 +58,18 @@ export const useTerminalStore = create<TerminalState>()(
     setCursorPosition: (pos: number) => set({ cursorPosition: pos }),
 
     // History state
-    history: ['welcome'],
+    history: [...terminalConfig.defaultHistory],
     historyIndex: -1,
     addToHistory: (command: string) => {
       const { history } = get();
-      set({ history: [command, ...history], historyIndex: -1 });
+      const newHistory = [command, ...history];
+      // Enforce maxHistorySize from config
+      const maxSize = terminalConfig.maxHistorySize;
+      const trimmedHistory =
+        newHistory.length > maxSize ? newHistory.slice(0, maxSize) : newHistory;
+      set({ history: trimmedHistory, historyIndex: -1 });
     },
-    clearHistory: () => set({ history: ['welcome'], historyIndex: -1 }),
+    clearHistory: () => set({ history: [...terminalConfig.defaultHistory], historyIndex: -1 }),
     navigateHistory: (direction: 'up' | 'down') => {
       const { history, historyIndex } = get();
       if (history.length <= 1) return;
@@ -73,13 +89,32 @@ export const useTerminalStore = create<TerminalState>()(
       }
     },
 
-    // UI state
-    isCrashed: false,
-    setCrashed: (crashed: boolean) => set({ isCrashed: crashed }),
-
     // Autocomplete state
     selectedCommandIndex: 0,
     setSelectedCommandIndex: (index: number) => set({ selectedCommandIndex: index }),
+
+    // Focus state
+    isInputFocused: false,
+    setInputFocused: (focused: boolean) => set({ isInputFocused: focused }),
+
+    // Toast state
+    showCopyToast: false,
+    setShowCopyToast: (show: boolean) => set({ showCopyToast: show }),
+
+    // Filtered commands (initialized as empty, updated by Terminal component after command registration)
+    filteredCommands: [],
+    setFilteredCommands: (commands) => set({ filteredCommands: commands }),
+    updateFilteredCommands: (input: string) => {
+      const allCommands = commandRegistry.getLegacyCommands();
+      if (input.startsWith(terminalConfig.autocompleteTrigger)) {
+        const filtered = allCommands.filter(({ cmd }) =>
+          cmd.startsWith(input.slice(1))
+        );
+        set({ filteredCommands: filtered, selectedCommandIndex: 0 });
+      } else {
+        set({ filteredCommands: allCommands });
+      }
+    },
 
     // Misc state
     rerender: false,

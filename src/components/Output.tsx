@@ -1,31 +1,12 @@
-import React, { useContext } from "react";
+import React, { useContext, lazy, Suspense, useMemo } from "react";
+import { commandRegistry } from "../core/CommandRegistry";
 import { OutputContainer, UsageDiv } from "./styles/Output.styled";
 import { termContext } from "./Terminal";
 
-// Import existing command components
-import About from "../commands/about/index";
-import Clear from "../commands/clear/index";
-import Education from "../commands/education/index";
-import Contact from "../commands/contact/index";
-import Welcome from "../commands/welcome/index";
-import Projects from "../commands/projects/index";
-import Themes from "../commands/themes/index";
-import Blog from "../commands/blog/index";
-
-// Legacy command components mapping (will be replaced by registry in Phase 3)
-const LEGACY_COMMAND_COMPONENTS = {
-  about: About,
-  clear: Clear,
-  education: Education,
-  contact: Contact,
-  projects: Projects,
-  themes: Themes,
-  welcome: Welcome,
-  blog: Blog,
-} as const;
-
-// Commands that accept arguments
-const COMMANDS_WITH_ARGS = ["projects", "themes"] as const;
+// Loading fallback for lazy-loaded components
+const LoadingOutput = () => (
+  <OutputContainer data-testid="loading-output">Loading...</OutputContainer>
+);
 
 type Props = {
   index: number;
@@ -35,16 +16,34 @@ type Props = {
 function Output({ index, cmd }: Props) {
   const { arg } = useContext(termContext);
 
+  // Get command from registry first to check if it accepts arguments
+  const command = commandRegistry.get(cmd);
+
   // Show usage message if command doesn't accept arguments
-  if (arg.length > 0 && !COMMANDS_WITH_ARGS.includes(cmd as any)) {
+  if (arg.length > 0 && !command?.acceptsArgs) {
     return <UsageDiv data-testid="usage-output">Usage: {cmd}</UsageDiv>;
   }
 
-  const CommandComponent = LEGACY_COMMAND_COMPONENTS[cmd as keyof typeof LEGACY_COMMAND_COMPONENTS];
+  if (!command) {
+    return (
+      <OutputContainer data-testid={`not-found-${index}`}>
+        command not found: {cmd}
+      </OutputContainer>
+    );
+  }
+
+  // Memoize lazy component to avoid recreating on every render
+  // This prevents Suspense from showing fallback unnecessarily
+  const CommandComponent = useMemo(
+    () => lazy(command.component),
+    [command]
+  );
 
   return (
     <OutputContainer data-testid={index === 0 ? "latest-output" : undefined}>
-      {CommandComponent && <CommandComponent />}
+      <Suspense fallback={<LoadingOutput />}>
+        <CommandComponent />
+      </Suspense>
     </OutputContainer>
   );
 }

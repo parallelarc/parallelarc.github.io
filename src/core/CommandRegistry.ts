@@ -130,6 +130,18 @@ class CommandRegistry {
   get size(): number {
     return this.commands.size;
   }
+
+  /**
+   * Get commands in legacy format for backward compatibility
+   * Used by Terminal.tsx for autocomplete display
+   */
+  getLegacyCommands(): Array<{ cmd: string; desc: string; tab: number }> {
+    return this.getVisible().map((cmd) => ({
+      cmd: cmd.name,
+      desc: cmd.description,
+      tab: cmd.name.length + 2,
+    }));
+  }
 }
 
 // Singleton instance

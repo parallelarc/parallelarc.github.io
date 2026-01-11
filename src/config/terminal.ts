@@ -12,9 +12,6 @@ export const terminalConfig = {
   /** Character that triggers autocomplete mode */
   autocompleteTrigger: '/',
 
-  /** Command that crashes the terminal (easter egg) */
-  crashCommand: 'sudo rm -rf /',
-
   /** Character(s) that trigger help display */
   helpTrigger: '?',
 

@@ -1,6 +1,7 @@
 import { useMemo } from "react";
+import { commandRegistry } from "../core/CommandRegistry";
 import Output from "./Output";
-import { termContext, commands } from "./Terminal";
+import { termContext } from "./Terminal";
 import { Empty, MobileBr, MobileSpan, CommandBlock } from "./styles/Terminal.styled";
 import { HistoryPrompt } from "./styles/TerminalInfo.styled";
 import { OutputContainer } from "./styles/Output.styled";
@@ -22,7 +23,7 @@ function CommandHistoryItem({
 }: CommandHistoryItemProps) {
   const commandArray = cmdH.trim().split(" ");
   const normalizedCommand = commandArray[0].toLowerCase().replace(/^\//, "");
-  const validCommand = commands.find(({ cmd }) => cmd === normalizedCommand);
+  const validCommand = commandRegistry.get(normalizedCommand);
 
   const contextValue = useMemo(
     () => ({

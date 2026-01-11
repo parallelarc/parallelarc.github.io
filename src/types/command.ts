@@ -41,6 +41,9 @@ export interface Command {
   /** Command argument definitions */
   args?: ArgDefinition[];
 
+  /** Whether this command accepts arguments (defaults to false) */
+  acceptsArgs?: boolean;
+
   /** Lazy loaded command component */
   component: LazyComponent;
 

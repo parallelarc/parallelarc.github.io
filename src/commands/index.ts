@@ -10,7 +10,6 @@ import { config as clearConfig } from './clear/config';
 import { config as contactConfig } from './contact/config';
 import { config as educationConfig } from './education/config';
 import { config as projectsConfig } from './projects/config';
-import { config as themesConfig } from './themes/config';
 import { config as welcomeConfig } from './welcome/config';
 
 /**
@@ -29,7 +28,6 @@ export function registerCommands() {
 
   // System commands
   commandRegistry.register(clearConfig);
-  commandRegistry.register(themesConfig);
 
   return commandRegistry;
 }
@@ -44,7 +42,6 @@ export const commandConfigs = {
   contact: contactConfig,
   education: educationConfig,
   projects: projectsConfig,
-  themes: themesConfig,
   welcome: welcomeConfig,
 };
 
