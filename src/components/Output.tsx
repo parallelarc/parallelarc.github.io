@@ -1,5 +1,6 @@
 import React, { useContext, lazy, Suspense, useMemo } from "react";
 import { commandRegistry } from "../core/CommandRegistry";
+import { useTerminalStore } from "../stores/terminalStore";
 import { OutputContainer, UsageDiv } from "./styles/Output.styled";
 import { termContext } from "./Terminal";
 
@@ -15,6 +16,7 @@ type Props = {
 
 function Output({ index, cmd }: Props) {
   const { arg } = useContext(termContext);
+  const interactiveMode = useTerminalStore((s) => s.interactiveMode);
 
   // Get command from registry first to check if it accepts arguments
   const command = commandRegistry.get(cmd);
@@ -39,8 +41,13 @@ function Output({ index, cmd }: Props) {
     [command]
   );
 
+  // For interactive commands, use a key that changes when interactive mode changes
+  // This forces React to unmount and remount the component, bypassing React.memo issues
+  const isInteractive = command.interactive === true;
+  const containerKey = isInteractive ? `${cmd}-${interactiveMode.active}` : undefined;
+
   return (
-    <OutputContainer data-testid={index === 0 ? "latest-output" : undefined}>
+    <OutputContainer data-testid={index === 0 ? "latest-output" : undefined} key={containerKey}>
       <Suspense fallback={<LoadingOutput />}>
         <CommandComponent />
       </Suspense>

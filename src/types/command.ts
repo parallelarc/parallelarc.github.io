@@ -44,6 +44,9 @@ export interface Command {
   /** Whether this command accepts arguments (defaults to false) */
   acceptsArgs?: boolean;
 
+  /** Whether this command uses interactive TUI mode (hides input) */
+  interactive?: boolean;
+
   /** Lazy loaded command component */
   component: LazyComponent;
 

@@ -6,5 +6,6 @@ export const config: Command = {
   description: 'open blog interface',
   category: 'content',
   acceptsArgs: true, // Support: `blog search term` or `blog tag:xxx`
+  interactive: true, // TUI mode - hides input
   component: () => import('./index'),
 };

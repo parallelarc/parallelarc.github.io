@@ -601,14 +601,20 @@ export const CategoryTabs = styled.div`
   }
 `;
 
-export const CategoryTab = styled.button<{ $active?: boolean }>`
-  background: ${({ $active, theme }) =>
-    $active ? theme.colors?.primary : 'transparent'};
-  color: ${({ $active, theme }) =>
-    $active ? theme.colors?.body : theme.colors?.text[100]};
+export const CategoryTab = styled.button<{ $active?: boolean; $focused?: boolean }>`
+  background: ${({ $active, $focused, theme }) => {
+    if ($focused) return `${theme.colors?.primary}30`;
+    return $active ? theme.colors?.primary : 'transparent';
+  }};
+  color: ${({ $active, $focused, theme }) => {
+    if ($focused) return theme.colors?.primary;
+    return $active ? theme.colors?.body : theme.colors?.text[100];
+  }};
   border: 1px solid
-    ${({ $active, theme }) =>
-      $active ? theme.colors?.primary : theme.colors?.text[300]};
+    ${({ $active, $focused, theme }) => {
+      if ($focused) return theme.colors?.primary;
+      return $active ? theme.colors?.primary : theme.colors?.text[300];
+    }};
   padding: 0.25rem 0.75rem;
   border-radius: 0.25rem;
   font-size: 0.875rem;
@@ -725,4 +731,92 @@ export const EmptyState = styled.div`
   padding: 2rem 1rem;
   text-align: center;
   color: ${({ theme }) => theme.colors?.text[300]};
+`;
+
+// --- TUI (Terminal User Interface) Styles ---
+
+export const TuiHeader = styled.div`
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors?.text[100]};
+`;
+
+export const TuiDivider = styled.div`
+  margin: 0.5rem 0;
+  height: 1px;
+  width: 100%;
+  background: ${({ theme }) => theme.colors?.text[300]};
+  opacity: 0.35;
+`;
+
+export const TuiFooter = styled.div`
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid ${({ theme }) => theme.colors?.text[300]};
+  font-size: 0.8rem;
+  color: ${({ theme }) => theme.colors?.text[300]};
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+`;
+
+export const TuiKeyHint = styled.span`
+  padding: 0.1rem 0.35rem;
+  background: ${({ theme }) => theme.colors?.text[300]};
+  border-radius: 0.2rem;
+  color: ${({ theme }) => theme.colors?.body};
+  font-family: monospace;
+  font-size: 0.75rem;
+`;
+
+export const TuiList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+export const TuiListItem = styled.article<{ $focused?: boolean }>`
+  padding: 0.75rem;
+  border: 1px solid
+    ${({ $focused, theme }) =>
+      $focused ? theme.colors?.primary : theme.colors?.text[300]};
+  border-radius: 0.4rem;
+  background: ${({ $focused, theme }) =>
+    $focused ? `${theme.colors?.primary}10` : "transparent"};
+  transition: all 0.15s ease;
+  cursor: pointer;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors?.primary};
+  }
+`;
+
+export const TuiListTitle = styled.div<{ $focused?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: ${({ $focused, theme }) =>
+    $focused ? theme.colors?.primary : theme.colors?.text[100]};
+`;
+
+export const TuiListMeta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: ${({ theme }) => theme.colors?.text[300]};
+`;
+
+export const TuiPageIndicator = styled.span<{ $focused?: boolean }>`
+  padding: 0.25rem 0.5rem;
+  border: 1px solid
+    ${({ $focused, theme }) =>
+      $focused ? theme.colors?.primary : theme.colors?.text[300]};
+  border-radius: 0.25rem;
+  color: ${({ $focused, theme }) =>
+    $focused ? theme.colors?.primary : theme.colors?.text[100]};
+  font-size: 0.875rem;
 `;

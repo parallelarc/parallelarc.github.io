@@ -3,10 +3,16 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import { commandRegistry } from '../core/CommandRegistry';
 import { terminalConfig } from '../config/terminal';
 
-export interface CommandHistory {
-  command: string;
-  args: string[];
-  timestamp?: number;
+export interface CommandHistoryEntry {
+  id: string;                 // 唯一标识符
+  command: string;            // 命令文本
+  timestamp?: number;         // 时间戳
+  dismissMessage?: string;    // 关闭时的替换消息
+}
+
+export interface InteractiveMode {
+  active: boolean;
+  command: string | null;
 }
 
 export interface TerminalState {
@@ -17,11 +23,13 @@ export interface TerminalState {
   setCursorPosition: (pos: number) => void;
 
   // History state
-  history: string[];
+  history: CommandHistoryEntry[];
   historyIndex: number;
   addToHistory: (command: string) => void;
   clearHistory: () => void;
   navigateHistory: (direction: 'up' | 'down') => void;
+  removeFromHistory: (index: number) => void;
+  setDismissMessage: (index: number, message: string) => void;
 
   // Autocomplete state
   selectedCommandIndex: number;
@@ -44,10 +52,18 @@ export interface TerminalState {
   rerender: boolean;
   setRerender: (value: boolean) => void;
 
+  // Interactive mode state
+  interactiveMode: InteractiveMode;
+  setInteractiveMode: (active: boolean, command?: string | null) => void;
+
   // Actions
   resetInputState: () => void;
   syncCursorPosition: (position: number) => void;
 }
+
+// Helper function to generate unique history IDs
+const generateHistoryId = (prefix = ''): string =>
+  `${prefix}${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 
 export const useTerminalStore = create<TerminalState>()(
   subscribeWithSelector((set, get) => ({
@@ -58,18 +74,45 @@ export const useTerminalStore = create<TerminalState>()(
     setCursorPosition: (pos: number) => set({ cursorPosition: pos }),
 
     // History state
-    history: [...terminalConfig.defaultHistory],
+    history: [...terminalConfig.defaultHistory].map(cmd => ({
+      id: generateHistoryId('default-'),
+      command: cmd,
+    })),
     historyIndex: -1,
     addToHistory: (command: string) => {
       const { history } = get();
-      const newHistory = [command, ...history];
+      const entry: CommandHistoryEntry = {
+        id: generateHistoryId(),
+        command,
+        timestamp: Date.now(),
+      };
+      const newHistory = [entry, ...history];
       // Enforce maxHistorySize from config
       const maxSize = terminalConfig.maxHistorySize;
       const trimmedHistory =
         newHistory.length > maxSize ? newHistory.slice(0, maxSize) : newHistory;
       set({ history: trimmedHistory, historyIndex: -1 });
     },
-    clearHistory: () => set({ history: [...terminalConfig.defaultHistory], historyIndex: -1 }),
+    clearHistory: () => set({
+      history: [...terminalConfig.defaultHistory].map(cmd => ({
+        id: generateHistoryId('default-'),
+        command: cmd,
+      })),
+      historyIndex: -1
+    }),
+    removeFromHistory: (index: number) => {
+      const { history } = get();
+      const newHistory = history.filter((_, i) => i !== index);
+      set({ history: newHistory });
+    },
+    setDismissMessage: (index: number, message: string) => {
+      const { history } = get();
+      const newHistory = [...history];
+      if (newHistory[index]) {
+        newHistory[index] = { ...newHistory[index], dismissMessage: message };
+      }
+      set({ history: newHistory });
+    },
     navigateHistory: (direction: 'up' | 'down') => {
       const { history, historyIndex } = get();
       if (history.length <= 1) return;
@@ -77,12 +120,12 @@ export const useTerminalStore = create<TerminalState>()(
       if (direction === 'up') {
         const newIndex = historyIndex + 1;
         if (newIndex < history.length) {
-          set({ historyIndex: newIndex, input: history[newIndex] });
+          set({ historyIndex: newIndex, input: history[newIndex].command });
         }
       } else {
         const newIndex = historyIndex - 1;
         if (newIndex >= 0) {
-          set({ historyIndex: newIndex, input: history[newIndex] });
+          set({ historyIndex: newIndex, input: history[newIndex].command });
         } else {
           set({ historyIndex: -1, input: '' });
         }
@@ -119,6 +162,11 @@ export const useTerminalStore = create<TerminalState>()(
     // Misc state
     rerender: false,
     setRerender: (value: boolean) => set({ rerender: value }),
+
+    // Interactive mode state
+    interactiveMode: { active: false, command: null },
+    setInteractiveMode: (active: boolean, command: string | null = null) =>
+      set({ interactiveMode: { active, command } }),
 
     // Actions
     resetInputState: () =>

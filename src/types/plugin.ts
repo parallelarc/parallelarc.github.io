@@ -1,5 +1,6 @@
 import { Command } from './command';
 import { TerminalConfig } from '../config/terminal';
+import type { CommandHistoryEntry } from '../stores/terminalStore';
 
 /**
  * Plugin interface
@@ -33,7 +34,7 @@ export interface Plugin {
  */
 export interface TerminalState {
   /** Command history */
-  history: string[];
+  history: CommandHistoryEntry[];
   /** Current input value (readonly) */
   input?: string;
   /** Cursor position (readonly) */

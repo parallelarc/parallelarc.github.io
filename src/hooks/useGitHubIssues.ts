@@ -14,7 +14,7 @@ import {
   calculateCategoryStats,
 } from "../utils/github";
 
-const POSTS_PER_PAGE = 10;
+export const POSTS_PER_PAGE = 10;
 
 interface UseGitHubIssuesResult {
   // Data state
@@ -32,12 +32,9 @@ interface UseGitHubIssuesResult {
   setActiveCategory: (category: string) => void;
   setSearchQuery: (query: string) => void;
   setSelectedIndex: (index: number) => void;
-  nextPost: () => void;
-  prevPost: () => void;
+  setCurrentPage: (page: number) => void;
   nextPage: () => void;
   prevPage: () => void;
-  selectPost: (post: BlogPost) => void;
-  clearSelection: () => void;
 }
 
 export function useGitHubIssues(
@@ -134,18 +131,6 @@ export function useGitHubIssues(
     setCurrentPage(1);
   }, []);
 
-  const nextPost = useCallback(() => {
-    if (selectedIndex < paginatedPosts.length - 1) {
-      setSelectedIndex(selectedIndex + 1);
-    }
-  }, [selectedIndex, paginatedPosts.length]);
-
-  const prevPost = useCallback(() => {
-    if (selectedIndex > 0) {
-      setSelectedIndex(selectedIndex - 1);
-    }
-  }, [selectedIndex]);
-
   const nextPage = useCallback(() => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
@@ -160,18 +145,12 @@ export function useGitHubIssues(
     }
   }, [currentPage]);
 
-  const selectPost = useCallback((post: BlogPost) => {
-    const index = filteredPosts.findIndex((p) => p.id === post.id);
-    if (index !== -1) {
-      const page = Math.floor(index / POSTS_PER_PAGE) + 1;
+  const setCurrentPageSafe = useCallback((page: number) => {
+    if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
-      setSelectedIndex(index % POSTS_PER_PAGE);
+      setSelectedIndex(0);
     }
-  }, [filteredPosts]);
-
-  const clearSelection = useCallback(() => {
-    setSelectedIndex(0);
-  }, []);
+  }, [totalPages]);
 
   // List state summary
   const listState: PostListState = {
@@ -195,11 +174,8 @@ export function useGitHubIssues(
     setActiveCategory,
     setSearchQuery,
     setSelectedIndex,
-    nextPost,
-    prevPost,
+    setCurrentPage: setCurrentPageSafe,
     nextPage,
     prevPage,
-    selectPost,
-    clearSelection,
   };
 }

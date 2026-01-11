@@ -57,7 +57,11 @@ export type Term = {
   history: string[];
   rerender: boolean;
   index: number;
+  isLatest: boolean;
   clearHistory?: () => void;
+  removeFromHistory?: (index: number) => void;
+  entryId?: string;
+  setDismissMessage?: (index: number, message: string) => void;
 };
 
 export const termContext = createContext<Term>({
@@ -65,6 +69,7 @@ export const termContext = createContext<Term>({
   history: [],
   rerender: false,
   index: 0,
+  isLatest: false,
 });
 
 function Terminal() {
@@ -80,6 +85,7 @@ function Terminal() {
   const filteredCommands = useTerminalStore((s) => s.filteredCommands);
   const showCopyToast = useTerminalStore((s) => s.showCopyToast);
   const isInputFocused = useTerminalStore((s) => s.isInputFocused);
+  const interactiveMode = useTerminalStore((s) => s.interactiveMode);
 
   // Actions (stable references, won't cause re-renders)
   const setInput = useTerminalStore((s) => s.setInput);
@@ -88,6 +94,8 @@ function Terminal() {
   const syncCursorPosition = useTerminalStore((s) => s.syncCursorPosition);
   const clearHistory = useTerminalStore((s) => s.clearHistory);
   const addToHistory = useTerminalStore((s) => s.addToHistory);
+  const removeFromHistory = useTerminalStore((s) => s.removeFromHistory);
+  const setDismissMessage = useTerminalStore((s) => s.setDismissMessage);
   const setSelectedCommandIndex = useTerminalStore((s) => s.setSelectedCommandIndex);
   const setFilteredCommands = useTerminalStore((s) => s.setFilteredCommands);
   const setRerender = useTerminalStore((s) => s.setRerender);
@@ -162,6 +170,7 @@ function Terminal() {
           <span aria-hidden="true">✨</span> Copied to clipboard
         </CopyToast>
       )}
+      {!interactiveMode.active && (
       <Form onSubmit={handleSubmit}>
         <ClaudeInputContainer>
           <ClaudeTopLine />
@@ -241,15 +250,20 @@ function Terminal() {
           )}
         </ClaudeInputContainer>
       </Form>
+      )}
 
-      {cmdHistory.map((cmdH, index) => (
+      {cmdHistory.map((entry, index) => (
         <CommandHistoryItem
-          key={`${cmdH}_${index}`}
-          cmdH={cmdH}
+          key={entry.id}
+          cmdH={entry.command}
+          entryId={entry.id}
           index={index}
           cmdHistory={cmdHistory}
           rerender={rerender}
           clearHistory={clearHistory}
+          removeFromHistory={removeFromHistory}
+          setDismissMessage={setDismissMessage}
+          dismissMessage={entry.dismissMessage}
         />
       ))}
     </Wrapper>

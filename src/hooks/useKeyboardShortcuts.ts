@@ -69,8 +69,8 @@ export function useKeyboardShortcuts({
         return;
       }
 
-      // Enter in slash mode - Execute selected command
-      if (isSlashMode && e.key === "Enter") {
+      // Enter in slash mode with selected command - Execute selected command
+      if (isSlashMode && e.key === "Enter" && selectedCommandIndex >= 0) {
         e.preventDefault();
         const selectedCmd = filteredCommands[selectedCommandIndex]?.cmd;
         if (selectedCmd) {
@@ -81,7 +81,7 @@ export function useKeyboardShortcuts({
         return;
       }
 
-      // Enter - Submit form
+      // Enter - Submit form (including slash mode without selection)
       if (e.key === "Enter") {
         e.preventDefault();
         handleSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
