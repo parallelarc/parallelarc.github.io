@@ -526,3 +526,203 @@ export const RainbowText = styled.p`
   font-weight: 500;
   ${rainbowTextStyles};
 `;
+
+// --- Blog ---
+
+export const BlogContainer = styled.div`
+  margin-top: 0.5rem;
+  margin-bottom: 0.875rem;
+`;
+
+export const BlogIntro = styled.div`
+  margin-bottom: 1rem;
+  line-height: 1.5rem;
+`;
+
+export const SearchBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border: 1px solid ${({ theme }) => theme.colors?.text[300]};
+  border-radius: 0.25rem;
+`;
+
+export const SearchInput = styled.input`
+  background: transparent;
+  border: none;
+  color: ${({ theme }) => theme.colors?.text[100]};
+  font-family: inherit;
+  font-size: inherit;
+  flex: 1;
+  outline: none;
+
+  &::placeholder {
+    color: ${({ theme }) => theme.colors?.text[300]};
+  }
+`;
+
+export const RefreshButton = styled.button`
+  background: transparent;
+  border: 1px solid ${({ theme }) => theme.colors?.text[300]};
+  color: ${({ theme }) => theme.colors?.text[100]};
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors?.primary};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+export const CategoryTabs = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: ${({ theme }) => theme.colors?.text[300]};
+    border-radius: 2px;
+  }
+`;
+
+export const CategoryTab = styled.button<{ $active?: boolean }>`
+  background: ${({ $active, theme }) =>
+    $active ? theme.colors?.primary : 'transparent'};
+  color: ${({ $active, theme }) =>
+    $active ? theme.colors?.body : theme.colors?.text[100]};
+  border: 1px solid
+    ${({ $active, theme }) =>
+      $active ? theme.colors?.primary : theme.colors?.text[300]};
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  font-family: inherit;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors?.primary};
+  }
+`;
+
+export const BlogList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`;
+
+export const BlogPostCard = styled.article`
+  padding: 0.75rem;
+  border: 1px solid ${({ theme }) => theme.colors?.text[300]};
+  border-radius: 0.4rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors?.primary};
+  }
+`;
+
+export const PostHeader = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+`;
+
+export const PostNumber = styled.span`
+  color: ${({ theme }) => theme.colors?.primary};
+  font-weight: 600;
+  font-size: 0.875rem;
+`;
+
+export const PostTitle = styled(Link)`
+  font-weight: 600;
+  display: inline;
+`;
+
+export const PostMeta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: ${({ theme }) => theme.colors?.text[300]};
+`;
+
+export const PostExcerpt = styled.p`
+  margin: 0.5rem 0;
+  color: ${({ theme }) => theme.colors?.text[200]};
+  line-height: 1.5;
+`;
+
+export const PostLabels = styled.div`
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+`;
+
+export const PostLabel = styled.span`
+  font-size: 0.75rem;
+  padding: 0.15rem 0.4rem;
+  background: ${({ theme }) => theme.colors?.text[300]};
+  border-radius: 0.2rem;
+  color: ${({ theme }) => theme.colors?.body};
+`;
+
+export const Pagination = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid ${({ theme }) => theme.colors?.text[300]};
+`;
+
+export const PageInfo = styled.span`
+  color: ${({ theme }) => theme.colors?.text[200]};
+  font-size: 0.875rem;
+`;
+
+export const NavButtons = styled.div`
+  display: flex;
+  gap: 0.5rem;
+`;
+
+export const NavButton = styled.button<{ $disabled?: boolean }>`
+  background: transparent;
+  border: 1px solid ${({ theme }) => theme.colors?.text[300]};
+  color: ${({ theme }) => theme.colors?.text[100]};
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.25rem;
+  cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
+  opacity: ${({ $disabled }) => ($disabled ? 0.5 : 1)};
+  font-family: inherit;
+  font-size: 0.875rem;
+
+  &:hover:not(:disabled) {
+    border-color: ${({ theme }) => theme.colors?.primary};
+  }
+`;
+
+export const EmptyState = styled.div`
+  padding: 2rem 1rem;
+  text-align: center;
+  color: ${({ theme }) => theme.colors?.text[300]};
+`;
