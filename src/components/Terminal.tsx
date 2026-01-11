@@ -141,7 +141,13 @@ function Terminal() {
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const newValue = e.target.value;
       setInput(newValue);
-      setCursorPosition(e.target.selectionStart ?? newValue.length);
+
+      // 确保 selectionStart 是有效的数字
+      const rawPosition = e.target.selectionStart;
+      const validPosition = Number.isNaN(rawPosition) || rawPosition === null || rawPosition === undefined
+        ? newValue.length
+        : Math.max(0, Math.min(rawPosition, newValue.length));
+      setCursorPosition(validPosition);
 
       // Update filtered commands based on input
       const allCommands = getCommands();

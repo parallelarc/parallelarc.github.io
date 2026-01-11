@@ -71,7 +71,11 @@ export const useTerminalStore = create<TerminalState>()(
     input: '',
     cursorPosition: 0,
     setInput: (value: string) => set({ input: value }),
-    setCursorPosition: (pos: number) => set({ cursorPosition: pos }),
+    setCursorPosition: (pos: number) => {
+      // 确保位置是有效的数字
+      const validPos = Number.isNaN(pos) ? 0 : Math.max(0, Math.floor(pos));
+      set({ cursorPosition: validPos });
+    },
 
     // History state
     history: [...terminalConfig.defaultHistory].map(cmd => ({
@@ -177,11 +181,13 @@ export const useTerminalStore = create<TerminalState>()(
         historyIndex: -1,
       }),
     syncCursorPosition: (position: number) => {
-      set({ cursorPosition: position });
+      // 确保位置是有效的数字
+      const validPos = Number.isNaN(position) ? 0 : Math.max(0, Math.floor(position));
+      set({ cursorPosition: validPos });
       // Sync with textarea if needed
       const textarea = document.getElementById('terminal-input') as HTMLTextAreaElement;
       if (textarea) {
-        textarea.setSelectionRange(position, position);
+        textarea.setSelectionRange(validPos, validPos);
       }
     },
   }))

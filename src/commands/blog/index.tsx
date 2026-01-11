@@ -1,6 +1,6 @@
 /**
  * Blog Command - Interactive TUI Mode
- * Displays blog posts from GitHub Issues with keyboard navigation
+ * Displays blog posts from GitHub Issues with unified list navigation
  */
 
 import { useContext, useEffect, useCallback, useState } from "react";
@@ -11,26 +11,22 @@ import { useTerminalStore } from "../../stores/terminalStore";
 import type { GitHubConfig } from "../../types/github";
 import {
   BlogContainer,
-  SearchBar,
-  SearchInput,
-  RefreshButton,
-  CategoryTabs,
-  CategoryTab,
   EmptyState,
-  Link,
-  Cmd,
   LoadingDots,
   StatusText,
-  PostLabel,
-  // TUI Components
-  TuiHeader,
-  TuiFooter,
-  TuiKeyHint,
-  TuiList,
-  TuiListItem,
-  TuiListTitle,
-  TuiListMeta,
-  TuiPageIndicator,
+  // New TUI Components
+  TuiUnifiedList,
+  TuiUnifiedItem,
+  TuiFocusIndicator,
+  TuiTagsRow,
+  TuiTag,
+  TuiPostContent,
+  TuiPostTitle,
+  TuiPostMeta,
+  TuiPaginationRow,
+  TuiPageNumber,
+  TuiSeparator,
+  TuiInstructions,
 } from "../../components/styles/Commands.styled";
 import { formatRelativeTime } from "../../utils/github";
 
@@ -51,10 +47,9 @@ function Blog() {
 
   // Focus state for keyboard navigation
   const [focusState, setFocusState] = useState<FocusState>({
-    level: "category",
-    categoryIndex: 0,
+    section: "tags",
+    tagsIndex: 0,
     postIndex: 0,
-    pageIndex: 0,
   });
 
   const {
@@ -72,22 +67,15 @@ function Blog() {
   const currentPosts = listState.filteredPosts;
   const { currentPage, totalPages, searchQuery, activeCategory } = listState;
 
-  // Update categoryIndex when activeCategory changes externally
+  // Update tagsIndex when activeCategory changes externally
   useEffect(() => {
     const activeIndex = categoryStats.findIndex(
       (cat) => cat.name === activeCategory
     );
-    if (activeIndex !== -1 && activeIndex !== focusState.categoryIndex) {
-      setFocusState((prev) => ({ ...prev, categoryIndex: activeIndex }));
+    if (activeIndex !== -1 && activeIndex !== focusState.tagsIndex) {
+      setFocusState((prev) => ({ ...prev, tagsIndex: activeIndex }));
     }
   }, [activeCategory, categoryStats]);
-
-  // Update pageIndex when currentPage changes externally
-  useEffect(() => {
-    if (currentPage - 1 !== focusState.pageIndex) {
-      setFocusState((prev) => ({ ...prev, pageIndex: currentPage - 1 }));
-    }
-  }, [currentPage]);
 
   // Reset postIndex when posts list changes
   useEffect(() => {
@@ -141,18 +129,23 @@ function Blog() {
   // Escape handler - exit interactive mode and set dismiss message
   const handleEscape = useCallback(() => {
     setInteractiveMode(false, null);
-    // Set dismiss message to replace blog content
     setDismissMessage?.(index, "Blog dialog dismissed");
   }, [setInteractiveMode, setDismissMessage, index]);
+
+  // Calculate current active category index
+  const activeCategoryIndex = categoryStats.findIndex(
+    (cat) => cat.name === activeCategory
+  );
 
   // Keyboard navigation
   const { handleKeyDown } = useKeyboardNavigation({
     focusState,
     setFocusState,
     categoryCount: categoryStats.length,
-    postsPerPage: POSTS_PER_PAGE,
     currentPagePosts: currentPosts.length,
     totalPages,
+    currentPage,
+    activeCategoryIndex: activeCategoryIndex >= 0 ? activeCategoryIndex : 0,
     onCategoryChange: handleCategoryChange,
     onPostSelect: handlePostSelect,
     onPageChange: handlePageChange,
@@ -161,28 +154,11 @@ function Blog() {
 
   // Set up keyboard event listener
   useEffect(() => {
-    // Only activate interactive mode for the latest command (not in history)
     if (!isLatest) return;
 
     setInteractiveMode(true, "blog");
 
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      // Ignore if typing in search input
-      if (
-        document.activeElement instanceof HTMLInputElement ||
-        document.activeElement instanceof HTMLTextAreaElement
-      ) {
-        // Allow Escape to exit search focus and return focus to terminal input
-        if (e.key === "Escape") {
-          (document.activeElement as HTMLElement).blur();
-          // Refocus the terminal input
-          const terminalInput = document.getElementById("terminal-input") as HTMLTextAreaElement;
-          if (terminalInput) {
-            terminalInput.focus();
-          }
-        }
-        return;
-      }
       handleKeyDown(e);
     };
 
@@ -190,18 +166,9 @@ function Blog() {
 
     return () => {
       window.removeEventListener("keydown", handleGlobalKeyDown);
-      // Always deactivate interactive mode on cleanup
       setInteractiveMode(false, null);
     };
   }, [isLatest, handleKeyDown, setInteractiveMode]);
-
-  // Search handlers
-  const handleSearchChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setSearchQuery(e.target.value);
-    },
-    [setSearchQuery]
-  );
 
   const handleRefresh = useCallback(() => {
     refresh();
@@ -230,56 +197,37 @@ function Blog() {
   const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
   const totalPosts = posts.length;
 
-  // Focus state for rendering
-  const isCategoryFocused = focusState.level === "category";
-  const isPostsFocused = focusState.level === "posts";
-  const isPaginationFocused = focusState.level === "pagination";
+  // Generate page numbers for display
+  const pageNumbers = totalPages > 0
+    ? Array.from({ length: totalPages }, (_, i) => i + 1)
+    : [1];
+
+  // Format labels for display
+  const formatLabels = (labels: string[]) => labels.join(", ");
 
   return (
     <BlogContainer data-testid="blog">
-      {/* Header */}
-      <TuiHeader>
-        Manage Blog Posts · {totalPosts} {totalPosts === 1 ? "post" : "posts"}
-      </TuiHeader>
+      <TuiUnifiedList>
+        {/* 1. 标签行 */}
+        {categoryStats.length > 1 && (
+          <TuiTagsRow>
+            <TuiFocusIndicator $visible={focusState.section === "tags"} />
+            {categoryStats.map((cat, index) => {
+              const isTagFocused = focusState.section === "tags" && focusState.tagsIndex === index;
+              return (
+                <TuiTag
+                  key={cat.name}
+                  $active={cat.name === activeCategory}
+                  $focused={isTagFocused}
+                >
+                  [{cat.name} {cat.count}]
+                </TuiTag>
+              );
+            })}
+          </TuiTagsRow>
+        )}
 
-      {/* Search Bar */}
-      <SearchBar>
-        <Cmd>/</Cmd>
-        <SearchInput
-          type="text"
-          placeholder="Search posts..."
-          value={searchQuery}
-          onChange={handleSearchChange}
-        />
-        <RefreshButton onClick={handleRefresh} disabled={loading}>
-          {loading ? "..." : "Refresh"}
-        </RefreshButton>
-      </SearchBar>
-
-      {/* Category Tabs */}
-      {categoryStats.length > 1 && (
-        <CategoryTabs>
-          {categoryStats.map((cat, index) => (
-            <CategoryTab
-              key={cat.name}
-              $active={cat.name === activeCategory}
-              $focused={isCategoryFocused && focusState.categoryIndex === index}
-            >
-              [{cat.name} {cat.count}]
-            </CategoryTab>
-          ))}
-        </CategoryTabs>
-      )}
-
-      {/* Error message (non-blocking) */}
-      {error && (
-        <StatusText $variant="error" style={{ marginBottom: "1rem" }}>
-          {error}
-        </StatusText>
-      )}
-
-      {/* Blog Posts */}
-      <TuiList>
+        {/* 2. 文章行 */}
         {currentPosts.length === 0 ? (
           <EmptyState>
             {posts.length === 0
@@ -288,69 +236,53 @@ function Blog() {
           </EmptyState>
         ) : (
           currentPosts.map((post, index) => {
-            const isFocused = isPostsFocused && focusState.postIndex === index;
+            const isFocused = focusState.section === "posts" && focusState.postIndex === index;
             return (
-              <TuiListItem
-                key={post.id}
-                $focused={isFocused}
-                onClick={() => handlePostSelect(index)}
-              >
-                <TuiListTitle $focused={isFocused}>
-                  {isFocused && "❯ "}
-                  {startIndex + index + 1}. {post.title}
-                </TuiListTitle>
-                <TuiListMeta>
-                  <span>{formatRelativeTime(post.createdAt)}</span>
-                  {post.commentsCount > 0 && (
-                    <span>· 💬 {post.commentsCount} comments</span>
-                  )}
-                </TuiListMeta>
-                {post.excerpt && (
-                  <div style={{ marginTop: "0.5rem", color: "var(--text-200)", lineHeight: "1.5" }}>
-                    {post.excerpt}
-                  </div>
-                )}
-                {post.labels.length > 0 && (
-                  <div style={{ display: "flex", gap: "0.35rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
-                    {post.labels.map((label) => (
-                      <PostLabel key={label}>{label}</PostLabel>
-                    ))}
-                  </div>
-                )}
-              </TuiListItem>
+              <TuiUnifiedItem key={post.id} $focused={isFocused}>
+                <TuiFocusIndicator $visible={isFocused} />
+                <TuiPostContent>
+                  <TuiPostTitle>
+                    {startIndex + index + 1}. {post.title}
+                  </TuiPostTitle>
+                  <TuiPostMeta>
+                    {formatRelativeTime(post.createdAt)}
+                    {post.labels.length > 0 && ` · ${formatLabels(post.labels)}`}
+                  </TuiPostMeta>
+                </TuiPostContent>
+              </TuiUnifiedItem>
             );
           })
         )}
-      </TuiList>
 
-      {/* Pagination */}
-      {totalPages > 1 && currentPosts.length > 0 && (
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "0.75rem" }}>
-          <TuiPageIndicator $focused={isPaginationFocused}>
-            Page {currentPage} of {totalPages} · {currentPosts.length} posts
-          </TuiPageIndicator>
-        </div>
+        {/* 3. 分页行（仅展示） */}
+        {totalPages > 1 && currentPosts.length > 0 && (
+          <TuiPaginationRow>
+            <span>{"<prev"}</span>
+            {pageNumbers.map((p) => (
+              <TuiPageNumber key={p} $active={p === currentPage}>
+                {p}
+              </TuiPageNumber>
+            ))}
+            <span>{"next>"}</span>
+          </TuiPaginationRow>
+        )}
+      </TuiUnifiedList>
+
+      <TuiSeparator />
+
+      <TuiInstructions>
+        <span>Enter/Space</span> to open ·
+        <span>↑↓</span> to navigate ·
+        <span>←→</span> for tags/pages ·
+        <span>esc</span> to cancel
+      </TuiInstructions>
+
+      {/* Non-blocking error message */}
+      {error && (
+        <StatusText $variant="error" style={{ marginTop: "0.5rem" }}>
+          {error}
+        </StatusText>
       )}
-
-      {/* Footer with keyboard hints */}
-      <TuiFooter>
-        <TuiKeyHint>Tab</TuiKeyHint>
-        <span>切换焦点</span>
-        <span style={{ margin: "0 0.25rem" }}>·</span>
-        <TuiKeyHint>←</TuiKeyHint>
-        <TuiKeyHint>→</TuiKeyHint>
-        <span>分类/分页</span>
-        <span style={{ margin: "0 0.25rem" }}>·</span>
-        <TuiKeyHint>↑</TuiKeyHint>
-        <TuiKeyHint>↓</TuiKeyHint>
-        <span>选择文章</span>
-        <span style={{ margin: "0 0.25rem" }}>·</span>
-        <TuiKeyHint>Enter</TuiKeyHint>
-        <span>打开</span>
-        <span style={{ margin: "0 0.25rem" }}>·</span>
-        <TuiKeyHint>esc</TuiKeyHint>
-        <span>退出</span>
-      </TuiFooter>
     </BlogContainer>
   );
 }

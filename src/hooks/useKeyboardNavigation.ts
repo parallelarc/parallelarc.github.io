@@ -1,47 +1,62 @@
 /**
- * Custom Hook: Keyboard navigation for TUI (Terminal User Interface)
- * Supports multi-level focus system with category, posts, and pagination layers
+ * Custom Hook: Keyboard navigation for Unified TUI List
+ * Supports single-list navigation with ↑↓ keys cycling through all sections
  */
 
 import { useCallback } from "react";
 
-export type FocusLevel = "category" | "posts" | "pagination";
+export type ListSection = "search" | "tags" | "posts";
 
 export interface FocusState {
-  level: FocusLevel;
-  categoryIndex: number;
+  section: ListSection;
+  tagsIndex: number;
   postIndex: number;
-  pageIndex: number;
 }
 
 export interface UseKeyboardNavigationOptions {
   focusState: FocusState;
   setFocusState: (state: FocusState) => void;
   categoryCount: number;
-  postsPerPage: number;
   currentPagePosts: number;
   totalPages: number;
+  currentPage: number;
+  activeCategoryIndex?: number;
 
-  // Callbacks for each level
+  // Callbacks
   onCategoryChange?: (index: number) => void;
   onPostSelect?: (index: number) => void;
   onPageChange?: (page: number) => void;
   onEscape?: () => void;
+  onSearchInput?: (char: string) => void;
+  onSearchBackspace?: () => void;
+  // Cursor movement callbacks for search mode
+  onSearchMoveLeft?: () => void;
+  onSearchMoveRight?: () => void;
+  onSearchMoveToStart?: () => void;
+  onSearchMoveToEnd?: () => void;
+  onSearchDelete?: () => void;
 }
 
 export function useKeyboardNavigation({
   focusState,
   setFocusState,
   categoryCount,
-  postsPerPage,
   currentPagePosts,
   totalPages,
+  currentPage,
+  activeCategoryIndex,
   onCategoryChange,
   onPostSelect,
   onPageChange,
   onEscape,
+  onSearchInput,
+  onSearchBackspace,
+  onSearchMoveLeft,
+  onSearchMoveRight,
+  onSearchMoveToStart,
+  onSearchMoveToEnd,
+  onSearchDelete,
 }: UseKeyboardNavigationOptions) {
-  // Handle keyboard navigation
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       // Ignore if modifier keys are pressed
@@ -56,83 +71,147 @@ export function useKeyboardNavigation({
         return;
       }
 
-      const { level, categoryIndex, postIndex, pageIndex } = focusState;
+      const { section, tagsIndex, postIndex } = focusState;
 
-      switch (level) {
-        case "category":
-          // Left/Right - switch category
+      // Handle character input when in search mode
+      if (section === "search") {
+        // Backspace - delete last character
+        if (e.key === "Backspace") {
+          e.preventDefault();
+          onSearchBackspace?.();
+          return;
+        }
+        // Regular character input - single character, not a control key
+        if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+          e.preventDefault();
+          onSearchInput?.(e.key);
+          return;
+        }
+      }
+
+      switch (section) {
+        case "search":
+          // ← - move cursor left
           if (e.key === "ArrowLeft") {
             e.preventDefault();
-            const newIndex =
-              categoryIndex > 0 ? categoryIndex - 1 : categoryCount - 1;
-            setFocusState({ ...focusState, categoryIndex: newIndex });
-            onCategoryChange?.(newIndex);
-          } else if (e.key === "ArrowRight") {
+            onSearchMoveLeft?.();
+          }
+          // → - move cursor right
+          else if (e.key === "ArrowRight") {
             e.preventDefault();
-            const newIndex =
-              categoryIndex < categoryCount - 1 ? categoryIndex + 1 : 0;
-            setFocusState({ ...focusState, categoryIndex: newIndex });
+            onSearchMoveRight?.();
+          }
+          // Home - move to start
+          else if (e.key === "Home") {
+            e.preventDefault();
+            onSearchMoveToStart?.();
+          }
+          // End - move to end
+          else if (e.key === "End") {
+            e.preventDefault();
+            onSearchMoveToEnd?.();
+          }
+          // Delete - delete character at cursor
+          else if (e.key === "Delete") {
+            e.preventDefault();
+            onSearchDelete?.();
+          }
+          // ↑ - cycle to last post
+          else if (e.key === "ArrowUp" && currentPagePosts > 0) {
+            e.preventDefault();
+            setFocusState({
+              section: "posts",
+              tagsIndex: activeCategoryIndex ?? 0,
+              postIndex: currentPagePosts - 1,
+            });
+          }
+          // ↓ - move to tags (if categories exist) or first post
+          else if (e.key === "ArrowDown") {
+            e.preventDefault();
+            if (categoryCount > 1) {
+              // Has categories, move to tags
+              setFocusState({
+                section: "tags",
+                tagsIndex: activeCategoryIndex ?? 0,
+                postIndex: 0
+              });
+            } else if (currentPagePosts > 0) {
+              // No categories, move directly to posts
+              setFocusState({ section: "posts", tagsIndex: 0, postIndex: 0 });
+            }
+          }
+          break;
+
+        case "tags":
+          // ↑ - move to search
+          if (e.key === "ArrowUp") {
+            e.preventDefault();
+            setFocusState({ ...focusState, section: "search" });
+          }
+          // ↓ - move to first post
+          else if (e.key === "ArrowDown" && currentPagePosts > 0) {
+            e.preventDefault();
+            setFocusState({
+              section: "posts",
+              tagsIndex,
+              postIndex: 0,
+            });
+          }
+          // ← - previous tag (cycle)
+          else if (e.key === "ArrowLeft") {
+            e.preventDefault();
+            const newIndex = tagsIndex > 0 ? tagsIndex - 1 : categoryCount - 1;
+            setFocusState({ ...focusState, tagsIndex: newIndex });
             onCategoryChange?.(newIndex);
           }
-          // Tab - move to posts focus
-          else if (e.key === "Tab") {
+          // → - next tag (cycle)
+          else if (e.key === "ArrowRight") {
             e.preventDefault();
-            setFocusState({ ...focusState, level: "posts" });
+            const newIndex = tagsIndex < categoryCount - 1 ? tagsIndex + 1 : 0;
+            setFocusState({ ...focusState, tagsIndex: newIndex });
+            onCategoryChange?.(newIndex);
           }
           break;
 
         case "posts":
-          // Up/Down - select post
+          // ↑ - move up in posts or to tags if at first
           if (e.key === "ArrowUp") {
             e.preventDefault();
-            const newIndex =
-              postIndex > 0 ? postIndex - 1 : currentPagePosts - 1;
-            setFocusState({ ...focusState, postIndex: newIndex });
-          } else if (e.key === "ArrowDown") {
-            e.preventDefault();
-            const newIndex =
-              postIndex < currentPagePosts - 1 ? postIndex + 1 : 0;
-            setFocusState({ ...focusState, postIndex: newIndex });
+            if (postIndex > 0) {
+              setFocusState({ ...focusState, postIndex: postIndex - 1 });
+            } else {
+              setFocusState({
+                section: "tags",
+                tagsIndex: activeCategoryIndex ?? 0,
+                postIndex: 0
+              });
+            }
           }
-          // Enter - open post
-          else if (e.key === "Enter") {
+          // ↓ - move down in posts or cycle to search if at last
+          else if (e.key === "ArrowDown") {
+            e.preventDefault();
+            if (postIndex < currentPagePosts - 1) {
+              setFocusState({ ...focusState, postIndex: postIndex + 1 });
+            } else {
+              setFocusState({ section: "search", tagsIndex: 0, postIndex: 0 });
+            }
+          }
+          // ← - previous page (cycle)
+          else if (e.key === "ArrowLeft" && totalPages > 1) {
+            e.preventDefault();
+            const newPage = currentPage > 1 ? currentPage - 1 : totalPages;
+            onPageChange?.(newPage);
+          }
+          // → - next page (cycle)
+          else if (e.key === "ArrowRight" && totalPages > 1) {
+            e.preventDefault();
+            const newPage = currentPage < totalPages ? currentPage + 1 : 1;
+            onPageChange?.(newPage);
+          }
+          // Enter/Space - open post
+          else if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
             onPostSelect?.(postIndex);
-          }
-          // Tab - move to pagination focus
-          else if (e.key === "Tab") {
-            e.preventDefault();
-            setFocusState({ ...focusState, level: "pagination" });
-          }
-          break;
-
-        case "pagination":
-          // Left/Right - change page
-          if (e.key === "ArrowLeft") {
-            e.preventDefault();
-            const newPage = pageIndex > 0 ? pageIndex - 1 : totalPages - 1;
-            setFocusState({ ...focusState, pageIndex: newPage });
-            onPageChange?.(newPage + 1); // Pages are 1-indexed
-          } else if (e.key === "ArrowRight") {
-            e.preventDefault();
-            const newPage = pageIndex < totalPages - 1 ? pageIndex + 1 : 0;
-            setFocusState({ ...focusState, pageIndex: newPage });
-            onPageChange?.(newPage + 1);
-          }
-          // PageUp/Down - change page
-          else if (e.key === "PageUp" || e.key === "PageDown") {
-            e.preventDefault();
-            const direction = e.key === "PageUp" ? -1 : 1;
-            let newPage = pageIndex + direction;
-            // Clamp to valid range
-            newPage = Math.max(0, Math.min(totalPages - 1, newPage));
-            setFocusState({ ...focusState, pageIndex: newPage });
-            onPageChange?.(newPage + 1);
-          }
-          // Tab - cycle back to category focus
-          else if (e.key === "Tab") {
-            e.preventDefault();
-            setFocusState({ ...focusState, level: "category" });
           }
           break;
       }
@@ -142,10 +221,19 @@ export function useKeyboardNavigation({
       categoryCount,
       currentPagePosts,
       totalPages,
+      currentPage,
+      activeCategoryIndex,
       onCategoryChange,
       onPostSelect,
       onPageChange,
       onEscape,
+      onSearchInput,
+      onSearchBackspace,
+      onSearchMoveLeft,
+      onSearchMoveRight,
+      onSearchMoveToStart,
+      onSearchMoveToEnd,
+      onSearchDelete,
       setFocusState,
     ]
   );

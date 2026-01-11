@@ -12,6 +12,8 @@ declare module "styled-components" {
       scrollHandleHover: string;
       primary: string;
       secondary: string;
+      accent: string;
+      bg: string;
       text: {
         100: string;
         200: string;

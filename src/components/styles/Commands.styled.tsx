@@ -4,6 +4,7 @@ import styled, { css, keyframes } from "styled-components";
 
 export const Cmd = styled.span`
   color: ${({ theme }) => theme.colors?.primary};
+  margin-right: 0.75rem;
 `;
 
 export const Link = styled.a`
@@ -156,8 +157,9 @@ export const StatusText = styled.p<{ $variant?: "error" | "muted" }>`
   margin: 0;
   color: ${({ $variant, theme }) => {
     if ($variant === "error") return "#ff8ba7";
-    if ($variant === "muted") return theme.colors.text[300];
-    return theme.colors.text[200];
+    const textColors = theme.colors?.text;
+    if ($variant === "muted") return textColors?.[300] || "rgba(255, 255, 255, 0.5)";
+    return textColors?.[200] || "rgba(255, 255, 255, 0.7)";
   }};
 `;
 
@@ -819,4 +821,128 @@ export const TuiPageIndicator = styled.span<{ $focused?: boolean }>`
   color: ${({ $focused, theme }) =>
     $focused ? theme.colors?.primary : theme.colors?.text[100]};
   font-size: 0.875rem;
+`;
+
+// --- Unified TUI List Components ---
+
+// Block cursor character - inverts the character color like terminal cursor
+export const TuiCursorChar = styled.span<{ $focused?: boolean }>`
+  background-color: ${({ theme }) => theme.colors?.text[100] || "#ffffff"};
+  color: ${({ theme }) => theme.colors?.body || "#000000"};
+  display: inline-block;
+  min-width: 0.6em;
+  text-align: center;
+`;
+
+export const TuiUnifiedList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+`;
+
+export const TuiFocusIndicator = styled.span<{ $visible?: boolean }>`
+  display: inline-block;
+  width: 1.2rem;
+  color: ${({ theme }) => theme.colors?.accent};
+  opacity: ${({ $visible }) => ($visible ? 1 : 0)};
+  transition: opacity 0.15s ease;
+`;
+
+export const TuiUnifiedItem = styled.div<{ $focused?: boolean }>`
+  display: flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  background: transparent;
+  color: ${({ $focused, theme }) =>
+    $focused ? theme.colors?.accent : theme.colors?.text[100]};
+  transition: color 0.15s ease;
+`;
+
+export const TuiSearchInput = styled.span<{ $focused?: boolean; $hasValue?: boolean }>`
+  flex: 1;
+  color: ${({ $hasValue, theme }) =>
+    $hasValue ? theme.colors?.text[100] : theme.colors?.text[300]};
+`;
+
+export const TuiTagsRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+`;
+
+export const TuiTag = styled.span<{ $active?: boolean; $focused?: boolean }>`
+  padding: 0 0.25rem;
+  border-radius: 2px;
+  font-size: 0.875rem;
+  background: ${({ $active, $focused, theme }) => {
+    if ($active && $focused) return theme.colors?.accent;
+    return "transparent";
+  }};
+  color: ${({ $active, $focused, theme }) => {
+    if ($active && $focused) return theme.colors?.bg;
+    if ($active) return theme.colors?.accent;
+    if ($focused) return theme.colors?.accent;
+    return theme.colors?.text[100];
+  }};
+  transition: all 0.15s ease;
+`;
+
+export const TuiPostContent = styled.div`
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+`;
+
+export const TuiPostTitle = styled.span`
+  flex: 1;
+`;
+
+export const TuiPostMeta = styled.span`
+  font-size: 0.8rem;
+  color: ${({ theme }) => theme.colors?.text[300]};
+  white-space: nowrap;
+`;
+
+export const TuiPaginationRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  color: ${({ theme }) => theme.colors?.text[300]};
+`;
+
+export const TuiPageNumber = styled.span<{ $active?: boolean }>`
+  padding: 0 0.25rem;
+  border-radius: 2px;
+  background: ${({ $active, theme }) =>
+    $active ? theme.colors?.accent : "transparent"};
+  color: ${({ $active, theme }) =>
+    $active ? theme.colors?.bg : theme.colors?.text[300]};
+  transition: all 0.15s ease;
+`;
+
+export const TuiSeparator = styled.div`
+  height: 1px;
+  width: 100%;
+  background: ${({ theme }) => theme.colors?.text[300]};
+  opacity: 0.35;
+  margin: 0.5rem 0;
+`;
+
+export const TuiInstructions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  color: ${({ theme }) => theme.colors?.text[300]};
+
+  span {
+    color: ${({ theme }) => theme.colors?.text[200]};
+  }
 `;
