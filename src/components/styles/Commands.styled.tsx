@@ -502,6 +502,8 @@ export const PreNameMobile = styled.pre`
 `;
 
 export const PreImg = styled.pre`
+  line-height: 1.1;
+
   @media (max-width: 550px) {
     display: none;
   }

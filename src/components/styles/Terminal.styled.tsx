@@ -211,7 +211,7 @@ export const CommandsList = styled.div`
 // 命令项（用于斜杠命令列表）
 export const CommandItem = styled.div<{ $selected: boolean }>`
   white-space: nowrap;
-  color: ${({ $selected }) => $selected ? "rgb(168, 85, 247)" : "rgba(255, 255, 255, 0.35)"};
+  color: ${({ $selected }) => $selected ? "rgb(200, 150, 255)" : "rgba(255, 255, 255, 0.35)"};
   display: flex;
   align-items: center;
 
