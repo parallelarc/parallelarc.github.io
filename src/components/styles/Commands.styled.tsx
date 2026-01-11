@@ -851,7 +851,6 @@ export const TuiFocusIndicator = styled.span<{ $visible?: boolean }>`
 export const TuiUnifiedItem = styled.div<{ $focused?: boolean }>`
   display: flex;
   align-items: center;
-  padding: 0.25rem 0.5rem;
   background: transparent;
   color: ${({ $focused, theme }) =>
     $focused ? theme.colors?.accent : theme.colors?.text[100]};
@@ -909,7 +908,7 @@ export const TuiPostMeta = styled.span`
 export const TuiPaginationRow = styled.div`
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: 0.5rem;
   padding: 0.25rem 0.5rem;
   font-size: 0.875rem;

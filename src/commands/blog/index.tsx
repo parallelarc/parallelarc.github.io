@@ -197,13 +197,9 @@ function Blog() {
   const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
   const totalPosts = posts.length;
 
-  // Generate page numbers for display
-  const pageNumbers = totalPages > 0
-    ? Array.from({ length: totalPages }, (_, i) => i + 1)
-    : [1];
-
   // Format labels for display
-  const formatLabels = (labels: string[]) => labels.join(", ");
+  const formatLabels = (labels: string[]) =>
+    labels.filter((l) => l.toLowerCase() !== "blog").join(", ");
 
   return (
     <BlogContainer data-testid="blog">
@@ -239,7 +235,7 @@ function Blog() {
             const isFocused = focusState.section === "posts" && focusState.postIndex === index;
             return (
               <TuiUnifiedItem key={post.id} $focused={isFocused}>
-                <TuiFocusIndicator $visible={isFocused} />
+                <TuiFocusIndicator $visible={isFocused}>{">"}</TuiFocusIndicator>
                 <TuiPostContent>
                   <TuiPostTitle>
                     {startIndex + index + 1}. {post.title}
@@ -255,14 +251,10 @@ function Blog() {
         )}
 
         {/* 3. 分页行（仅展示） */}
-        {totalPages > 1 && currentPosts.length > 0 && (
+        {currentPosts.length > 0 && (
           <TuiPaginationRow>
             <span>{"<prev"}</span>
-            {pageNumbers.map((p) => (
-              <TuiPageNumber key={p} $active={p === currentPage}>
-                {p}
-              </TuiPageNumber>
-            ))}
+            <span>Page {currentPage}/{totalPages}</span>
             <span>{"next>"}</span>
           </TuiPaginationRow>
         )}

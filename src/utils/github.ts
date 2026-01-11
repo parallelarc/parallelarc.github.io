@@ -123,7 +123,9 @@ export function calculateCategoryStats(
 
   posts.forEach((post) => {
     post.labels.forEach((label) => {
-      labelCount[label] = (labelCount[label] || 0) + 1;
+      if (label.toLowerCase() !== "blog") {
+        labelCount[label] = (labelCount[label] || 0) + 1;
+      }
     });
   });
 
