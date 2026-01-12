@@ -37,6 +37,9 @@ const BLOG_CONFIG: GitHubConfig = {
   labels: import.meta.env.VITE_GITHUB_BLOG_LABEL
     ? [import.meta.env.VITE_GITHUB_BLOG_LABEL]
     : undefined,
+  dataSource:
+    import.meta.env.VITE_BLOG_DATA_SOURCE === "static" ? "static" : "api",
+  staticUrl: import.meta.env.VITE_BLOG_STATIC_URL,
 };
 
 const REPO_URL = `https://github.com/${BLOG_CONFIG.owner}/${BLOG_CONFIG.repo}`;

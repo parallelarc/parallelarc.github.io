@@ -67,6 +67,8 @@ VITE_GITHUB_OWNER=owner           # GitHub用户名
 VITE_GITHUB_BLOG_REPO=repo        # 博客仓库名
 VITE_GITHUB_BLOG_LABEL=label      # 博客标签
 VITE_GITHUB_TOKEN=token           # GitHub Token（可选）
+VITE_BLOG_DATA_SOURCE=static      # Use static blog.json
+VITE_BLOG_STATIC_URL=/blog.json   # Static data URL
 ```
 
 ## 配置项
@@ -338,6 +340,9 @@ echo $VITE_GITHUB_BLOG_REPO
 # 测试Token
 curl -H "Authorization: token $VITE_GITHUB_TOKEN" \
   https://api.github.com/repos/$OWNER/$REPO/issues
+
+# Static mode (no token in client bundle)
+BLOG_GITHUB_TOKEN=ghp_xxx pnpm blog:generate
 ```
 
 ## 相关链接

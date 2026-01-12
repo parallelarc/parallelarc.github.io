@@ -211,6 +211,10 @@ VITE_GITHUB_OWNER=parallelarc
 VITE_GITHUB_BLOG_REPO=blog
 VITE_GITHUB_BLOG_LABEL=blog
 VITE_GITHUB_TOKEN=ghp_xxxxx
+
+# Static blog data (avoid exposing token in the client bundle)
+VITE_BLOG_DATA_SOURCE=static
+VITE_BLOG_STATIC_URL=/blog.json
 ```
 
 ### 使用环境变量
@@ -220,6 +224,9 @@ const config: GitHubConfig = {
   owner: import.meta.env.VITE_GITHUB_OWNER || "default",
   repo: import.meta.env.VITE_GITHUB_BLOG_REPO || "blog",
   token: import.meta.env.VITE_GITHUB_TOKEN,
+  dataSource:
+    import.meta.env.VITE_BLOG_DATA_SOURCE === "static" ? "static" : "api",
+  staticUrl: import.meta.env.VITE_BLOG_STATIC_URL,
 };
 ```
 
@@ -232,7 +239,23 @@ VITE_GITHUB_OWNER=your-username
 VITE_GITHUB_BLOG_REPO=your-blog-repo
 VITE_GITHUB_BLOG_LABEL=blog
 VITE_GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
+
+# Use static data in production builds (recommended for GitHub Pages)
+VITE_BLOG_DATA_SOURCE=static
+VITE_BLOG_STATIC_URL=/blog.json
 ```
+
+### Static blog data (CI build)
+
+To avoid exposing a GitHub token in the browser, generate `public/blog.json`
+in CI and set the app to `static` mode.
+
+```bash
+BLOG_GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
+pnpm blog:generate
+```
+
+Do not set `VITE_GITHUB_TOKEN` in production builds when using static mode.
 
 ---
 

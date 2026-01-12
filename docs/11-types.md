@@ -259,6 +259,8 @@ interface GitHubConfig {
   repo: string                       // 仓库名称
   token?: string                     // Personal Access Token
   labels?: string[]                  // 标签过滤
+  dataSource?: "api" | "static"      // Data source mode
+  staticUrl?: string                 // Static JSON URL
 }
 ```
 

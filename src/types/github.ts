@@ -65,6 +65,8 @@ export interface GitHubConfig {
   repo: string;
   token?: string;
   labels?: string[];
+  dataSource?: "api" | "static";
+  staticUrl?: string;
 }
 
 // API 响应状态

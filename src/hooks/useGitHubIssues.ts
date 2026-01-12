@@ -68,7 +68,14 @@ export function useGitHubIssues(
     } finally {
       setLoading(false);
     }
-  }, [config.owner, config.repo, config.token, config.labels?.join(",")]);
+  }, [
+    config.owner,
+    config.repo,
+    config.token,
+    config.labels?.join(","),
+    config.dataSource,
+    config.staticUrl,
+  ]);
 
   // Initial load
   useEffect(() => {

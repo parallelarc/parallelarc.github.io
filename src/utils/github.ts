@@ -68,6 +68,28 @@ export async function fetchIssues(
   }
 }
 
+async function fetchStaticBlogPosts(staticUrl: string): Promise<BlogPost[]> {
+  const response = await fetch(staticUrl);
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error(
+        "Static blog data not found. Ensure /blog.json is generated during build."
+      );
+    }
+    throw new Error(
+      `Failed to fetch static blog data: ${response.status} ${response.statusText}`
+    );
+  }
+
+  const data = await response.json();
+  if (!Array.isArray(data)) {
+    throw new Error("Static blog data is invalid. Expected an array of posts.");
+  }
+
+  return data as BlogPost[];
+}
+
 /**
  * Transform GitHub Issue to blog post format
  */
@@ -101,6 +123,15 @@ function transformIssueToBlogPost(issue: GitHubIssue): BlogPost {
 export async function fetchBlogPosts(
   config: GitHubConfig
 ): Promise<BlogPost[]> {
+  if (config.dataSource === "static") {
+    const staticUrl = config.staticUrl || "/blog.json";
+    const posts = await fetchStaticBlogPosts(staticUrl);
+    posts.sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+    return posts;
+  }
+
   const issues = await fetchIssues(config);
   const posts = issues.map((issue) => transformIssueToBlogPost(issue));
 
