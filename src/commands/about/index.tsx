@@ -11,15 +11,7 @@ function About() {
         an algorithm engineer at a cool robotics company.
       </p>
       <p>
-        Previously a researcher in{" "}
-        <Link
-          href="https://group.iiis.tsinghua.edu.cn/~marslab/#/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          MARS Lab
-        </Link>{" "}
-        at IIIS, Tsinghua University, working with Prof. Hang Zhao. I
+        Previously a researcher at IIIS, Tsinghua University. I
         collaborated with Xiaomi Auto and Li Auto.
       </p>
     </AboutWrapper>
