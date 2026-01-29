@@ -260,7 +260,7 @@ No buttons, no noise — just commands, output, and a trace of how I think.`,
     id: 3,
     title: "Jarvis",
     desc:
-      "Jarvis is a gesture-based interface for controlling 3D objects on 2D screens. A new interaction for personal AI assistants. No AI involved, for now",
+      "Jarvis is a gesture-based interface for controlling 3D objects on 2D screens. A new interaction for personal AI assistants. No AI involved, for now.",
     url: "https://github.com/parallelarc/Jarvis",
   },
 ];
