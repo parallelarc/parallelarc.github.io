@@ -237,7 +237,7 @@ No buttons, no noise — just commands, output, and a trace of how I think.`,
     title: "Vbot",
     desc:
       "Vbot is a robot pet designed for family and outdoor life. During Beijing's first snow in 2025, it walked through Purple Jade Villas, meeting friends along the way.",
-    url: "https://space.bilibili.com/3546948055337693",
+     url: "https://space.bilibili.com/3546948055337693",
     albumGroups: [
       {
         id: "snow-companions",
@@ -255,6 +255,13 @@ No buttons, no noise — just commands, output, and a trace of how I think.`,
         imageIds: ["dessert", "deer", "husky"],
       },
     ],
+  },
+  {
+    id: 3,
+    title: "Jarvis",
+    desc:
+      "Jarvis is a gesture-based interface for controlling 3D objects on 2D screens. A new interaction for personal AI assistants. No AI involved, for now",
+    url: "https://github.com/parallelarc/Jarvis",
   },
 ];
 
