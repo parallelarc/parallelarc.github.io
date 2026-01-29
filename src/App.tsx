@@ -1,5 +1,6 @@
 import { createContext, useCallback, useEffect, useState } from "react";
 import type { DefaultTheme } from "styled-components";
+// eslint-disable-next-line no-duplicate-imports
 import { ThemeProvider } from "styled-components";
 import { useTheme } from "./hooks/useTheme";
 import GlobalStyle from "./components/styles/GlobalStyle";

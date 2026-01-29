@@ -24,7 +24,6 @@ import {
   TuiPostTitle,
   TuiPostMeta,
   TuiPaginationRow,
-  TuiPageNumber,
   TuiSeparator,
   TuiInstructions,
 } from "../../components/styles/Commands.styled";
@@ -42,7 +41,7 @@ const BLOG_CONFIG: GitHubConfig = {
   staticUrl: import.meta.env.VITE_BLOG_STATIC_URL,
 };
 
-const REPO_URL = `https://github.com/${BLOG_CONFIG.owner}/${BLOG_CONFIG.repo}`;
+
 
 function Blog() {
   const { arg, isLatest, index, setDismissMessage } = useContext(termContext);
@@ -61,7 +60,6 @@ function Blog() {
     error,
     listState,
     categoryStats,
-    refresh,
     setActiveCategory,
     setSearchQuery,
     setCurrentPage,
@@ -173,10 +171,6 @@ function Blog() {
     };
   }, [isLatest, handleKeyDown, setInteractiveMode]);
 
-  const handleRefresh = useCallback(() => {
-    refresh();
-  }, [refresh]);
-
   // Loading state
   if (loading && posts.length === 0) {
     return (
@@ -198,7 +192,6 @@ function Blog() {
   }
 
   const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
-  const totalPosts = posts.length;
 
   // Format labels for display
   const formatLabels = (labels: string[]) =>

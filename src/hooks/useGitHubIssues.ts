@@ -120,11 +120,6 @@ export function useGitHubIssues(
     [filteredPosts.length]
   );
 
-  const paginatedPosts = useMemo(() => {
-    const start = (currentPage - 1) * POSTS_PER_PAGE;
-    return filteredPosts.slice(start, start + POSTS_PER_PAGE);
-  }, [filteredPosts, currentPage]);
-
   // Operations
   const setActiveCategory = useCallback((category: string) => {
     setActiveCategoryState(category);

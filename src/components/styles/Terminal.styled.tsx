@@ -1,5 +1,4 @@
-import styled, { keyframes } from "styled-components";
-import { BaseOutputStyle } from "./Output.styled";
+import styled from "styled-components";
 
 export const Wrapper = styled.div`
   position: relative;
@@ -228,42 +227,5 @@ export const CommandName = styled.span`
   margin-right: 1rem;
 `;
 
-const scanline = keyframes`
-  0% {
-    opacity: 0.4;
-  }
-  50% {
-    opacity: 0.8;
-  }
-  100% {
-    opacity: 0.4;
-  }
-`;
 
-const glitch = keyframes`
-  0% {
-    clip-path: inset(40% 0 61% 0);
-    transform: skew(0.9deg);
-  }
-  20% {
-    clip-path: inset(10% 0 35% 0);
-    transform: skew(0.7deg);
-  }
-  40% {
-    clip-path: inset(80% 0 5% 0);
-    transform: skew(1deg);
-  }
-  60% {
-    clip-path: inset(50% 0 30% 0);
-    transform: skew(0.4deg);
-  }
-  80% {
-    clip-path: inset(20% 0 50% 0);
-    transform: skew(0.8deg);
-  }
-  100% {
-    clip-path: inset(40% 0 61% 0);
-    transform: skew(0.9deg);
-  }
-`;
 

@@ -1,4 +1,4 @@
-import { AboutWrapper, HighlightSpan, Link } from "../../components/styles/Commands.styled";
+import { AboutWrapper, HighlightSpan } from "../../components/styles/Commands.styled";
 
 function About() {
   return (

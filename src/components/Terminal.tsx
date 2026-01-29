@@ -1,7 +1,6 @@
 import {
   createContext,
   useCallback,
-  useEffect,
   useRef,
 } from "react";
 import { terminalConfig } from "../config/terminal";
@@ -18,7 +17,6 @@ import "../commands";
 import {
   CopyToast,
   Form,
-  Hints,
   InputHint,
   ShortcutsGrid,
   ShortcutItem,
@@ -47,10 +45,7 @@ type Command = {
 // Get commands from registry (safe to call at runtime after command registration)
 export const getCommands = (): Command[] => commandRegistry.getLegacyCommands();
 
-// Note: 'commands' export is evaluated at module load time,
-// but commands are registered by the `import "../commands"` above.
-// If this causes issues, use getCommands() instead.
-export const commands = getCommands();
+
 
 export type Term = {
   arg: string[];

@@ -1,7 +1,5 @@
 import {
-  Cmd,
   HeroContainer,
-  Instruction,
   PreImg,
   PreName,
   PreNameMobile,

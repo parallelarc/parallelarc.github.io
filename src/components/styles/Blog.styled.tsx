@@ -3,7 +3,7 @@
  * 类 Claude Code /status 风格
  */
 
-import styled, { css, keyframes } from "styled-components";
+import styled, { keyframes } from "styled-components";
 
 // 全屏容器
 export const BlogContainer = styled.div`

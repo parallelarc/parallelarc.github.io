@@ -37,7 +37,7 @@ const CommandContext = createContext<CommandContextValue | null>(null);
 export function CommandProvider({ children }: { children: ReactNode }) {
   const addToHistory = useTerminalStore((state: TerminalState) => state.addToHistory);
 
-  const execute = (command: string, args: string[]) => {
+  const execute = (command: string, _args: string[]) => { // eslint-disable-line @typescript-eslint/no-unused-vars
     // Add to history
     addToHistory(command);
 

@@ -5,10 +5,6 @@
 
 import type { GitHubIssue, BlogPost, GitHubConfig, CategoryStats } from "../types/github";
 
-const DEFAULT_CONFIG: Partial<GitHubConfig> = {
-  labels: ["blog"],
-};
-
 /**
  * Create GitHub API request headers
  */
@@ -95,7 +91,7 @@ async function fetchStaticBlogPosts(staticUrl: string): Promise<BlogPost[]> {
  */
 function transformIssueToBlogPost(issue: GitHubIssue): BlogPost {
   const excerpt = issue.body
-    .replace(/[#*`\[\]]/g, "")
+    .replace(/[#*\]`[]/g, "")
     .replace(/\n+/g, " ")
     .trim()
     .slice(0, 150) + "...";

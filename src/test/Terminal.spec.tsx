@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { UserEvent } from "@testing-library/user-event/dist/types/setup/setup";
 import { render, screen, userEvent } from "../utils/test-utils";
-import Terminal, { commands } from "../components/Terminal";
+import Terminal, { getCommands } from "../components/Terminal";
 
 // setup function
 function setup(jsx: JSX.Element) {
@@ -11,7 +11,7 @@ function setup(jsx: JSX.Element) {
   };
 }
 
-const allCmds = commands.map(cmdObj => cmdObj.cmd);
+const allCmds = getCommands().map((cmdObj: { cmd: string }) => cmdObj.cmd);
 
 describe("Terminal Component", () => {
   let terminalInput: HTMLInputElement;
@@ -143,10 +143,10 @@ describe("Terminal Component", () => {
 
   describe("Invalid Arguments", () => {
     const usageCmds = allCmds.filter(
-      cmd => !["export"].includes(cmd)
+      (cmd: string) => !["export"].includes(cmd)
     );
 
-    usageCmds.forEach(cmd => {
+    usageCmds.forEach((cmd: string) => {
       it(`should return usage component for ${cmd} cmd with invalid arg`, async () => {
         await user.type(terminalInput, `${cmd} sth{enter}`);
         expect(screen.getByTestId("usage-output").innerHTML).toBe(
@@ -159,7 +159,7 @@ describe("Terminal Component", () => {
   describe("Keyboard shortcuts", () => {
     const autocompleteCmds = allCmds;
 
-    autocompleteCmds.forEach(cmd => {
+    autocompleteCmds.forEach((cmd: string) => {
       it(`should autocomplete '${cmd}' when 'Tab' is pressed`, async () => {
         await user.type(terminalInput, cmd.slice(0, 2));
         await user.tab();
@@ -167,7 +167,7 @@ describe("Terminal Component", () => {
       });
     });
 
-    autocompleteCmds.forEach(cmd => {
+    autocompleteCmds.forEach((cmd: string) => {
       it(`should autocomplete '${cmd}' when 'Ctrl + i' is pressed`, async () => {
         await user.type(terminalInput, cmd.slice(0, 2));
         await user.keyboard("{Control>}i{/Control}");

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { FaEnvelope, FaGithub, FaSteam, FaXTwitter } from "react-icons/fa6";
 import styled from "styled-components";
 import {
@@ -17,7 +17,7 @@ type ContactLink = {
   title: string;
   url: string;
   desc?: string;
-  icon: any;
+  icon: React.ComponentType<{ size?: number }>;
   gallery?: {
     src: string;
     alt: string;
