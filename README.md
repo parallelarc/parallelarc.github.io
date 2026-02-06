@@ -1,6 +1,6 @@
 <div align="center">
 
-![Terminal Portfolio](demo.jpg)
+![Terminal Portfolio](public/demo.jpg)
 
 # Terminal Portfolio
 
