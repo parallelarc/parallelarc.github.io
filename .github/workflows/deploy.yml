@@ -9,7 +9,6 @@ permissions:
   contents: read
   pages: write
   id-token: write
-  issues: read
 
 concurrency:
   group: "pages"
@@ -41,10 +40,15 @@ jobs:
         run: npm run blog:generate
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BLOG_GITHUB_REPO: ${{ github.repository }}
+          BLOG_GITHUB_LABEL: blog
 
       - name: Build site
         run: npm run build
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BLOG_GITHUB_REPO: ${{ github.repository }}
+          BLOG_GITHUB_LABEL: blog
           VITE_BLOG_DATA_SOURCE: static
           VITE_BLOG_STATIC_URL: /blog.json
 

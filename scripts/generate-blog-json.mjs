@@ -3,14 +3,21 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-const owner =
+// Parse owner/repo from environment variables
+const ownerEnv =
   process.env.VITE_GITHUB_OWNER ||
   process.env.BLOG_GITHUB_OWNER ||
   "parallelarc";
-const repo =
+const repoEnv =
   process.env.VITE_GITHUB_BLOG_REPO ||
   process.env.BLOG_GITHUB_REPO ||
   "parallelarc.github.io";
+
+// Handle both "owner" and "owner/repo" formats
+const [owner, repoName] = repoEnv.includes("/")
+  ? repoEnv.split("/")
+  : [ownerEnv, repoEnv];
+
 const label =
   process.env.VITE_GITHUB_BLOG_LABEL ||
   process.env.BLOG_GITHUB_LABEL;
@@ -26,7 +33,7 @@ if (!token) {
   process.exit(1);
 }
 
-const url = new URL(`https://api.github.com/repos/${owner}/${repo}/issues`);
+const url = new URL(`https://api.github.com/repos/${owner}/${repoName}/issues`);
 url.searchParams.set("state", "open");
 url.searchParams.set("per_page", "100");
 if (label) {
