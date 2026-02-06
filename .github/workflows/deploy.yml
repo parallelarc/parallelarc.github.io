@@ -37,14 +37,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Generate blog data
+        run: npm run blog:generate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build site
         run: npm run build
         env:
-          # Use API mode with auto-detected repository
-          VITE_BLOG_DATA_SOURCE: api
-          VITE_GITHUB_OWNER: ${{ github.repository_owner }}
-          VITE_GITHUB_BLOG_REPO: ${{ github.repository }}
-          VITE_GITHUB_BLOG_LABEL: ${{ vars.BLOG_LABEL || 'blog' }}
+          VITE_BLOG_DATA_SOURCE: static
+          VITE_BLOG_STATIC_URL: /blog.json
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

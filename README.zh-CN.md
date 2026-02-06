@@ -161,19 +161,13 @@ src/
 
 ### 博客配置
 
-博客文章从你的 Fork 仓库中带有 `blog` 标签的 GitHub Issues 获取。添加文章：
+博客文章从 `public/blog.json` 加载。自定义方式：
 
-1. 在你的 Fork 仓库中创建新 issue
-2. 添加 `blog` 标签
-3. 网站会自动显示
+1. 在仓库中创建带有 `blog` 标签的 issue
+2. 运行 `npm run blog:generate` 更新 `blog.json`
+3. 提交并推送更改
 
-**可选**：在仓库 Settings → Variables → 中设置 `BLOG_LABEL` 来自定义博客标签（默认：`blog`）
-
-**本地开发**：编辑 `.env` 文件匹配你的 GitHub 用户名：
-```bash
-VITE_GITHUB_OWNER=your-username
-VITE_GITHUB_BLOG_REPO=your-username.github.io
-```
+本地开发也可以直接编辑 `public/blog.json`，或在 `.env` 中设置 `VITE_BLOG_DATA_SOURCE=api` 使用 API 模式。
 
 ---
 

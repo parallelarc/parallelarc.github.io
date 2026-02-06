@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "npm run blog:generate && tsc && vite build",
     "blog:generate": "node scripts/generate-blog-json.mjs",
     "preview": "vite preview",
     "test:once": "vitest run",

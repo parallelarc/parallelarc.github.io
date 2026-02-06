@@ -160,19 +160,13 @@ The deployment automatically detects your fork and uses your repository for blog
 
 ### Blog Configuration
 
-Blog posts are fetched from your fork's GitHub Issues with the `blog` label. To add posts:
+Blog posts are loaded from `public/blog.json`. To customize:
 
-1. Create a new issue in your forked repository
-2. Add the `blog` label
-3. The site will automatically display it
+1. Create issues with the `blog` label in your repository
+2. Run `npm run blog:generate` to update `blog.json`
+3. Commit and push the changes
 
-**Optional**: Customize the blog label by setting `BLOG_LABEL` in your repository Settings → Variables (default: `blog`)
-
-**Local development**: Edit `.env` to match your GitHub username:
-```bash
-VITE_GITHUB_OWNER=your-username
-VITE_GITHUB_BLOG_REPO=your-username.github.io
-```
+For local development, you can also manually edit `public/blog.json` or use the API mode by setting `VITE_BLOG_DATA_SOURCE=api` in `.env`.
 
 ---
 
