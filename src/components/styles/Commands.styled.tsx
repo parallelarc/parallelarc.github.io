@@ -482,6 +482,13 @@ export const HeroContainer = styled.div`
 export const PreName = styled.pre`
   margin-top: 0.5rem;
   margin-bottom: 1.5rem;
+  font-family: "Cascadia Code", "SF Mono", "Fira Code", "Consolas", "Lucida Console", "Courier New", monospace;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+  -webkit-font-variant-ligatures: none;
+  line-height: 1.05;
+  letter-spacing: 0;
+  padding: 0;
   ${rainbowTextStyles};
 
   @media (max-width: 550px) {
@@ -496,6 +503,13 @@ export const PreWrapper = styled.div`
 export const PreNameMobile = styled.pre`
   margin-top: 0.5rem;
   margin-bottom: 1.5rem;
+  font-family: "Cascadia Code", "SF Mono", "Fira Code", "Consolas", "Lucida Console", "Courier New", monospace;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+  -webkit-font-variant-ligatures: none;
+  line-height: 1.05;
+  letter-spacing: 0;
+  padding: 0;
   ${rainbowTextStyles};
 
   @media (min-width: 550px) {
@@ -504,7 +518,13 @@ export const PreNameMobile = styled.pre`
 `;
 
 export const PreImg = styled.pre`
-  line-height: 1.1;
+  font-family: "Cascadia Code", "SF Mono", "Fira Code", "Consolas", "Lucida Console", "Courier New", monospace;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+  -webkit-font-variant-ligatures: none;
+  line-height: 1.05;
+  letter-spacing: 0;
+  padding: 0;
 
   @media (max-width: 550px) {
     display: none;
