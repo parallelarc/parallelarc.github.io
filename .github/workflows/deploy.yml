@@ -28,37 +28,23 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "pnpm"
+          cache: "npm"
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
-
-      - name: Generate blog data
-        run: pnpm blog:generate
-        env:
-          BLOG_GITHUB_TOKEN: ${{ secrets.BLOG_GITHUB_TOKEN }}
-          GITHUB_TOKEN: ${{ github.token }}
-          VITE_GITHUB_OWNER: ${{ secrets.VITE_GITHUB_OWNER }}
-          VITE_GITHUB_BLOG_REPO: ${{ secrets.VITE_GITHUB_BLOG_REPO }}
-          VITE_GITHUB_BLOG_LABEL: ${{ secrets.VITE_GITHUB_BLOG_LABEL }}
+        run: npm ci
 
       - name: Build site
-        run: pnpm build
+        run: npm run build
         env:
-          VITE_BLOG_DATA_SOURCE: static
-          VITE_BLOG_STATIC_URL: /blog.json
-          VITE_GITHUB_OWNER: ${{ secrets.VITE_GITHUB_OWNER }}
-          VITE_GITHUB_BLOG_REPO: ${{ secrets.VITE_GITHUB_BLOG_REPO }}
-          VITE_GITHUB_BLOG_LABEL: ${{ secrets.VITE_GITHUB_BLOG_LABEL }}
+          # Use API mode with auto-detected repository
+          VITE_BLOG_DATA_SOURCE: api
+          VITE_GITHUB_OWNER: ${{ github.repository_owner }}
+          VITE_GITHUB_BLOG_REPO: ${{ github.repository }}
+          VITE_GITHUB_BLOG_LABEL: ${{ vars.BLOG_LABEL || 'blog' }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

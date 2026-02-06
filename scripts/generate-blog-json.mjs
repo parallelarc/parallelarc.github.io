@@ -10,7 +10,7 @@ const owner =
 const repo =
   process.env.VITE_GITHUB_BLOG_REPO ||
   process.env.BLOG_GITHUB_REPO ||
-  "blog";
+  "parallelarc.github.io";
 const label =
   process.env.VITE_GITHUB_BLOG_LABEL ||
   process.env.BLOG_GITHUB_LABEL;
