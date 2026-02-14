@@ -8,6 +8,7 @@ on:
 permissions:
   contents: write
   issues: read
+  workflows: write
 
 jobs:
   update-blog:
@@ -15,6 +16,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -28,10 +31,22 @@ jobs:
           BLOG_GITHUB_REPO: ${{ github.repository }}
           BLOG_GITHUB_LABEL: blog
 
-      - name: Commit changes
+      - name: Commit and push changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add public/blog.json
           git diff --staged --quiet || git commit -m "chore: update blog data"
-          git push
+
+      - name: Trigger deploy workflow
+        run: |
+          # Use GitHub API to trigger the deploy workflow
+          # This works because we have workflows: write permission
+          curl -X POST https://api.github.com/repos/${{ github.repository }}/actions/workflows/deploy.yml/dispatches \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -d '{"ref":"main"}'
+
+      - name: Push changes
+        run: git push
