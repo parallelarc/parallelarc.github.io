@@ -146,17 +146,52 @@ src/
 
 ## &nbsp; Deployment
 
-This project uses GitHub Actions for automatic deployment to GitHub Pages.
+### Cloudflare (Recommended)
 
-### Fork & Deploy
+This setup keeps all LLM keys on the server side and never exposes keys in frontend assets.
 
-1. **Fork this repository**
-2. **Enable GitHub Pages** in your fork settings:
-   - Go to Settings → Pages
-   - Source: GitHub Actions
-3. **Push to main branch** — automatic deployment begins!
+1. Install Wrangler and log in:
 
-The deployment automatically detects your fork and uses your repository for blog posts. No configuration needed!
+```bash
+npx wrangler login
+```
+
+2. Configure Worker secrets (one-time):
+
+```bash
+npx wrangler secret put ANTHROPIC_COMPAT_API_KEY
+```
+
+3. Configure Worker vars (`wrangler.toml` or dashboard):
+- `DEFAULT_PROVIDER=anthropic-compatible`
+- `ANTHROPIC_COMPAT_BASE_URL=https://open.bigmodel.cn/api/anthropic` (or your compatible gateway base URL)
+- `ANTHROPIC_COMPAT_AUTH_MODE=x-api-key` (or `bearer`)
+- `ANTHROPIC_COMPAT_MODEL=claude-3-5-sonnet-latest`
+
+4. Deploy the proxy Worker:
+
+```bash
+npm run cf:worker:deploy
+```
+
+5. Set frontend env:
+- `VITE_LLM_PROXY_URL` = your Worker URL (e.g. `https://xxx.workers.dev`)
+- `VITE_LLM_PROVIDER=anthropic-compatible`
+- Optional: `VITE_LLM_ANTHROPIC_COMPAT_MODEL`
+
+6. Deploy site to Cloudflare Pages:
+- Use GitHub workflow: `.github/workflows/deploy-cloudflare.yml`
+- Required GitHub Secrets:
+  - `CLOUDFLARE_API_TOKEN`
+  - `CLOUDFLARE_ACCOUNT_ID`
+- Optional GitHub Variable:
+  - `CLOUDFLARE_PAGES_PROJECT` (defaults to `parallelarc-portfolio`)
+
+More proxy details: `cloudflare/README.md`
+
+### GitHub Pages (Static-only)
+
+GitHub Pages deployment still works for static content, but real-time AI chat should use a backend proxy (Cloudflare Worker) to avoid exposing provider keys.
 
 ### Blog Configuration
 

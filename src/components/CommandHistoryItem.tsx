@@ -9,6 +9,7 @@ import type { CommandHistoryEntry } from "../stores/terminalStore";
 
 type CommandHistoryItemProps = {
   cmdH: string;
+  displayCommand?: string;
   entryId?: string;
   index: number;
   cmdHistory: CommandHistoryEntry[];
@@ -21,6 +22,7 @@ type CommandHistoryItemProps = {
 
 function CommandHistoryItem({
   cmdH,
+  displayCommand,
   entryId,
   index,
   cmdHistory,
@@ -55,7 +57,7 @@ function CommandHistoryItem({
         <HistoryPrompt>❯</HistoryPrompt>
         <MobileBr />
         <MobileSpan>&#62;</MobileSpan>
-        <span data-testid="input-command">{cmdH}</span>
+        <span data-testid="input-command">{displayCommand ?? cmdH}</span>
       </CommandBlock>
       {dismissMessage ? (
         <OutputContainer>{dismissMessage}</OutputContainer>

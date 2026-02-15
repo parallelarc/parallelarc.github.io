@@ -2,13 +2,15 @@ import styled from "styled-components";
 
 export const Wrapper = styled.div`
   position: relative;
-  padding: 1.25rem;
-  padding-top: 0.75rem;
+  padding: 0.9rem 1.15rem 1.2rem;
 
   display: flex;
   flex-direction: column-reverse;
-  height: calc(100vh - 2rem);
+  height: calc(100vh - 1rem);
   overflow-y: auto;
+  background:
+    radial-gradient(circle at 8% -15%, rgba(5, 206, 145, 0.12), transparent 38%),
+    radial-gradient(circle at 92% 110%, rgba(255, 157, 0, 0.08), transparent 34%);
 `;
 
 export const CopyToast = styled.div`
@@ -79,10 +81,8 @@ export const MobileBr = styled.br`
 export const CommandBlock = styled.div`
   display: inline-flex;
   align-items: center;
-  padding: 0.35rem 0.4rem 0.35rem 0.15rem;
-  border-radius: 2px;
-  background: rgba(148, 163, 184, 0.15);
-  margin-bottom: 0.1rem;
+  padding: 0.18rem 0;
+  margin-bottom: 0.12rem;
   font-family: inherit;
 `;
 
@@ -127,6 +127,7 @@ export const InputDisplay = styled.div`
   align-items: center;
   cursor: text;
   min-height: 1.5em;
+  line-height: 1.55;
 `;
 
 // 显示的文本内容
@@ -164,11 +165,12 @@ export const BlockCursor = styled.span<{ $visible: boolean }>`
 export const Input = HiddenInput;
 
 export const InputHint = styled.div`
-  margin-top: 0.25rem;
-  padding-left: 0.5rem;
-  font-size: 0.9rem;
+  margin-top: 0.35rem;
+  padding-left: 0.35rem;
+  font-size: 0.82rem;
   color: ${({ theme }) => theme.colors?.text[400] || "rgba(255, 255, 255, 0.35)"};
-  opacity: 0.8;
+  opacity: 0.92;
+  letter-spacing: 0.02em;
 `;
 
 // 快捷键网格布局
@@ -199,23 +201,30 @@ export const Hints = styled.span`
 export const CommandsList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
-  margin-top: 0.25rem;
-  padding-left: 0.5rem;
-  font-size: 0.85rem;
-  color: ${({ theme }) => theme.colors?.text[400] || "rgba(255, 255, 255, 0.35)"};
-  opacity: 0.8;
+  gap: 0.05rem;
+  margin-top: 0.35rem;
+  padding-left: 0.15rem;
+  font-size: 0.84rem;
+  color: ${({ theme }) => theme.colors?.text[300] || "rgba(255, 255, 255, 0.45)"};
 `;
 
 // 命令项（用于斜杠命令列表）
 export const CommandItem = styled.div<{ $selected: boolean }>`
   white-space: nowrap;
-  color: ${({ $selected }) => $selected ? "rgb(200, 150, 255)" : "rgba(255, 255, 255, 0.35)"};
+  color: ${({ $selected, theme }) =>
+    $selected
+      ? theme.colors?.primary || "#05CE91"
+      : theme.colors?.text[300] || "rgba(255, 255, 255, 0.45)"};
   display: flex;
   align-items: center;
+  gap: 0.6rem;
+  padding: 0.14rem 0.35rem;
+  border-radius: 0.25rem;
+  background: ${({ $selected }) =>
+    $selected ? "rgba(5, 206, 145, 0.12)" : "transparent"};
 
   &:hover {
-    color: "rgba(255, 255, 255, 0.5)";
+    color: ${({ theme }) => theme.colors?.text[100] || "rgba(255, 255, 255, 0.9)"};
   }
 `;
 
@@ -226,6 +235,5 @@ export const CommandName = styled.span`
   color: inherit;
   margin-right: 1rem;
 `;
-
 
 

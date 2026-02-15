@@ -147,17 +147,52 @@ src/
 
 ## &nbsp; 部署
 
-本项目使用 GitHub Actions 自动部署到 GitHub Pages。
+### Cloudflare（推荐）
 
-### Fork 并部署
+该方案可确保 LLM Key 仅保存在服务端，不会暴露到前端资源中。
 
-1. **Fork 本仓库**
-2. **在你的 Fork 设置中启用 GitHub Pages**：
-   - 进入 Settings → Pages
-   - Source 选择：GitHub Actions
-3. **推送到 main 分支** — 自动部署开始！
+1. 安装 Wrangler 并登录：
 
-部署会自动检测你的 Fork 并使用你的仓库获取博客文章，无需额外配置！
+```bash
+npx wrangler login
+```
+
+2. 配置 Worker Secrets（一次性）：
+
+```bash
+npx wrangler secret put ANTHROPIC_COMPAT_API_KEY
+```
+
+3. 配置 Worker 变量（`wrangler.toml` 或 Cloudflare Dashboard）：
+- `DEFAULT_PROVIDER=anthropic-compatible`
+- `ANTHROPIC_COMPAT_BASE_URL=https://open.bigmodel.cn/api/anthropic`（或你的兼容网关基地址）
+- `ANTHROPIC_COMPAT_AUTH_MODE=x-api-key`（或 `bearer`）
+- `ANTHROPIC_COMPAT_MODEL=claude-3-5-sonnet-latest`
+
+4. 部署代理 Worker：
+
+```bash
+npm run cf:worker:deploy
+```
+
+5. 配置前端环境变量：
+- `VITE_LLM_PROXY_URL` = 你的 Worker 地址（例如 `https://xxx.workers.dev`）
+- `VITE_LLM_PROVIDER=anthropic-compatible`
+- 可选：`VITE_LLM_ANTHROPIC_COMPAT_MODEL`
+
+6. 部署站点到 Cloudflare Pages：
+- 使用工作流：`.github/workflows/deploy-cloudflare.yml`
+- 需要的 GitHub Secrets：
+  - `CLOUDFLARE_API_TOKEN`
+  - `CLOUDFLARE_ACCOUNT_ID`
+- 可选 GitHub Variable：
+  - `CLOUDFLARE_PAGES_PROJECT`（默认 `parallelarc-portfolio`）
+
+更多代理配置说明见：`cloudflare/README.md`
+
+### GitHub Pages（仅静态）
+
+GitHub Pages 仍可用于纯静态部署；若需要实时 AI 对话，建议使用 Cloudflare Worker 代理以避免暴露模型提供商 key。
 
 ### 博客配置
 

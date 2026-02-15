@@ -1,5 +1,16 @@
 import { Command } from '../types/command';
 
+export type InputMode = 'command' | 'ai';
+
+export interface ResolvedInput {
+  raw: string;
+  mode: InputMode;
+  isExplicitCommand: boolean;
+  commandName: string;
+  args: string[];
+  commandExists: boolean;
+}
+
 /**
  * CommandRegistry - Central registry for all terminal commands
  *
@@ -114,6 +125,30 @@ class CommandRegistry {
    */
   has(name: string): boolean {
     return this.commands.has(name) || this.aliases.has(name);
+  }
+
+  /**
+   * Resolve user input into command mode or AI mode.
+   * - Explicit slash inputs are always treated as commands.
+   * - Non-slash inputs are treated as commands only when command exists.
+   */
+  resolveInput(rawInput: string): ResolvedInput {
+    const raw = rawInput.trim();
+    const tokens = raw.length > 0 ? raw.split(/\s+/) : [];
+    const isExplicitCommand = raw.startsWith('/');
+    const commandName = (tokens[0] ?? '').toLowerCase().replace(/^\//, '');
+    const args = tokens.slice(1);
+    const commandExists = commandName.length > 0 && this.has(commandName);
+    const mode: InputMode = isExplicitCommand || commandExists ? 'command' : 'ai';
+
+    return {
+      raw,
+      mode,
+      isExplicitCommand,
+      commandName,
+      args,
+      commandExists,
+    };
   }
 
   /**

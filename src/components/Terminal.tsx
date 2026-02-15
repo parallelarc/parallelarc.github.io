@@ -89,6 +89,7 @@ function Terminal() {
   const syncCursorPosition = useTerminalStore((s) => s.syncCursorPosition);
   const clearHistory = useTerminalStore((s) => s.clearHistory);
   const addToHistory = useTerminalStore((s) => s.addToHistory);
+  const ensureAiEntry = useTerminalStore((s) => s.ensureAiEntry);
   const removeFromHistory = useTerminalStore((s) => s.removeFromHistory);
   const setDismissMessage = useTerminalStore((s) => s.setDismissMessage);
   const setSelectedCommandIndex = useTerminalStore((s) => s.setSelectedCommandIndex);
@@ -112,6 +113,7 @@ function Terminal() {
   const { handleSubmit } = useCommandSubmission({
     inputVal,
     onAddToHistory: addToHistory,
+    onEnsureAiEntry: ensureAiEntry,
     onResetInputState: resetInputState,
     onSetRerender: setRerender,
   });
@@ -257,6 +259,7 @@ function Terminal() {
         <CommandHistoryItem
           key={entry.id}
           cmdH={entry.command}
+          displayCommand={entry.displayCommand}
           entryId={entry.id}
           index={index}
           cmdHistory={cmdHistory}

@@ -41,6 +41,15 @@ function Welcome() {
           <br />
           I enjoy philosophy and games, and care more about brain–computer
           interfaces and immortality than about living on Mars.
+          <br />
+          <br />
+          You can type commands like <strong>/about</strong> to explore.
+          <br />
+          Or ask directly, like <strong>你是谁？</strong> /{" "}
+          <strong>who are you?</strong>
+          <br />
+          Try <strong>/projects</strong>, <strong>/blogs</strong>,{" "}
+          <strong>/contact</strong>.
         </RainbowText>
       </div>
       <div className="illu-section">

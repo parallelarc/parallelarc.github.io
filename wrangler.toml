@@ -1,0 +1,13 @@
+name = "parallelarc-llm-proxy"
+main = "cloudflare/llm-proxy.ts"
+compatibility_date = "2026-02-15"
+
+[vars]
+DEFAULT_PROVIDER = "anthropic-compatible"
+OPENAI_MODEL = "gpt-4o-mini"
+ANTHROPIC_MODEL = "claude-3-5-sonnet-latest"
+ANTHROPIC_COMPAT_MODEL = "claude-3-5-sonnet-latest"
+ANTHROPIC_COMPAT_BASE_URL = ""
+ANTHROPIC_COMPAT_AUTH_MODE = "x-api-key"
+ANTHROPIC_COMPAT_VERSION = "2023-06-01"
+ALLOWED_ORIGINS = ""

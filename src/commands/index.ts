@@ -4,6 +4,7 @@
  */
 
 import { commandRegistry } from '../core/CommandRegistry';
+import { config as aiConfig } from './ai/config';
 import { config as aboutConfig } from './about/config';
 import { config as blogConfig } from './blog/config';
 import { config as clearConfig } from './clear/config';
@@ -16,6 +17,8 @@ import { config as welcomeConfig } from './welcome/config';
  * Register all built-in commands
  */
 export function registerCommands() {
+  commandRegistry.register(aiConfig);
+
   // Info commands
   commandRegistry.register(aboutConfig);
   commandRegistry.register(contactConfig);
@@ -36,6 +39,7 @@ export function registerCommands() {
  * Export command configs for external use
  */
 export const commandConfigs = {
+  ai: aiConfig,
   about: aboutConfig,
   blog: blogConfig,
   clear: clearConfig,

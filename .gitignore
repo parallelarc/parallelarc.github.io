@@ -19,6 +19,7 @@ build
 .env
 .env.local
 .env.*.local
+.dev.vars
 *.local
 
 # Editor directories and files
@@ -49,3 +50,4 @@ coverage
 .parcel-cache
 .vite
 .turbo
+.wrangler

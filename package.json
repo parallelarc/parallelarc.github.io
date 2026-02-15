@@ -6,8 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "npm run blog:generate && tsc && vite build",
+    "build:client": "tsc && vite build",
     "blog:generate": "node scripts/generate-blog-json.mjs",
     "preview": "vite preview",
+    "cf:worker:dev": "npx wrangler dev",
+    "cf:worker:deploy": "npx wrangler deploy",
     "test:once": "vitest run",
     "test": "vitest",
     "coverage": "vitest run --coverage",
