@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import { commandRegistry } from '../core/CommandRegistry';
 import { terminalConfig } from '../config/terminal';
+import type { BlogPost } from '../types/github';
 
 export type HistoryEntryMode = 'command' | 'ai';
 
@@ -63,6 +64,7 @@ export interface TerminalState {
   // AI conversation state
   aiEntries: Record<string, AiEntryState>;
   aiConversation: AiConversationMessage[];
+  blogPostsSnapshot: BlogPost[];
   ensureAiEntry: (entryId: string, prompt: string) => void;
   startAiEntry: (entryId: string) => void;
   appendAiResponseChunk: (entryId: string, chunk: string) => void;
@@ -70,6 +72,7 @@ export interface TerminalState {
   failAiEntry: (entryId: string, error: string) => void;
   addAiConversationTurn: (prompt: string, response: string) => void;
   clearAiConversation: () => void;
+  setBlogPostsSnapshot: (posts: BlogPost[]) => void;
 
   // Autocomplete state
   selectedCommandIndex: number;
@@ -204,6 +207,7 @@ export const useTerminalStore = create<TerminalState>()(
     // AI conversation state
     aiEntries: {},
     aiConversation: [],
+    blogPostsSnapshot: [],
     ensureAiEntry: (entryId: string, prompt: string) => {
       const { aiEntries } = get();
       if (aiEntries[entryId]) return;
@@ -308,6 +312,7 @@ export const useTerminalStore = create<TerminalState>()(
       set({ aiConversation: trimmed });
     },
     clearAiConversation: () => set({ aiEntries: {}, aiConversation: [] }),
+    setBlogPostsSnapshot: (posts: BlogPost[]) => set({ blogPostsSnapshot: posts }),
 
     // Autocomplete state
     selectedCommandIndex: 0,

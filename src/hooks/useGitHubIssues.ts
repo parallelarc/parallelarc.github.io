@@ -9,6 +9,7 @@ import type {
   CategoryStats,
   PostListState,
 } from "../types/github";
+import { useTerminalStore } from "../stores/terminalStore";
 import {
   fetchBlogPosts,
   calculateCategoryStats,
@@ -41,6 +42,7 @@ export function useGitHubIssues(
   config: GitHubConfig,
   initialCategory = "All"
 ): UseGitHubIssuesResult {
+  const setBlogPostsSnapshot = useTerminalStore((state) => state.setBlogPostsSnapshot);
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -60,6 +62,7 @@ export function useGitHubIssues(
     try {
       const blogPosts = await fetchBlogPosts(config);
       setPosts(blogPosts);
+      setBlogPostsSnapshot(blogPosts);
       setLastUpdated(new Date());
       setSelectedIndex(0);
       setCurrentPage(1);
@@ -75,6 +78,7 @@ export function useGitHubIssues(
     config.labels?.join(","),
     config.dataSource,
     config.staticUrl,
+    setBlogPostsSnapshot,
   ]);
 
   // Initial load

@@ -3,10 +3,14 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { terminalConfig } from "../../config/terminal";
 import { AI_PERSONA_PROMPT } from "../../config/aiPersona";
-import { WEBSITE_MEMORY_PROMPT } from "../../config/websiteMemory";
 import { termContext } from "../../components/Terminal";
+import { siteContent } from "../../content/siteData";
 import { useTerminalStore } from "../../stores/terminalStore";
 import { decodeAiPrompt } from "../../utils/aiInput";
+import {
+  buildWebsiteContextPrompt,
+  loadStaticBlogPostsSnapshot,
+} from "../../utils/content/contextBuilder";
 import { LlmMessage, streamLlmResponse } from "../../utils/llm";
 import { LoadingDots, StatusText } from "../../components/styles/Commands.styled";
 import { AiMeta, AiResponseText } from "../../components/styles/Output.styled";
@@ -21,6 +25,7 @@ function AICommand() {
     entryId ? state.aiEntries[entryId] : undefined
   );
   const aiConversation = useTerminalStore((state) => state.aiConversation);
+  const blogPostsSnapshot = useTerminalStore((state) => state.blogPostsSnapshot);
 
   const ensureAiEntry = useTerminalStore((state) => state.ensureAiEntry);
   const startAiEntry = useTerminalStore((state) => state.startAiEntry);
@@ -57,19 +62,34 @@ function AICommand() {
       controller.abort();
     }, timeoutMs);
 
-    streamLlmResponse({
-      messages: [
-        { role: "system", content: AI_PERSONA_PROMPT },
-        { role: "system", content: WEBSITE_MEMORY_PROMPT },
-        ...contextualMessages,
-        { role: "user", content: currentPrompt },
-      ],
-      signal: controller.signal,
-      onToken: (token) => {
-        streamedText += token;
-        appendAiResponseChunk(entryId, token);
-      },
-    })
+    const resolveBlogPosts = async () => {
+      if (blogPostsSnapshot.length > 0) {
+        return blogPostsSnapshot;
+      }
+      return loadStaticBlogPostsSnapshot("/blog.json", controller.signal);
+    };
+
+    resolveBlogPosts()
+      .then((blogPosts) => {
+        const websiteContextPrompt = buildWebsiteContextPrompt({
+          content: siteContent,
+          blogPosts,
+        });
+
+        return streamLlmResponse({
+          messages: [
+            { role: "system", content: AI_PERSONA_PROMPT },
+            { role: "system", content: websiteContextPrompt },
+            ...contextualMessages,
+            { role: "user", content: currentPrompt },
+          ],
+          signal: controller.signal,
+          onToken: (token) => {
+            streamedText += token;
+            appendAiResponseChunk(entryId, token);
+          },
+        });
+      })
       .then(({ provider, model, text }) => {
         const finalText = (text || streamedText).trim();
         completeAiEntry(entryId, { provider, model });
@@ -106,6 +126,7 @@ function AICommand() {
     completeAiEntry,
     failAiEntry,
     addAiConversationTurn,
+    blogPostsSnapshot,
   ]);
 
   if (!entryId) {

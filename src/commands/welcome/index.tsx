@@ -6,6 +6,7 @@ import {
   PreWrapper,
   RainbowText,
 } from "../../components/styles/Commands.styled";
+import { WELCOME_CONTENT } from "../../content/siteData";
 
 function Welcome() {
   return (
@@ -35,21 +36,21 @@ function Welcome() {
           </PreNameMobile>
         </PreWrapper>
         <RainbowText>
-          I&apos;m a friend of AI.
+          {WELCOME_CONTENT.headline}
           <br />
-          Welcome to my terminal portfolio.
+          {WELCOME_CONTENT.intro}
           <br />
-          I enjoy philosophy and games, and care more about brain–computer
-          interfaces and immortality than about living on Mars.
+          {WELCOME_CONTENT.philosophy}
           <br />
           <br />
-          You can type commands like <strong>/about</strong> to explore.
+          You can type commands like <strong>{WELCOME_CONTENT.exploreCommand}</strong> to explore.
           <br />
-          Or ask directly, like <strong>你是谁？</strong> /{" "}
-          <strong>who are you?</strong>
+          Or ask directly, like <strong>{WELCOME_CONTENT.askExamples[0]}</strong> /{" "}
+          <strong>{WELCOME_CONTENT.askExamples[1]}</strong>
           <br />
-          Try <strong>/projects</strong>, <strong>/blogs</strong>,{" "}
-          <strong>/contact</strong>.
+          Try <strong>{WELCOME_CONTENT.tryCommands[0]}</strong>,{" "}
+          <strong>{WELCOME_CONTENT.tryCommands[1]}</strong>,{" "}
+          <strong>{WELCOME_CONTENT.tryCommands[2]}</strong>.
         </RainbowText>
       </div>
       <div className="illu-section">

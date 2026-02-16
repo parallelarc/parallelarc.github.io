@@ -8,7 +8,7 @@ on:
 permissions:
   contents: write
   issues: read
-  workflows: write
+  actions: write
 
 jobs:
   update-blog:
@@ -17,7 +17,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          persist-credentials: false
+          persist-credentials: true
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -41,7 +41,7 @@ jobs:
       - name: Trigger deploy workflow
         run: |
           # Use GitHub API to trigger the deploy workflow
-          # This works because we have workflows: write permission
+          # This works because we have actions: write permission
           curl -X POST https://api.github.com/repos/${{ github.repository }}/actions/workflows/deploy.yml/dispatches \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \

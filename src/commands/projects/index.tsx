@@ -14,28 +14,11 @@ import {
   LightboxImage,
   Link,
 } from "../../components/styles/Commands.styled";
+import { PROJECTS_CONTENT, type ProjectImage } from "../../content/siteData";
 
 type ImageOrientation = "landscape" | "portrait" | "square";
 
 type GroupLayout = "3h" | "3v" | "2h1v" | "1h2v";
-
-type ProjectImage = {
-  id: string;
-  src: string;
-  alt: string;
-};
-
-type Project = {
-  id: number;
-  title: string;
-  desc: string;
-  url: string;
-  albumGroups?: {
-    id: string;
-    title: string;
-    imageIds: string[];
-  }[];
-};
 
 type AlbumLayout = {
   layout: GroupLayout;
@@ -176,95 +159,6 @@ function getFlexRatio(layoutType: GroupLayout): number {
   return 1;
 }
 
-const PROJECT_IMAGES: ProjectImage[] = [
-  {
-    id: "husky",
-    src: "/profile-media/project_vbot/husky.jpg",
-    alt: "Husky robot companion bounding through fresh snow",
-  },
-  {
-    id: "labrador",
-    src: "/profile-media/project_vbot/labrador.jpg",
-    alt: "Labrador-like robot strolling beside guests",
-  },
-  {
-    id: "peafowl",
-    src: "/profile-media/project_vbot/peafowl.jpg",
-    alt: "Peafowl spreading feathers in the courtyard",
-  },
-  {
-    id: "branchestower",
-    src: "/profile-media/project_vbot/branchestower.jpg",
-    alt: "Tree branches and tower wrapped in snowfall",
-  },
-  {
-    id: "deer",
-    src: "/profile-media/project_vbot/deer.jpg",
-    alt: "Deer sculpture showcasing Vbot's environmental sensors",
-  },
-  {
-    id: "dessert",
-    src: "/profile-media/project_vbot/dessert.jpg",
-    alt: "Dessert platter prepared for Vbot's guests",
-  },
-  {
-    id: "marmot",
-    src: "/profile-media/project_vbot/marmot.jpg",
-    alt: "Marmot resting near the patio heaters",
-  },
-  {
-    id: "staff",
-    src: "/profile-media/project_vbot/staff.png",
-    alt: "Staff members configuring Vbot's control tablet",
-  },
-  {
-    id: "avatar",
-    src: "/profile-media/project_vbot/avatar.jpg",
-    alt: "TV wall looping Vbot telemetry visualizations",
-  },
-];
-
-const PROJECTS: Project[] = [
-  {
-    id: 1,
-    title: "Terminal Portfolio",
-    desc: `This project. A minimalist terminal interface pretending to be a portfolio.
-No buttons, no noise — just commands, output, and a trace of how I think.`,
-    url: "https://github.com/parallelarc/parallelarc.github.io",
-  },
-  {
-    id: 2,
-    title: "Vbot",
-    desc:
-      "Vbot is a robot pet designed for family and outdoor life. During Beijing's first snow in 2025, it walked through Purple Jade Villas, meeting friends along the way.",
-     url: "https://space.bilibili.com/3546948055337693",
-    albumGroups: [
-      {
-        id: "snow-companions",
-        title: "Snow companions",
-        imageIds: ["avatar", "staff", "branchestower"],
-      },
-      {
-        id: "friends-met",
-        title: "Friends met on the walk",
-        imageIds: ["labrador", "marmot", "peafowl"],
-      },
-      {
-        id: "behind-the-scenes",
-        title: "Behind the scenes",
-        imageIds: ["dessert", "deer", "husky"],
-      },
-    ],
-  },
-  {
-    id: 3,
-    title: "Jarvis",
-    desc:
-      "Jarvis is a gesture-based interface for controlling 3D objects on 2D screens. A new interaction for personal AI assistants. No AI involved, for now.",
-    url: "https://github.com/parallelarc/Jarvis",
-  },
-];
-
 function Projects() {
   const [selectedImage, setSelectedImage] = useState<ProjectImage | null>(null);
 
@@ -293,11 +187,11 @@ function Projects() {
 
   const allGroups = useMemo(() => {
     const groups: { id: string; images: ProjectImage[] }[] = [];
-    PROJECTS.forEach((project) => {
+    PROJECTS_CONTENT.items.forEach((project) => {
       if (project.albumGroups) {
         project.albumGroups.forEach((group) => {
           const resolvedImages = group.imageIds
-            .map((id) => PROJECT_IMAGES.find((img) => img.id === id))
+            .map((id) => PROJECTS_CONTENT.images.find((img) => img.id === id))
             .filter(Boolean) as ProjectImage[];
           groups.push({ id: group.id, images: resolvedImages });
         });
@@ -310,11 +204,9 @@ function Projects() {
 
   return (
     <div data-testid="projects">
-      <ProjectsIntro>
-        Some things I&apos;ve made, and moments they passed through.
-      </ProjectsIntro>
+      <ProjectsIntro>{PROJECTS_CONTENT.intro}</ProjectsIntro>
 
-      {PROJECTS.map((project) => (
+      {PROJECTS_CONTENT.items.map((project) => (
         <ProjectLayout key={project.id}>
           <TextPanel>
             <ProjectTitle>
@@ -331,7 +223,7 @@ function Projects() {
               <AlbumGroups>
                 {project.albumGroups.map((group) => {
                   const resolvedImages = group.imageIds
-                    .map((id) => PROJECT_IMAGES.find((img) => img.id === id))
+                    .map((id) => PROJECTS_CONTENT.images.find((img) => img.id === id))
                     .filter(Boolean) as ProjectImage[];
 
                   const layout = layouts[group.id]?.layout ?? "3v";
