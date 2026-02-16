@@ -28,13 +28,104 @@ export const UsageDiv = styled(BaseOutputStyle)<{ marginY?: boolean }>`
   `}
 `;
 
-export const AiResponseText = styled.pre`
+export const AiResponseText = styled.div`
   margin: 0;
   font-family: inherit;
   font-size: 0.95rem;
-  white-space: pre-wrap;
+  white-space: normal;
   word-break: break-word;
   color: ${({ theme }) => theme.colors?.text[100] || "#d7dde5"};
+
+  p {
+    margin: 0.12rem 0 0.42rem;
+    line-height: 1.55;
+  }
+
+  p:first-child {
+    margin-top: 0;
+  }
+
+  p:last-child {
+    margin-bottom: 0;
+  }
+
+  strong {
+    color: ${({ theme }) => theme.colors?.text[100] || "#f1f5f9"};
+    font-weight: 700;
+  }
+
+  em {
+    font-style: italic;
+  }
+
+  code {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.88em;
+    background: rgba(148, 163, 184, 0.15);
+    border-radius: 0.2rem;
+    padding: 0.08rem 0.25rem;
+  }
+
+  pre {
+    margin: 0.2rem 0 0.5rem;
+    padding: 0.5rem 0.65rem;
+    border-radius: 0.35rem;
+    background: rgba(2, 6, 23, 0.5);
+    overflow-x: auto;
+  }
+
+  pre code {
+    background: transparent;
+    padding: 0;
+  }
+
+  ul,
+  ol {
+    margin: 0.2rem 0 0.5rem;
+    padding-left: 1.25rem;
+  }
+
+  li {
+    margin: 0.14rem 0;
+  }
+
+  blockquote {
+    margin: 0.2rem 0 0.5rem;
+    padding-left: 0.75rem;
+    border-left: 2px solid ${({ theme }) => theme.colors?.text[300] || "rgba(255, 255, 255, 0.25)"};
+    color: ${({ theme }) => theme.colors?.text[200] || "rgba(203, 213, 225, 0.75)"};
+  }
+
+  a {
+    color: ${({ theme }) => theme.colors?.secondary || "#f59e0b"};
+    text-decoration: underline;
+    text-decoration-style: dashed;
+  }
+
+  table {
+    border-collapse: collapse;
+    margin: 0.2rem 0 0.55rem;
+    width: 100%;
+    font-size: 0.9em;
+  }
+
+  th,
+  td {
+    border: 1px solid ${({ theme }) => theme.colors?.text[300] || "rgba(255, 255, 255, 0.22)"};
+    padding: 0.25rem 0.45rem;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    color: ${({ theme }) => theme.colors?.text[100] || "#f1f5f9"};
+    background: rgba(148, 163, 184, 0.11);
+  }
+
+  input[type="checkbox"] {
+    margin-right: 0.35rem;
+    accent-color: ${({ theme }) => theme.colors?.primary || "#05ce91"};
+  }
 `;
 
 export const AiMeta = styled.div`

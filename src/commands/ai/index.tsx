@@ -1,4 +1,6 @@
 import { useContext, useEffect, useMemo, useRef } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { terminalConfig } from "../../config/terminal";
 import { AI_PERSONA_PROMPT } from "../../config/aiPersona";
 import { WEBSITE_MEMORY_PROMPT } from "../../config/websiteMemory";
@@ -120,7 +122,11 @@ function AICommand() {
 
   return (
     <div data-testid="ai-response">
-      {hasResponse ? <AiResponseText>{response}</AiResponseText> : null}
+      {hasResponse ? (
+        <AiResponseText>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{response}</ReactMarkdown>
+        </AiResponseText>
+      ) : null}
 
       {status === "streaming" && (
         <StatusText $variant="muted">
