@@ -1,0 +1,20 @@
+# Ignore everything
+/*
+
+# Except this folder
+!/src
+!/.github
+!tsconfig.json
+!tsconfig.node.json
+!package.json
+!.prettierrc
+!.eslintrc.json
+
+# Repository documentation
+!/README*.md
+!/AGENTS.md
+!/CONTRIBUTING.md
+!/docs
+!/cloudflare
+/cloudflare/*
+!/cloudflare/README.md

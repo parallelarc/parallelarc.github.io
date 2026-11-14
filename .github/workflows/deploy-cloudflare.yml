@@ -1,0 +1,62 @@
+name: Deploy to Cloudflare
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy-worker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy LLM Proxy Worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
+
+  deploy-pages:
+    needs: deploy-worker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate blog data
+        run: npm run blog:generate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BLOG_GITHUB_REPO: ${{ github.repository }}
+          BLOG_GITHUB_LABEL: blog
+
+      - name: Build site
+        run: npm run build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BLOG_GITHUB_REPO: ${{ github.repository }}
+          BLOG_GITHUB_LABEL: blog
+          VITE_BLOG_DATA_SOURCE: static
+          VITE_BLOG_STATIC_URL: /blog.json
+          VITE_LLM_PROVIDER: ${{ vars.VITE_LLM_PROVIDER || 'anthropic-compatible' }}
+          VITE_LLM_PROXY_URL: ${{ vars.VITE_LLM_PROXY_URL }}
+          VITE_LLM_OPENAI_MODEL: ${{ vars.VITE_LLM_OPENAI_MODEL }}
+          VITE_LLM_ANTHROPIC_MODEL: ${{ vars.VITE_LLM_ANTHROPIC_MODEL }}
+          VITE_LLM_ANTHROPIC_COMPAT_MODEL: ${{ vars.VITE_LLM_ANTHROPIC_COMPAT_MODEL }}
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT || 'parallelarc-portfolio' }}

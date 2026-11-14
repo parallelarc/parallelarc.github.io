@@ -1,0 +1,68 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate blog data
+        run: npm run blog:generate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BLOG_GITHUB_REPO: ${{ github.repository }}
+          BLOG_GITHUB_LABEL: blog
+
+      - name: Build site
+        run: npm run build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BLOG_GITHUB_REPO: ${{ github.repository }}
+          BLOG_GITHUB_LABEL: blog
+          VITE_BLOG_DATA_SOURCE: static
+          VITE_BLOG_STATIC_URL: /blog.json
+          VITE_LLM_PROVIDER: ${{ vars.VITE_LLM_PROVIDER || 'anthropic-compatible' }}
+          VITE_LLM_PROXY_URL: ${{ vars.VITE_LLM_PROXY_URL }}
+          VITE_LLM_OPENAI_MODEL: ${{ vars.VITE_LLM_OPENAI_MODEL }}
+          VITE_LLM_ANTHROPIC_MODEL: ${{ vars.VITE_LLM_ANTHROPIC_MODEL }}
+          VITE_LLM_ANTHROPIC_COMPAT_MODEL: ${{ vars.VITE_LLM_ANTHROPIC_COMPAT_MODEL }}
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

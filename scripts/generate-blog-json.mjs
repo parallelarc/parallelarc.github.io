@@ -1,0 +1,139 @@
+#!/usr/bin/env node
+/* eslint-env node */
+
+import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
+
+// Parse owner/repo from environment variables
+const ownerEnv =
+  process.env.VITE_GITHUB_OWNER ||
+  process.env.BLOG_GITHUB_OWNER ||
+  "parallelarc";
+const repoEnv =
+  process.env.VITE_GITHUB_BLOG_REPO ||
+  process.env.BLOG_GITHUB_REPO ||
+  "parallelarc.github.io";
+
+// Handle both "owner" and "owner/repo" formats
+const [owner, repoName] = repoEnv.includes("/")
+  ? repoEnv.split("/")
+  : [ownerEnv, repoEnv];
+
+const label =
+  process.env.VITE_GITHUB_BLOG_LABEL || process.env.BLOG_GITHUB_LABEL || "blog";
+const token =
+  process.env.BLOG_GITHUB_TOKEN ||
+  process.env.GITHUB_TOKEN ||
+  process.env.VITE_GITHUB_TOKEN;
+
+export async function fetchBlogSnapshot({
+  owner,
+  repoName,
+  label,
+  token,
+  fetchImpl = fetch,
+}) {
+  const url = new URL(
+    `https://api.github.com/repos/${owner}/${repoName}/issues`
+  );
+  url.searchParams.set("state", "open");
+  url.searchParams.set("per_page", "100");
+  url.searchParams.set("sort", "created");
+  url.searchParams.set("direction", "desc");
+  if (label) {
+    url.searchParams.set("labels", label);
+  }
+
+  const issues = [];
+  for (let page = 1; ; page += 1) {
+    url.searchParams.set("page", String(page));
+    const response = await fetchImpl(url.href, {
+      headers: {
+        Accept: "application/vnd.github.v3+json",
+        "User-Agent": "terminal-portfolio",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `GitHub API error: ${response.status} ${response.statusText}`
+      );
+    }
+
+    const batch = await response.json();
+    if (!Array.isArray(batch)) {
+      throw new Error(
+        "Unexpected GitHub API response. Expected an array of issues."
+      );
+    }
+    issues.push(...batch);
+    if (batch.length < 100) break;
+  }
+
+  const posts = [
+    ...new Map(issues.map(issue => [issue.number, issue])).values(),
+  ]
+    .filter(issue => !issue.pull_request)
+    .map(issue => {
+      const body = issue.body || "";
+      const excerpt =
+        body
+          .replace(/[#*`[\]]/g, "")
+          .replace(/\n+/g, " ")
+          .trim()
+          .slice(0, 150) + "...";
+
+      const labels = Array.isArray(issue.labels)
+        ? issue.labels.map(item =>
+            typeof item === "string" ? item : item.name
+          )
+        : [];
+
+      return {
+        id: issue.id,
+        number: issue.number,
+        title: issue.title,
+        content: body,
+        createdAt: issue.created_at,
+        updatedAt: issue.updated_at,
+        author: issue.user?.login || "unknown",
+        authorAvatar: issue.user?.avatar_url || "",
+        authorUrl: issue.user?.html_url || "",
+        labels,
+        url: issue.html_url,
+        commentsCount: issue.comments,
+        excerpt,
+      };
+    })
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  return posts;
+}
+
+async function main() {
+  if (!token) {
+    throw new Error(
+      "Missing GitHub token. Set BLOG_GITHUB_TOKEN or GITHUB_TOKEN for the build step."
+    );
+  }
+  const posts = await fetchBlogSnapshot({ owner, repoName, label, token });
+  const outputPath = path.join(process.cwd(), "public", "blog.json");
+  await mkdir(path.dirname(outputPath), { recursive: true });
+  await writeFile(outputPath, JSON.stringify(posts, null, 2), "utf8");
+
+  console.log(`Wrote ${posts.length} posts to ${outputPath}`);
+}
+
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href
+) {
+  main().catch(error => {
+    console.error(error.message);
+    process.exitCode = 1;
+  });
+}
