@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FaEnvelope, FaGithub, FaSteam, FaXTwitter } from "react-icons/fa6";
+import { SiXiaohongshu } from "react-icons/si";
 import styled from "styled-components";
 import {
   ContactGallery,
@@ -38,6 +39,7 @@ const CONTACT_ICONS: Record<
   email: FaEnvelope,
   github: FaGithub,
   x: FaXTwitter,
+  xiaohongshu: SiXiaohongshu,
   steam: FaSteam,
 };
 

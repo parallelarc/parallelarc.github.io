@@ -20,6 +20,11 @@ export const CONTACT_CONTENT: ContactContent = {
       url: "https://x.com/jvren42",
     },
     {
+      kind: "xiaohongshu",
+      title: "Xiaohongshu",
+      url: "https://www.xiaohongshu.com/user/profile/66681e6c0000000007004acb",
+    },
+    {
       kind: "steam",
       title: "Steam",
       url: "https://steamcommunity.com/id/parallelarc",

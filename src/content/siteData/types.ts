@@ -40,7 +40,7 @@ export interface ProjectsContent {
   items: ProjectItem[];
 }
 
-export type ContactKind = "email" | "github" | "x" | "steam";
+export type ContactKind = "email" | "github" | "x" | "xiaohongshu" | "steam";
 
 export interface ContactGalleryImage {
   src: string;
