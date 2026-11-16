@@ -264,9 +264,15 @@ export const HeroContainer = styled.div`
     margin-bottom: 1.5rem;
   }
 
-  div {
-    @media (min-width: 1024px) {
+  > div {
+    @media (min-width: 1200px) {
       flex-basis: 50%;
+    }
+  }
+
+  @media (max-width: 1199px) {
+    > .illu-section {
+      display: none;
     }
   }
 `;
@@ -320,10 +326,6 @@ export const PreImg = styled.pre`
   line-height: 1.05;
   letter-spacing: 0;
   padding: 0;
-
-  @media (max-width: 550px) {
-    display: none;
-  }
 `;
 
 export const RainbowText = styled.p`

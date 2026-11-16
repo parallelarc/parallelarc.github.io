@@ -44,6 +44,11 @@ Browse mode renders bottom navigation without a prompt. Terminal mode renders a
 prompt without bottom navigation. `/blogs` opens an interactive panel inside the
 terminal; its escape/back control returns to the prompt, not to browse mode.
 
+The welcome illustration is hidden below a 1200px viewport width. Its two-column
+layout starts at the same breakpoint so narrow terminal windows use the full
+content width instead of stacking the ASCII fox above the introduction. Browse
+home continues to hide the illustration at every width.
+
 ## Content and blog data
 
 Personal content has one source: `src/content/siteData/`. About, projects,
