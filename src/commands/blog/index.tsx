@@ -216,6 +216,9 @@ function Blog() {
         </TerminalAction>
       </BlogToolbar>
 
+      {loading && posts.length > 0 && (
+        <StatusText role="status">Loading search…</StatusText>
+      )}
       {loading && posts.length === 0 ? (
         <StatusText role="status">
           <LoadingDots>Loading posts</LoadingDots>
@@ -347,6 +350,9 @@ function Blog() {
           {error && (
             <StatusText $variant="error" role="alert">
               {error}
+              <TerminalAction type="button" onClick={() => void refresh()}>
+                [retry]
+              </TerminalAction>
             </StatusText>
           )}
         </>

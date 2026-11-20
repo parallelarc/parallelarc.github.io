@@ -34,8 +34,6 @@ function Terminal({
         <CommandHistoryItem
           key={entry.id}
           cmdH={entry.command}
-          mode={entry.mode}
-          entryId={entry.id}
           index={index}
           dismissMessage={entry.dismissMessage}
         />

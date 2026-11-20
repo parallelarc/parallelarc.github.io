@@ -43,19 +43,10 @@ type Props = {
 function TerminalComposer({ inputRef, touchMode = false }: Props) {
   const inputVal = useTerminalStore(s => s.input);
   const selectedIndex = useTerminalStore(s => s.selectedCommandIndex);
-  const activeAiId = useTerminalStore(
-    s =>
-      s.history.find(entry => {
-        const status = s.aiEntries[entry.id]?.status;
-        return status === "idle" || status === "streaming";
-      })?.id
-  );
   const setInput = useTerminalStore(s => s.setInput);
   const setSelectedIndex = useTerminalStore(s => s.setSelectedCommandIndex);
   const resetInput = useTerminalStore(s => s.resetInputState);
   const addToHistory = useTerminalStore(s => s.addToHistory);
-  const ensureAiEntry = useTerminalStore(s => s.ensureAiEntry);
-  const stopAiEntry = useTerminalStore(s => s.stopAiEntry);
   const [browsing, setBrowsing] = useState(false);
   const [menuDismissed, setMenuDismissed] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
@@ -73,16 +64,12 @@ function TerminalComposer({ inputRef, touchMode = false }: Props) {
     .filter(({ name }) => query !== null && name.startsWith(query));
   const menuOpen = query !== null && !menuDismissed;
   const activeIndex = selectedIndex < commands.length ? selectedIndex : -1;
-  const isAiInput = commandRegistry.resolveInput(inputVal).mode === "ai";
   const canSend =
-    menuOpen && activeIndex >= 0
-      ? true
-      : inputVal.trim().length > 0 && !(activeAiId && isAiInput);
+    menuOpen && activeIndex >= 0 ? true : inputVal.trim().length > 0;
 
   const { handleSubmit } = useCommandSubmission({
     inputVal,
     onAddToHistory: addToHistory,
-    onEnsureAiEntry: ensureAiEntry,
     onResetInputState: resetInput,
   });
 
@@ -139,11 +126,6 @@ function TerminalComposer({ inputRef, touchMode = false }: Props) {
     setMenuDismissed(true);
     setBrowsing(false);
   };
-  const stopResponse = () => {
-    if (!activeAiId) return false;
-    stopAiEntry(activeAiId);
-    return true;
-  };
   const dismissPanel = () => {
     if (showHelp) {
       setShowHelp(false);
@@ -178,7 +160,6 @@ function TerminalComposer({ inputRef, touchMode = false }: Props) {
     onNavigateHistory: navigateHistory,
     onToggleHelp: () => setShowHelp(value => !value),
     onSubmit: () => inputRef.current?.form?.requestSubmit(),
-    onStop: stopResponse,
   });
   const submit = (event: FormEvent<HTMLFormElement>) => {
     if (!canSend || composing.current) {
@@ -242,7 +223,7 @@ function TerminalComposer({ inputRef, touchMode = false }: Props) {
               $overlayCaret={caret !== null}
               id="terminal-input"
               title="terminal-input"
-              aria-label="Message or command"
+              aria-label="Command"
               ref={inputRef}
               rows={1}
               value={inputVal}
@@ -320,26 +301,15 @@ function TerminalComposer({ inputRef, touchMode = false }: Props) {
             </ComposerButton>
           </ComposerActions>
           <InputHint id="terminal-hint" role="status">
-            {activeAiId
-              ? "responding · esc to stop"
-              : "enter to send · shift+enter for newline"}
+            enter to run · shift+enter for newline
           </InputHint>
           <ComposerActions>
-            {activeAiId && (
-              <ComposerButton
-                type="button"
-                onClick={stopResponse}
-                aria-label="Stop response"
-              >
-                ■ stop
-              </ComposerButton>
-            )}
             <ComposerButton
               type="submit"
               disabled={!canSend}
-              aria-label="Send message"
+              aria-label="Run command"
             >
-              ↵ send
+              ↵ run
             </ComposerButton>
           </ComposerActions>
         </ComposerFooter>
@@ -349,8 +319,8 @@ function TerminalComposer({ inputRef, touchMode = false }: Props) {
             <ShortcutItem>↑↓ to select or recall</ShortcutItem>
             <ShortcutItem>tab to complete</ShortcutItem>
             <ShortcutItem>shift + enter for newline</ShortcutItem>
-            <ShortcutItem>esc to close or stop</ShortcutItem>
-            <ShortcutItem>ctrl + c to clear or stop</ShortcutItem>
+            <ShortcutItem>esc to close panels</ShortcutItem>
+            <ShortcutItem>ctrl + c to clear input</ShortcutItem>
           </ShortcutsGrid>
         )}
       </ClaudeInputContainer>

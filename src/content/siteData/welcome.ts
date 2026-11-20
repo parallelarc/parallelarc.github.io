@@ -6,6 +6,5 @@ export const WELCOME_CONTENT: WelcomeContent = {
   philosophy:
     "I enjoy philosophy and games, and care more about brain-computer interfaces and immortality than about living on Mars.",
   exploreCommand: "/about",
-  askExamples: ["你是谁？", "who are you?"],
   tryCommands: ["/projects", "/blogs", "/contact"],
 };

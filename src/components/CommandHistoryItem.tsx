@@ -7,25 +7,21 @@ import { OutputContainer } from "./styles/Output.styled";
 
 type CommandHistoryItemProps = {
   cmdH: string;
-  mode?: "command" | "ai";
-  entryId?: string;
   index: number;
   dismissMessage?: string;
 };
 
 function CommandHistoryItem({
   cmdH,
-  mode,
-  entryId,
   index,
   dismissMessage,
 }: CommandHistoryItemProps) {
   const resolved = commandRegistry.resolveInput(cmdH);
-  const normalizedCommand = mode === "ai" ? "ai" : resolved.commandName;
-  const args = mode === "ai" ? [cmdH] : resolved.args;
+  const normalizedCommand = resolved.commandName;
+  const args = resolved.args;
   const validCommand = commandRegistry.get(normalizedCommand);
 
-  const contextValue = { arg: args, index, entryId, isLatest: index === 0 };
+  const contextValue = { arg: args, index, isLatest: index === 0 };
 
   return (
     <div>

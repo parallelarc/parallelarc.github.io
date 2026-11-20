@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   issues: read
   actions: write
 
@@ -18,40 +18,7 @@ jobs:
   update-blog:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          ref: main
-          persist-credentials: true
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Generate blog data
-        run: node scripts/generate-blog-json.mjs
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BLOG_GITHUB_REPO: ${{ github.repository }}
-          BLOG_GITHUB_LABEL: blog
-
-      - name: Commit and push changes
-        id: snapshot
-        run: |
-          git add public/blog.json
-          if git diff --staged --quiet; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git commit -m "chore: update blog data"
-          git -c push.followTags=false push origin HEAD:main
-          echo "changed=true" >> "$GITHUB_OUTPUT"
-
       - name: Trigger deploy workflow
-        if: steps.snapshot.outputs.changed == 'true' || github.event_name == 'workflow_dispatch'
         env:
           DEPLOY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

@@ -1,11 +1,8 @@
 import { useCallback } from "react";
-import { commandRegistry } from "../core/CommandRegistry";
-import type { AddToHistoryOptions } from "../stores/terminalStore";
 
 export interface UseCommandSubmissionProps {
   inputVal: string;
-  onAddToHistory: (command: string, options?: AddToHistoryOptions) => string;
-  onEnsureAiEntry: (entryId: string, prompt: string) => void;
+  onAddToHistory: (command: string) => string;
   onResetInputState: () => void;
 }
 
@@ -18,7 +15,6 @@ export interface UseCommandSubmissionProps {
 export function useCommandSubmission({
   inputVal,
   onAddToHistory,
-  onEnsureAiEntry,
   onResetInputState,
 }: UseCommandSubmissionProps) {
   const handleSubmit = useCallback(
@@ -30,19 +26,10 @@ export function useCommandSubmission({
         return;
       }
 
-      const resolved = commandRegistry.resolveInput(trimmedInput);
-
-      if (resolved.mode === "ai") {
-        const entryId = onAddToHistory(trimmedInput, {
-          mode: "ai",
-        });
-        onEnsureAiEntry(entryId, trimmedInput);
-      } else {
-        onAddToHistory(trimmedInput);
-      }
+      onAddToHistory(trimmedInput);
       onResetInputState();
     },
-    [inputVal, onResetInputState, onAddToHistory, onEnsureAiEntry]
+    [inputVal, onResetInputState, onAddToHistory]
   );
 
   return { handleSubmit };

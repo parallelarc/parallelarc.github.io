@@ -9,8 +9,6 @@
     "blog:generate": "node scripts/generate-blog-json.mjs",
     "test:content": "node --test scripts/generate-blog-json.test.mjs",
     "preview": "vite preview",
-    "cf:worker:dev": "npx wrangler dev",
-    "cf:worker:deploy": "npx wrangler deploy",
     "test:once": "vitest run",
     "test": "vitest",
     "coverage": "vitest run --coverage",

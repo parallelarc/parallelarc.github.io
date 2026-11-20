@@ -9,7 +9,6 @@ export interface WelcomeContent {
   intro: string;
   philosophy: string;
   exploreCommand: string;
-  askExamples: string[];
   tryCommands: string[];
 }
 
@@ -58,11 +57,4 @@ export interface ContactItem {
 export interface ContactContent {
   intro: string;
   items: ContactItem[];
-}
-
-export interface SiteContent {
-  welcome: WelcomeContent;
-  about: AboutContent;
-  projects: ProjectsContent;
-  contact: ContactContent;
 }

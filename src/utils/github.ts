@@ -138,7 +138,7 @@ function toBlogPost(candidate: unknown): BlogPost | null {
 }
 
 async function readStaticBlogPosts(
-  staticUrl = "/blog.json",
+  staticUrl = "/blog/index.json",
   signal?: AbortSignal
 ): Promise<BlogPost[]> {
   const response = await fetch(staticUrl, { signal });
@@ -146,12 +146,73 @@ async function readStaticBlogPosts(
     throw new Error(`Failed to fetch static blog data: ${response.status}`);
 
   const raw = await response.json();
-  if (!Array.isArray(raw))
-    throw new Error("Static blog data must be an array.");
-
-  return raw
-    .map(item => toBlogPost(item))
+  const entries: unknown = Array.isArray(raw) ? raw : raw?.posts;
+  if (!Array.isArray(entries))
+    throw new Error("Static blog data must contain an array of posts.");
+  const base = new URL(staticUrl, window.location.href);
+  return entries
+    .map(item => {
+      const post = toBlogPost(item);
+      if (post && isRecord(item) && typeof item.contentUrl === "string") {
+        post.contentUrl = new URL(item.contentUrl, base).href;
+        if (typeof raw.searchUrl === "string")
+          post.searchUrl = new URL(raw.searchUrl, base).href;
+      }
+      return post;
+    })
     .filter((item): item is BlogPost => Boolean(item));
+}
+
+const contentRequests = new Map<string, Promise<string>>();
+const searchRequests = new Map<string, Promise<Map<number, string>>>();
+
+export function fetchBlogContent(post: BlogPost): Promise<string> {
+  if (!post.contentUrl) return Promise.resolve(post.content);
+  const url = post.contentUrl;
+  const existing = contentRequests.get(url);
+  if (existing) return existing;
+  const request = fetch(url)
+    .then(async response => {
+      if (!response.ok) throw new Error("Unable to load article.");
+      const data: unknown = await response.json();
+      if (!isRecord(data) || typeof data.content !== "string")
+        throw new Error("Invalid article data.");
+      return data.content;
+    })
+    .catch(error => {
+      contentRequests.delete(url);
+      throw error;
+    });
+  contentRequests.set(url, request);
+  return request;
+}
+
+export function fetchBlogSearch(url: string): Promise<Map<number, string>> {
+  const existing = searchRequests.get(url);
+  if (existing) return existing;
+  const request = fetch(url)
+    .then(async response => {
+      if (!response.ok) throw new Error("Unable to load full-text search.");
+      const data: unknown = await response.json();
+      if (!Array.isArray(data)) throw new Error("Invalid search data.");
+      const entries = new Map<number, string>();
+      for (const entry of data) {
+        if (
+          !isRecord(entry) ||
+          typeof entry.number !== "number" ||
+          typeof entry.text !== "string"
+        )
+          throw new Error("Invalid search entry.");
+        entries.set(entry.number, entry.text);
+      }
+      return entries;
+    })
+    .catch(error => {
+      searchRequests.delete(url);
+      throw error;
+    });
+  searchRequests.set(url, request);
+  return request;
 }
 
 /**
@@ -287,11 +348,4 @@ export function formatRelativeTime(dateString: string): string {
   }
 
   return formatDate(dateString);
-}
-
-export async function loadStaticBlogPostsSnapshot(
-  url = "/blog.json",
-  signal?: AbortSignal
-): Promise<BlogPost[]> {
-  return readStaticBlogPosts(url, signal).catch(() => []);
 }

@@ -157,6 +157,7 @@ function PortfolioShell({ navigation, compact }: Props) {
                   post={post}
                   onBack={backToBlogs}
                   onReady={restoreScroll}
+                  onRefresh={refresh}
                 />
               </Suspense>
             ) : (

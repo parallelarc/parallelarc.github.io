@@ -34,9 +34,9 @@ This portfolio provides browse and terminal interfaces. Read
   current task. Extend React and native DOM behavior for interface needs.
 - **One source of truth:** authored site data lives in `src/content/siteData/`;
   blog configuration lives in `src/config/blog.ts`. Share these with both UI
-  modes and AI context instead of copying content or configuration.
+  modes instead of copying content or configuration.
 - **Keep responsibilities separate:** hash navigation owns pages and mode
-  changes; the terminal store owns command execution and AI response state.
+  changes; the terminal store owns command execution and history.
   Share content components without coupling command execution to navigation.
 - **Keep changes focused:** preserve unrelated user edits. Avoid broad format
   changes, speculative extension points, and unrelated refactors. Use precise
@@ -70,14 +70,13 @@ This portfolio provides browse and terminal interfaces. Read
 
 - Keep internal implementation plans and scratch notes local. Do not include
   `plan/` in commits or documentation indexes.
-- Treat frontend environment variables as public. Never put provider secrets in
-  `VITE_*` or `OPENAI_*` variables in the frontend environment. Keep provider
-  credentials in Worker secrets or ignored `.dev.vars`.
-- Use the existing blog snapshot or mocked network responses for routine UI
-  checks. Do not send real paid LLM requests merely to test layout or navigation.
-- `public/blog.json` is generated from Issues. Regenerate it only when needed
+- Treat frontend environment variables as public. Keep credentials in build-time
+  secrets and ignored local configuration.
+- Use locally generated blog assets or mocked network responses for routine UI
+  checks.
+- `public/blog/` is generated from Issues. Regenerate it only when needed
   for the task; do not hand-edit authored articles through the snapshot. Keep
-  `dist/`, credentials, local configuration, and temporary artifacts untracked.
+  `dist/`, generated blog assets, credentials, local configuration, and temporary artifacts untracked.
 - Commit or push when requested for the current task, staging only relevant
   files. Inspect the resulting diff and verify the remote branch after pushing.
   A successful push does not prove successful deployment; check the workflow

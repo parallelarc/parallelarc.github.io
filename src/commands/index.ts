@@ -1,4 +1,3 @@
-import Ai from "./ai";
 import About from "./about";
 import Contact from "./contact";
 import Projects from "./projects";
@@ -8,13 +7,6 @@ import Clear from "./clear";
 import type { Command } from "../types/command";
 
 export const commands: Command[] = [
-  {
-    name: "ai",
-    description: "internal ai conversation handler",
-    hidden: true,
-    acceptsArgs: true,
-    component: Ai,
-  },
   {
     name: "about",
     description: "about me",

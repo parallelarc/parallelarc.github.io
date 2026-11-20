@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /* eslint-env node */
 
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, writeFile, rm } from "node:fs/promises";
 import path from "node:path";
+import { createHash } from "node:crypto";
 import { pathToFileURL } from "node:url";
 
 // Parse owner/repo from environment variables
@@ -114,6 +115,34 @@ export async function fetchBlogSnapshot({
   return posts;
 }
 
+export async function writeBlogArtifacts(posts, publicDir = "public") {
+  const outputDir = path.join(publicDir, "blog");
+  await rm(outputDir, { recursive: true, force: true });
+  await mkdir(path.join(outputDir, "posts"), { recursive: true });
+  const hash = value =>
+    createHash("sha256").update(value).digest("hex").slice(0, 16);
+  const search = JSON.stringify(
+    posts.map(post => ({
+      number: post.number,
+      text: post.content.toLowerCase(),
+    }))
+  );
+  const searchUrl = `search-${hash(search)}.json`;
+  await writeFile(path.join(outputDir, searchUrl), search, "utf8");
+  const entries = [];
+  for (const { content, ...metadata } of posts) {
+    const body = JSON.stringify({ content });
+    const contentUrl = `posts/${metadata.number}-${hash(body)}.json`;
+    await writeFile(path.join(outputDir, contentUrl), body, "utf8");
+    entries.push({ ...metadata, contentUrl });
+  }
+  await writeFile(
+    path.join(outputDir, "index.json"),
+    JSON.stringify({ posts: entries, searchUrl }),
+    "utf8"
+  );
+}
+
 async function main() {
   if (!token) {
     throw new Error(
@@ -121,11 +150,8 @@ async function main() {
     );
   }
   const posts = await fetchBlogSnapshot({ owner, repoName, label, token });
-  const outputPath = path.join(process.cwd(), "public", "blog.json");
-  await mkdir(path.dirname(outputPath), { recursive: true });
-  await writeFile(outputPath, JSON.stringify(posts, null, 2), "utf8");
-
-  console.log(`Wrote ${posts.length} posts to ${outputPath}`);
+  await writeBlogArtifacts(posts);
+  console.log(`Wrote ${posts.length} posts to public/blog/`);
 }
 
 if (

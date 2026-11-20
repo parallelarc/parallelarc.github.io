@@ -2,7 +2,13 @@
 /* eslint camelcase: "off" */
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { fetchBlogSnapshot } from "./generate-blog-json.mjs";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import {
+  fetchBlogSnapshot,
+  writeBlogArtifacts,
+} from "./generate-blog-json.mjs";
 
 const issue = number => ({
   id: number + 1000,
@@ -88,4 +94,44 @@ test("supports an empty published set", async () => {
     }),
     []
   );
+});
+
+test("generates a body-free index and changes asset URLs when content changes", async () => {
+  const dir = await mkdtemp(path.join(os.tmpdir(), "blog-artifacts-"));
+  try {
+    const posts = [
+      {
+        number: 13,
+        title: "Title",
+        content: "电力交易 AI",
+        excerpt: "Summary",
+      },
+    ];
+    await writeBlogArtifacts(posts, dir);
+    const first = JSON.parse(
+      await readFile(path.join(dir, "blog/index.json"), "utf8")
+    );
+    assert.equal(first.posts[0].content, undefined);
+    const body = JSON.parse(
+      await readFile(path.join(dir, "blog", first.posts[0].contentUrl), "utf8")
+    );
+    assert.equal(body.content, posts[0].content);
+    const search = JSON.parse(
+      await readFile(path.join(dir, "blog", first.searchUrl), "utf8")
+    );
+    assert.equal(search[0].text, "电力交易 ai");
+    await writeBlogArtifacts([{ ...posts[0], content: "Revised body" }], dir);
+    const next = JSON.parse(
+      await readFile(path.join(dir, "blog/index.json"), "utf8")
+    );
+    assert.notEqual(next.posts[0].contentUrl, first.posts[0].contentUrl);
+    assert.notEqual(next.searchUrl, first.searchUrl);
+    await writeBlogArtifacts([], dir);
+    const empty = JSON.parse(
+      await readFile(path.join(dir, "blog/index.json"), "utf8")
+    );
+    assert.deepEqual(empty.posts, []);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
 });

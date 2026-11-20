@@ -1,8 +1,8 @@
-import { useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { BlogPost } from "../types/github";
-import { formatDate } from "../utils/github";
+import { fetchBlogContent, formatDate } from "../utils/github";
 import {
   ArticleBody,
   BrowseAction,
@@ -10,10 +10,37 @@ import {
   ReaderHeader,
 } from "./styles/Mobile.styled";
 
-type Props = { post: BlogPost; onBack: () => void; onReady: () => void };
+type Props = {
+  post: BlogPost;
+  onBack: () => void;
+  onReady: () => void;
+  onRefresh?: () => Promise<void>;
+};
 
-function ArticleReader({ post, onBack, onReady }: Props) {
-  useLayoutEffect(onReady, [onReady]);
+function ArticleReader({ post, onBack, onReady, onRefresh }: Props) {
+  const [content, setContent] = useState<string | null>(
+    post.contentUrl ? null : post.content
+  );
+  const [error, setError] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    let active = true;
+    setError(false);
+    setContent(post.contentUrl ? null : post.content);
+    void fetchBlogContent(post)
+      .then(body => {
+        if (active) setContent(body);
+      })
+      .catch(() => {
+        if (active) setError(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [post, attempt]);
+  useLayoutEffect(() => {
+    if (content !== null) onReady();
+  }, [content, onReady]);
   const [copyStatus, setCopyStatus] = useState("");
   const copyLink = async () => {
     try {
@@ -44,46 +71,65 @@ function ArticleReader({ post, onBack, onReady }: Props) {
         </p>
         {copyStatus && <p role="status">{copyStatus}</p>}
       </ReaderHeader>
-      <ArticleBody>
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          components={{
-            a: ({ href, children, id, title }) => (
-              <a
-                id={id}
-                title={title}
-                href={href}
-                target={href?.startsWith("#") ? undefined : "_blank"}
-                rel="noopener noreferrer"
-                onClick={event => {
-                  if (href?.startsWith("#")) {
-                    event.preventDefault();
-                    const id = href.slice(1);
-                    document
-                      .getElementById(id)
-                      ?.scrollIntoView({ block: "start" });
-                  }
-                }}
-              >
-                {children}
-              </a>
-            ),
-            img: ({ src, alt, title, width, height }) => (
-              <img
-                src={src}
-                alt={alt}
-                title={title}
-                width={width}
-                height={height}
-                loading="lazy"
-                decoding="async"
-              />
-            ),
-          }}
-        >
-          {post.content}
-        </ReactMarkdown>
-      </ArticleBody>
+      {error ? (
+        <div>
+          <p role="alert">Unable to load this article. Please try again.</p>
+          <BrowseAction
+            type="button"
+            onClick={() =>
+              void (async () => {
+                await onRefresh?.();
+                setAttempt(value => value + 1);
+              })()
+            }
+          >
+            [retry]
+          </BrowseAction>
+        </div>
+      ) : content === null ? (
+        <p role="status">Loading article…</p>
+      ) : (
+        <ArticleBody>
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              a: ({ href, children, id, title }) => (
+                <a
+                  id={id}
+                  title={title}
+                  href={href}
+                  target={href?.startsWith("#") ? undefined : "_blank"}
+                  rel="noopener noreferrer"
+                  onClick={event => {
+                    if (href?.startsWith("#")) {
+                      event.preventDefault();
+                      const id = href.slice(1);
+                      document
+                        .getElementById(id)
+                        ?.scrollIntoView({ block: "start" });
+                    }
+                  }}
+                >
+                  {children}
+                </a>
+              ),
+              img: ({ src, alt, title, width, height }) => (
+                <img
+                  src={src}
+                  alt={alt}
+                  title={title}
+                  width={width}
+                  height={height}
+                  loading="lazy"
+                  decoding="async"
+                />
+              ),
+            }}
+          >
+            {content}
+          </ReactMarkdown>
+        </ArticleBody>
+      )}
       <ReaderFooter>
         <BrowseAction type="button" onClick={onBack}>
           ← Back to blog

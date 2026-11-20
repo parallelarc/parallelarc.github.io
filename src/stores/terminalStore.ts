@@ -1,12 +1,9 @@
 import { create } from "zustand";
 import { terminalConfig } from "../config/terminal";
 
-export type HistoryEntryMode = "command" | "ai";
-
 export interface CommandHistoryEntry {
   id: string; // 唯一标识符
   command: string; // 命令文本
-  mode?: HistoryEntryMode;
   timestamp?: number; // 时间戳
   dismissMessage?: string; // 关闭时的替换消息
 }
@@ -14,30 +11,6 @@ export interface CommandHistoryEntry {
 export interface InteractiveMode {
   active: boolean;
   command: string | null;
-}
-
-export type AiRole = "user" | "assistant";
-
-export interface AiConversationMessage {
-  role: AiRole;
-  content: string;
-  timestamp: number;
-}
-
-export type AiEntryStatus = "idle" | "streaming" | "done" | "error" | "stopped";
-
-export interface AiEntryState {
-  prompt: string;
-  response: string;
-  status: AiEntryStatus;
-  error?: string;
-  provider?: string;
-  model?: string;
-  updatedAt: number;
-}
-
-export interface AddToHistoryOptions {
-  mode?: HistoryEntryMode;
 }
 
 export interface TerminalState {
@@ -51,25 +24,10 @@ export interface TerminalState {
   history: CommandHistoryEntry[];
   historyIndex: number;
   historyDraft: string;
-  addToHistory: (command: string, options?: AddToHistoryOptions) => string;
+  addToHistory: (command: string) => string;
   clearHistory: () => void;
   navigateHistory: (direction: "up" | "down") => void;
   setDismissMessage: (index: number, message: string) => void;
-
-  // AI conversation state
-  aiEntries: Record<string, AiEntryState>;
-  aiConversation: AiConversationMessage[];
-  ensureAiEntry: (entryId: string, prompt: string) => void;
-  startAiEntry: (entryId: string) => void;
-  appendAiResponseChunk: (entryId: string, chunk: string) => void;
-  completeAiEntry: (
-    entryId: string,
-    metadata?: { provider?: string; model?: string }
-  ) => void;
-  failAiEntry: (entryId: string, error: string) => void;
-  stopAiEntry: (entryId: string) => void;
-  addAiConversationTurn: (prompt: string, response: string) => void;
-  clearAiConversation: () => void;
 
   // Autocomplete state
   selectedCommandIndex: number;
@@ -102,16 +60,14 @@ export const useTerminalStore = create<TerminalState>()((set, get) => ({
   history: [...terminalConfig.defaultHistory].map(cmd => ({
     id: generateHistoryId("default-"),
     command: cmd,
-    mode: "command",
   })),
   historyIndex: -1,
   historyDraft: "",
-  addToHistory: (command: string, options: AddToHistoryOptions = {}) => {
+  addToHistory: (command: string) => {
     const { history } = get();
     const entry: CommandHistoryEntry = {
       id: generateHistoryId(),
       command,
-      mode: options.mode ?? "command",
       timestamp: Date.now(),
     };
     const newHistory = [entry, ...history];
@@ -127,11 +83,8 @@ export const useTerminalStore = create<TerminalState>()((set, get) => ({
       history: [...terminalConfig.defaultHistory].map(cmd => ({
         id: generateHistoryId("default-"),
         command: cmd,
-        mode: "command",
       })),
       historyIndex: -1,
-      aiEntries: {},
-      aiConversation: [],
     }),
   setDismissMessage: (index: number, message: string) => {
     const { history } = get();
@@ -174,128 +127,6 @@ export const useTerminalStore = create<TerminalState>()((set, get) => ({
       }
     }
   },
-
-  // AI conversation state
-  aiEntries: {},
-  aiConversation: [],
-  ensureAiEntry: (entryId: string, prompt: string) => {
-    const { aiEntries } = get();
-    if (aiEntries[entryId]) return;
-
-    set({
-      aiEntries: {
-        ...aiEntries,
-        [entryId]: {
-          prompt,
-          response: "",
-          status: "idle",
-          updatedAt: Date.now(),
-        },
-      },
-    });
-  },
-  startAiEntry: (entryId: string) => {
-    const { aiEntries } = get();
-    const entry = aiEntries[entryId];
-    if (!entry) return;
-
-    set({
-      aiEntries: {
-        ...aiEntries,
-        [entryId]: {
-          ...entry,
-          status: "streaming",
-          error: undefined,
-          response: "",
-          updatedAt: Date.now(),
-        },
-      },
-    });
-  },
-  appendAiResponseChunk: (entryId: string, chunk: string) => {
-    if (!chunk) return;
-
-    const { aiEntries } = get();
-    const entry = aiEntries[entryId];
-    if (!entry || entry.status !== "streaming") return;
-
-    set({
-      aiEntries: {
-        ...aiEntries,
-        [entryId]: {
-          ...entry,
-          response: `${entry.response}${chunk}`,
-          status: "streaming",
-          updatedAt: Date.now(),
-        },
-      },
-    });
-  },
-  completeAiEntry: (entryId: string, metadata) => {
-    const { aiEntries } = get();
-    const entry = aiEntries[entryId];
-    if (!entry || entry.status === "stopped") return;
-
-    set({
-      aiEntries: {
-        ...aiEntries,
-        [entryId]: {
-          ...entry,
-          status: "done",
-          provider: metadata?.provider ?? entry.provider,
-          model: metadata?.model ?? entry.model,
-          updatedAt: Date.now(),
-        },
-      },
-    });
-  },
-  failAiEntry: (entryId: string, error: string) => {
-    const { aiEntries } = get();
-    const entry = aiEntries[entryId];
-    if (!entry || entry.status === "stopped") return;
-
-    set({
-      aiEntries: {
-        ...aiEntries,
-        [entryId]: {
-          ...entry,
-          status: "error",
-          error,
-          updatedAt: Date.now(),
-        },
-      },
-    });
-  },
-  stopAiEntry: (entryId: string) => {
-    const { aiEntries } = get();
-    const entry = aiEntries[entryId];
-    if (!entry || (entry.status !== "idle" && entry.status !== "streaming"))
-      return;
-    set({
-      aiEntries: {
-        ...aiEntries,
-        [entryId]: { ...entry, status: "stopped", updatedAt: Date.now() },
-      },
-    });
-  },
-  addAiConversationTurn: (prompt: string, response: string) => {
-    const { aiConversation } = get();
-    const updated: AiConversationMessage[] = [
-      ...aiConversation,
-      { role: "user", content: prompt, timestamp: Date.now() },
-      { role: "assistant", content: response, timestamp: Date.now() },
-    ];
-
-    const maxTurns = terminalConfig.aiHistoryTurns;
-    const maxMessages = maxTurns * 2;
-    const trimmed =
-      updated.length > maxMessages
-        ? updated.slice(updated.length - maxMessages)
-        : updated;
-
-    set({ aiConversation: trimmed });
-  },
-  clearAiConversation: () => set({ aiEntries: {}, aiConversation: [] }),
 
   // Autocomplete state
   selectedCommandIndex: 0,

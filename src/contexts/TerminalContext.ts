@@ -4,7 +4,6 @@ export type Term = {
   arg: string[];
   index: number;
   isLatest: boolean;
-  entryId?: string;
 };
 
 export const termContext = createContext<Term>({

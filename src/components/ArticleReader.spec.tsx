@@ -19,7 +19,10 @@ const post: BlogPost = {
   excerpt: "Original body.",
 };
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
 
 it("copies the current shareable hash URL only on an explicit request", async () => {
   const user = userEvent.setup();
@@ -44,4 +47,28 @@ it("keeps the article readable and gives a fallback when copying is unavailable"
     "Copy the link from your browser"
   );
   expect(screen.getByText("Original body.")).toBeInTheDocument();
+});
+
+it("loads a separate body before restoring scroll and supports retry", async () => {
+  const user = userEvent.setup();
+  const ready = vi.fn();
+  const fetch = vi
+    .fn()
+    .mockResolvedValueOnce(new Response("offline", { status: 503 }))
+    .mockResolvedValueOnce(
+      new Response(JSON.stringify({ content: "Lazy-loaded article" }))
+    );
+  vi.stubGlobal("fetch", fetch);
+  render(
+    <ArticleReader
+      post={{ ...post, content: "", contentUrl: "/reader-retry" }}
+      onBack={vi.fn()}
+      onReady={ready}
+    />
+  );
+  expect(ready).not.toHaveBeenCalled();
+  expect(await screen.findByRole("alert")).toHaveTextContent("Unable to load");
+  await user.click(screen.getByRole("button", { name: "[retry]" }));
+  expect(await screen.findByText("Lazy-loaded article")).toBeInTheDocument();
+  expect(ready).toHaveBeenCalled();
 });

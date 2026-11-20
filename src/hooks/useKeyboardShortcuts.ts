@@ -13,7 +13,6 @@ export interface UseKeyboardShortcutsProps {
   onNavigateHistory: (direction: "up" | "down") => void;
   onToggleHelp: () => void;
   onSubmit: () => void;
-  onStop: () => boolean;
 }
 
 /** Browser-native editing, with terminal shortcuts layered on top. */
@@ -30,7 +29,6 @@ export function useKeyboardShortcuts({
   onNavigateHistory,
   onToggleHelp,
   onSubmit,
-  onStop,
 }: UseKeyboardShortcutsProps) {
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -42,12 +40,12 @@ export function useKeyboardShortcuts({
 
       if (e.ctrlKey && e.key.toLowerCase() === "c" && !hasSelection) {
         e.preventDefault();
-        if (!onStop()) onResetInput();
+        onResetInput();
         return;
       }
       if (e.key === "Escape") {
         e.preventDefault();
-        if (!onDismiss()) onStop();
+        onDismiss();
         return;
       }
       if (e.key === "?" && !input.value) {
@@ -131,7 +129,6 @@ export function useKeyboardShortcuts({
       onNavigateHistory,
       onToggleHelp,
       onSubmit,
-      onStop,
     ]
   );
 

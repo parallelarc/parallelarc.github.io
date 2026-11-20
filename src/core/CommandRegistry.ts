@@ -13,10 +13,6 @@ export const commandRegistry = {
     const commandExists = byName.has(commandName);
     return {
       raw,
-      mode:
-        isExplicitCommand || commandExists
-          ? ("command" as const)
-          : ("ai" as const),
       isExplicitCommand,
       commandName,
       args: tokens.slice(1),

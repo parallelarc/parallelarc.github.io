@@ -47,16 +47,8 @@ jobs:
       - name: Build site
         run: npm run build
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BLOG_GITHUB_REPO: ${{ github.repository }}
-          BLOG_GITHUB_LABEL: blog
           VITE_BLOG_DATA_SOURCE: static
-          VITE_BLOG_STATIC_URL: /blog.json
-          VITE_LLM_PROVIDER: ${{ vars.VITE_LLM_PROVIDER || 'anthropic-compatible' }}
-          VITE_LLM_PROXY_URL: ${{ vars.VITE_LLM_PROXY_URL }}
-          VITE_LLM_OPENAI_MODEL: ${{ vars.VITE_LLM_OPENAI_MODEL }}
-          VITE_LLM_ANTHROPIC_MODEL: ${{ vars.VITE_LLM_ANTHROPIC_MODEL }}
-          VITE_LLM_ANTHROPIC_COMPAT_MODEL: ${{ vars.VITE_LLM_ANTHROPIC_COMPAT_MODEL }}
+          VITE_BLOG_STATIC_URL: /blog/index.json
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

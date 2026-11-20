@@ -1,5 +1,10 @@
 import { afterEach, expect, it, vi } from "vitest";
-import { fetchIssues } from "./github";
+import {
+  fetchIssues,
+  fetchBlogPosts,
+  fetchBlogContent,
+  fetchBlogSearch,
+} from "./github";
 /* eslint camelcase: "off" */
 
 afterEach(() => vi.unstubAllGlobals());
@@ -46,4 +51,68 @@ it("rejects a failed later page rather than returning an incomplete archive", as
     "rate limit"
   );
   vi.restoreAllMocks();
+});
+
+it("loads metadata separately and fetches a versioned body once", async () => {
+  const fetch = vi
+    .fn()
+    .mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          posts: [
+            {
+              id: 100,
+              number: 13,
+              title: "Title",
+              createdAt: "2026-11-20",
+              contentUrl: "posts/13-version.json",
+            },
+          ],
+          searchUrl: "search-version.json",
+        })
+      )
+    )
+    .mockResolvedValueOnce(
+      new Response(JSON.stringify({ content: "Full article" }))
+    );
+  vi.stubGlobal("fetch", fetch);
+  const posts = await fetchBlogPosts({
+    owner: "test",
+    repo: "blog",
+    dataSource: "static",
+    staticUrl: "/test-blog/index.json",
+  });
+  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(posts[0].content).toBe("");
+  expect(posts[0].searchUrl).toContain("/test-blog/search-version.json");
+  const results = await Promise.all([
+    fetchBlogContent(posts[0]),
+    fetchBlogContent(posts[0]),
+  ]);
+  expect(results).toEqual(["Full article", "Full article"]);
+  expect(fetch).toHaveBeenCalledTimes(2);
+  expect(fetch.mock.calls[1][0]).toContain("/test-blog/posts/13-version.json");
+});
+
+it("retries failed body and search requests and preserves Chinese search text", async () => {
+  const fetch = vi
+    .fn()
+    .mockResolvedValueOnce(new Response("missing", { status: 404 }))
+    .mockResolvedValueOnce(
+      new Response(JSON.stringify({ content: "恢复正文" }))
+    )
+    .mockResolvedValueOnce(new Response("offline", { status: 503 }))
+    .mockResolvedValueOnce(
+      new Response(JSON.stringify([{ number: 13, text: "电力交易与ai" }]))
+    );
+  vi.stubGlobal("fetch", fetch);
+  const post = {
+    contentUrl: "/retry-body",
+    content: "",
+  } as import("../types/github").BlogPost;
+  await expect(fetchBlogContent(post)).rejects.toThrow();
+  await expect(fetchBlogContent(post)).resolves.toBe("恢复正文");
+  await expect(fetchBlogSearch("/retry-search")).rejects.toThrow();
+  const index = await fetchBlogSearch("/retry-search");
+  expect(index.get(13)).toContain("电力交易");
 });

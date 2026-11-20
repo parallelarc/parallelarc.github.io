@@ -2,20 +2,29 @@
  * Custom Hook: Fetch and manage GitHub Issues blog data
  */
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import type { GitHubConfig } from "../types/github";
+import { useBlogStore } from "../stores/blogStore";
 import { useBlogData } from "./useBlogData";
 import { calculateCategoryStats } from "../utils/github";
 
 export const POSTS_PER_PAGE = 10;
 
 export function useGitHubIssues(config: GitHubConfig, initialCategory = "All") {
-  const { posts, loading, error, refresh } = useBlogData(config);
+  const { posts, loading, error, refresh: refreshPosts } = useBlogData(config);
 
   // List state
   const [activeCategory, setActiveCategoryState] = useState(initialCategory);
   const [searchQuery, setSearchQueryState] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const { loadSearch, searchLoading, searchError } = useBlogStore();
+  useEffect(() => {
+    if (searchQuery) void loadSearch(config).catch(() => undefined);
+  }, [searchQuery, loadSearch, config]);
+  const refresh = useCallback(async () => {
+    await refreshPosts();
+    if (searchQuery) await loadSearch(config).catch(() => undefined);
+  }, [refreshPosts, searchQuery, loadSearch, config]);
 
   // Calculate category stats
   const categoryStats = useMemo(() => calculateCategoryStats(posts), [posts]);
@@ -35,7 +44,9 @@ export function useGitHubIssues(config: GitHubConfig, initialCategory = "All") {
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         const titleMatch = post.title.toLowerCase().includes(query);
-        const contentMatch = post.content.toLowerCase().includes(query);
+        const contentMatch = (post.searchContent ?? post.content)
+          .toLowerCase()
+          .includes(query);
         const labelMatch = post.labels.some(label =>
           label.toLowerCase().includes(query)
         );
@@ -84,8 +95,8 @@ export function useGitHubIssues(config: GitHubConfig, initialCategory = "All") {
 
   return {
     posts,
-    loading,
-    error,
+    loading: loading || Boolean(searchQuery && searchLoading),
+    error: error || (searchQuery ? searchError : null),
     listState,
     categoryStats,
     refresh,

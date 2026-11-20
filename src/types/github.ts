@@ -40,6 +40,9 @@ export interface BlogPost {
   number: number;
   title: string;
   content: string;
+  contentUrl?: string;
+  searchUrl?: string;
+  searchContent?: string;
   createdAt: string;
   updatedAt: string;
   author: string;

@@ -7,5 +7,5 @@ export const BLOG_CONFIG: GitHubConfig = {
   labels: [import.meta.env.VITE_GITHUB_BLOG_LABEL || "blog"],
   dataSource:
     import.meta.env.VITE_BLOG_DATA_SOURCE === "static" ? "static" : "api",
-  staticUrl: import.meta.env.VITE_BLOG_STATIC_URL || "/blog.json",
+  staticUrl: import.meta.env.VITE_BLOG_STATIC_URL || "/blog/index.json",
 };

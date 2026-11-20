@@ -17,7 +17,7 @@ interaction.
 | Prompt and command menu                   | `src/components/TerminalComposer.tsx`                                                               |
 | Caret measurement, selection, composition | `src/hooks/useBlockCaret.ts`                                                                        |
 | Input shortcuts and command submission    | `src/hooks/useKeyboardShortcuts.ts`, `src/hooks/useCommandSubmission.ts`                            |
-| Command/AI state                          | `src/stores/terminalStore.ts`                                                                       |
+| Command state                             | `src/stores/terminalStore.ts`                                                                       |
 | Visual styling                            | `src/components/styles/`                                                                            |
 
 ## Modes and navigation
@@ -52,8 +52,7 @@ home continues to hide the illustration at every width.
 ## Content and blog data
 
 Personal content has one source: `src/content/siteData/`. About, projects,
-contact, and welcome components consume that data. AI context also
-consumes it rather than keeping a second biography.
+contact, and welcome components consume that data. Both browse and terminal interfaces consume these shared modules.
 
 `ProjectAlbum` owns the four-photo preview. `PhotoViewer` is the shared modal
 used by project albums and contact galleries, with `TransitionPhoto` handling
@@ -73,16 +72,23 @@ Blog configuration is shared in `src/config/blog.ts`:
 ```mermaid
 flowchart TD
   Issues[GitHub Issues] --> Generator[Snapshot generator]
-  Generator --> Snapshot[public/blog.json]
+  Generator --> Snapshot[public/blog/index.json]
   Issues -->|API mode| Fetch[src/utils/github.ts]
   Snapshot -->|Static mode| Fetch
+  Generator --> Bodies[Per-article bodies]
+  Generator --> Search[Search data]
+  Bodies -->|Open article| Browse
+  Search -->|First search query| Terminal
   Fetch --> Store[Shared blog store]
   Store --> Browse[Browse list and reader]
   Store --> Terminal[Terminal list]
-  Store --> AI[AI website context]
 ```
 
-`VITE_BLOG_DATA_SOURCE=static` selects the snapshot. Otherwise the browser reads
+`VITE_BLOG_DATA_SOURCE=static` selects generated assets under `public/blog/`.
+The index contains metadata and content URLs; article bodies load on demand.
+Full-text search loads its own data on the first query. These files are generated
+during deployment and excluded from Git. Issue events dispatch deployment without
+committing generated content. Otherwise the browser reads
 the API. CI explicitly selects static mode. The generator requires a build-time
 token and paginates all open issues with the configured blog label. The browser
 API mode also paginates. Closing an issue or removing its label withdraws it on
@@ -99,31 +105,18 @@ to the PWA app shell; text resources and unknown real paths reach the host.
 keep links, images, tables, and code usable on small screens. Do not introduce
 raw HTML execution merely to support an article's formatting.
 
-## AI boundary
-
-`src/commands/ai/index.tsx` builds messages from the persona, shared site content,
-and blog metadata. `src/utils/content/contextBuilder.ts` owns context formatting
-and approximate token budgets. `blogStore` shares article data, request status,
-and in-flight requests across browse, terminal, and AI; display filters stay local.
-
-`src/utils/llm.ts` consumes streaming responses. With `VITE_LLM_PROXY_URL`, it
-calls `cloudflare/llm-proxy.ts`, which uses server-side provider credentials.
-The client always uses the Worker; provider adapters and keys stay server-side. Frontend rendering, Worker reachability,
-and provider authentication are separate verification scopes.
-
 ## Extending behavior
 
 - **Content:** change `src/content/siteData/` only when content edits are requested.
 - **Command:** add an entry to `src/commands/index.ts` and a component under
   `src/commands/`. This static table owns names, descriptions, argument support,
   visibility, and components. `CommandRegistry` only resolves input and looks
-  up these definitions. History keeps raw input and its command/AI mode; AI
-  prompts are never encoded into command arguments.
+  up these definitions. History keeps the original command input.
 - **Browse page:** extend the route parser/type, shell rendering, navigation,
   and route tests together. Keep command execution independent.
 - **Input behavior:** work through the native textarea and its existing hooks;
   verify IME, selection, history editing, and mobile focus in addition to unit tests.
 
 There is no plugin runtime or secondary command context. Native textarea
-editing owns text and selection; the terminal store owns history and AI sessions.
+editing owns text and selection; the terminal store owns command history.
 The theme store is the sole source for theme initialization.

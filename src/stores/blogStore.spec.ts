@@ -63,3 +63,45 @@ describe("Shared blog data", () => {
     expect(fetch).toHaveBeenCalledTimes(2);
   });
 });
+
+describe("On-demand full-text search", () => {
+  it("loads search data only when requested and keeps article bodies unloaded", async () => {
+    const entries = [
+      {
+        ...posts[0],
+        content: "",
+        contentUrl: "/body",
+        searchUrl: "/search-store",
+      },
+    ];
+    vi.spyOn(github, "fetchBlogPosts").mockResolvedValue(entries);
+    const search = vi
+      .spyOn(github, "fetchBlogSearch")
+      .mockResolvedValue(new Map([[1, "电力交易"]]));
+    await useBlogStore.getState().load(config);
+    expect(search).not.toHaveBeenCalled();
+    await Promise.all([
+      useBlogStore.getState().loadSearch(config),
+      useBlogStore.getState().loadSearch(config),
+    ]);
+    expect(search).toHaveBeenCalledTimes(1);
+    expect(useBlogStore.getState().posts[0].searchContent).toBe("电力交易");
+    expect(useBlogStore.getState().posts[0].content).toBe("");
+  });
+
+  it("reports missing search entries and allows retry", async () => {
+    vi.spyOn(github, "fetchBlogPosts").mockResolvedValue([
+      { ...posts[0], content: "", searchUrl: "/search-retry" },
+    ]);
+    vi.spyOn(github, "fetchBlogSearch")
+      .mockResolvedValueOnce(new Map())
+      .mockResolvedValueOnce(new Map([[1, "Recovered"]]));
+    await expect(useBlogStore.getState().loadSearch(config)).rejects.toThrow(
+      "does not match"
+    );
+    expect(useBlogStore.getState().searchError).toContain("does not match");
+    await useBlogStore.getState().loadSearch(config);
+    expect(useBlogStore.getState().searchError).toBeNull();
+    expect(useBlogStore.getState().posts[0].searchContent).toBe("Recovered");
+  });
+});

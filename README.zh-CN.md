@@ -8,7 +8,7 @@
 ## 使用方式
 
 - **浏览模式**：点击进入博客、筛选分类、加载更多文章和站内阅读。返回列表时保留分类及滚动位置，无需输入命令。
-- **终端模式**：提供命令、历史记录、补全和可选的 AI 对话。保留原生文本输入的选择、多行编辑和中文输入法行为，方块光标会闪烁并将覆盖的字符反色。
+- **终端模式**：提供命令、历史记录和补全。保留原生文本输入的选择、多行编辑和中文输入法行为，方块光标会闪烁并将覆盖的字符反色。
 - **主动切换模式**：使用顶部的 `>_ terminal` 和 `← browse`。终端内点击或输入命令会继续在终端中执行。
 - **项目相册**：先展示四张预览图，点击后浏览完整相册。支持滑动、方向键和点击切换，关闭后回到原位置。
   光标悬停在主图或大图上时，也可以用触控板左右滑动或按住鼠标拖动切换；页面的上下滚动不受影响。
@@ -29,21 +29,22 @@
 
 ## 本地开发
 
-使用与部署工作流一致的 Node.js 20.x（至少 20.19），通过 npm 和仓库中的 lockfile 安装依赖。以下命令直接使用已有博客快照，无需 GitHub 或模型密钥：
+使用与部署工作流一致的 Node.js 20.x（至少 20.19），通过 npm 和仓库中的 lockfile 安装依赖。先配置构建时使用的 `GITHUB_TOKEN` 或 `BLOG_GITHUB_TOKEN`，再生成本地博客数据：
 
 ```bash
 npm ci
+npm run blog:generate
 VITE_BLOG_DATA_SOURCE=static npm run dev
 ```
 
-使用同一快照构建并预览前端：
+使用生成的数据构建并预览前端：
 
 ```bash
 VITE_BLOG_DATA_SOURCE=static npm run build
 npm run preview
 ```
 
-`npm run build` 使用已有快照；需要更新文章时，显式运行 `npm run blog:generate`，并配置构建时的 GitHub token。AI 对话需要单独配置代理。配置和验证方式见[开发指南](CONTRIBUTING.md)。
+`npm run build` 使用已有快照；需要更新文章时，显式运行 `npm run blog:generate`，在 `public/blog/` 生成文章目录、单篇正文和按需加载的全文搜索数据。这些生成文件由 Git 忽略。配置和验证方式见[开发指南](CONTRIBUTING.md)。
 
 ## Agent 阅读入口
 
@@ -62,7 +63,7 @@ npm run preview
 | `/welcome`  | 欢迎信息和可点击的命令       |
 | `/clear`    | 清空终端                     |
 
-已注册命令也可以省略 `/`。其他普通文本在配置代理后进入 AI 对话。输入 `/` 打开命令菜单；空输入框中按 `?` 查看快捷键；`Enter` 提交，`Shift+Enter` 换行。
+已注册命令也可以省略 `/`。未注册的输入会提示未知命令。输入 `/` 打开命令菜单；空输入框中按 `?` 查看快捷键；`Enter` 提交，`Shift+Enter` 换行。
 
 ## 文档导航
 
@@ -71,10 +72,5 @@ npm run preview
 | [AGENTS.md](AGENTS.md)             | 工程原则、产品约束及 Agent 工作方式 |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | 环境配置、检查、界面审查及部署      |
 | [架构说明](docs/ARCHITECTURE.md)   | 代码入口、状态归属和内容流向        |
-| [LLM 代理](cloudflare/README.md)   | Worker 配置、本地开发及部署         |
 
-主要部署方式是推送 `main` 后触发 [GitHub Pages 工作流](.github/workflows/deploy.yml)，也支持手动触发该工作流。AI 请求由独立的 Cloudflare Worker 处理，可以与 GitHub Pages 前端搭配使用。[Cloudflare 部署工作流](.github/workflows/deploy-cloudflare.yml)是另一种手动触发的部署方式。
-
-## 许可证
-
-[MIT](LICENSE) © [parallelarc](https://github.com/parallelarc)
+主要部署方式是推送 `main` 后触发 [GitHub Pages 工作流](.github/workflows/deploy.yml)，也支持手动触发。Issue 更新会请求重新部署，构建时生成博客数据。

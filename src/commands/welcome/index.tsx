@@ -74,13 +74,6 @@ function Welcome({ onCommand }: { onCommand?: (command: string) => void }) {
           </CommandShortcut>
           {onCommand ? " to learn more about me." : " to explore."}
           <br />
-          {!onCommand && (
-            <>
-              Or ask directly, like{" "}
-              <strong>{WELCOME_CONTENT.askExamples[1]}</strong>
-              <br />
-            </>
-          )}
           {onCommand ? "Or browse " : "Try "}
           {WELCOME_CONTENT.tryCommands.map((command, index) => (
             <span key={command}>

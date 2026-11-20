@@ -20,7 +20,7 @@ function setup() {
   return {
     user,
     input: screen.getByRole("textbox", {
-      name: "Message or command",
+      name: "Command",
     }) as HTMLTextAreaElement,
   };
 }
@@ -79,7 +79,7 @@ describe("Terminal composer", () => {
   it("uses the selected command for the touch send button, just like Enter", async () => {
     const { user, input } = setup();
     await user.type(input, "/ab");
-    await user.click(screen.getByRole("button", { name: "Send message" }));
+    await user.click(screen.getByRole("button", { name: "Run command" }));
     expect(useTerminalStore.getState().history[0].command).toBe("/about");
     expect(input.value).toBe("");
   });
@@ -154,26 +154,5 @@ describe("Terminal composer", () => {
     }
     await user.keyboard("{Shift>}{Enter}{/Shift}line two");
     expect(input.value).toBe("line one\nline two");
-  });
-
-  it("stops a response with Escape and keeps its partial output", async () => {
-    const store = useTerminalStore.getState();
-    const id = store.addToHistory("ai test", { mode: "ai" });
-    store.ensureAiEntry(id, "test");
-    store.startAiEntry(id);
-    store.appendAiResponseChunk(id, "partial response");
-    const { user, input } = setup();
-    await user.click(input);
-    expect(
-      screen.getByRole("button", { name: "Stop response" })
-    ).toBeInTheDocument();
-    await user.keyboard("{Escape}");
-    expect(useTerminalStore.getState().aiEntries[id].status).toBe("stopped");
-    store.appendAiResponseChunk(id, "late token");
-    store.completeAiEntry(id);
-    expect(useTerminalStore.getState().aiEntries[id].response).toBe(
-      "partial response"
-    );
-    expect(useTerminalStore.getState().aiEntries[id].status).toBe("stopped");
   });
 });

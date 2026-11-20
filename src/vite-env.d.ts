@@ -23,15 +23,3 @@ declare module "styled-components" {
     };
   }
 }
-
-interface ImportMetaEnv {
-  readonly VITE_LLM_PROVIDER?: "openai" | "anthropic" | "anthropic-compatible";
-  readonly VITE_LLM_PROXY_URL?: string;
-  readonly VITE_LLM_OPENAI_MODEL?: string;
-  readonly VITE_LLM_ANTHROPIC_MODEL?: string;
-  readonly VITE_LLM_ANTHROPIC_COMPAT_MODEL?: string;
-}
-
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
-}
