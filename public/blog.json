@@ -5,7 +5,7 @@
     "title": "电力交易 - 决策备忘录",
     "content": "# 电力交易 - 决策备忘录\n\n本期《峰向标》访谈兰木达创始人朱治中。\n\n峰向标是祥峰投资下的播客，后者是兰木达的资方，所以有商业互吹的意思。\n\n嘉宾是电力专业，对 AI 发展速度评估保守。从历史来看，人类专家引以为傲的知识根本不构成门槛。\n\n电力交易缺数据、政策迭代快是客观条件，但一者电力交易是交叉学科，其外围技术已经成熟；二者交易规则有最佳实践，各省份政策会趋于统一，发展速度会远快于嘉宾的预期。\n\n以下是本次播客的 memo：\n\n\n## 行业观察\n\n- 据朱治中对二十多个省份现货交易数据的观察，当时风电的实际售电价格普遍高于光伏。\n- 电改政策从出台到落地可能相隔三至五年。即使看准改革方向，过早入场的团队也可能在市场开放前耗尽资金。\n- 电力交易服务所需的设备投入较少，申报流程相对标准，发电企业和用电客户都有持续需求。这些条件有利于扩大服务规模，也使竞争者容易进入。\n\n## 市场机制与趋势判断\n\n- 新能源装机增长后，相同天气条件下的发电量可能更高。供需关系随之改变，依据旧有装机结构训练的电价模型可能失效。\n- 新规可以提前研读，参与者在新规下如何报价却要等实际交易才能观察。仅凭旧规则下的样本，难以量化报价行为的变化。\n- 风光项目的长期回报还取决于消纳能力。装机扩张后，新增发电量能被市场消纳多少，直接影响新增售电收入。\n- 储能通过充放电价差获得收入。朱治中判断，如果储能成本下降、火电调节成本上升，储能替代部分火电调节将更具经济性。\n\n## 交易建模与 AI 应用方法\n\n- 策略评价取决于客户目标。面对相同的电价预测，优先稳定购电成本的客户与愿意承担波动以争取收益的客户，可能申报不同的电量和价格。\n- 年度、月度和日前交易的提前量不同，应按决策窗口分别评价预测精度。电量模型的输出则要匹配申报要求，区分逐小时电量和全天总量。\n- 规则知识库降低检索成本，但基础操作仍可能占用大量工时。交易智能体的应用价值在于辅助执行标准流程；哪些环节值得优先自动化，取决于资产类型和交易任务。\n- 台风等偶发事件缺少训练样本。朱治中判断，在 AI 能模拟电力系统运行、推演规则变化的影响之前，异常行情仍需高级交易员研判。\n\n## 团队经营经验\n\n- 朱治中发现，部分非电力专业员工经过两至三年的实盘交易、复盘和专家培训，也能成长为交易骨干。\n- 与大型能源企业的合作通常始于管理层和业务骨干培训，再延伸至交易能力和信息系统建设。客户积累实际业绩后，才有条件诊断交易表现。\n- 先发团队积累的优势在于调整速度。长期复盘有助于更快识别已经失效的判断，减少修订模型时的试错。\n\n## 企业战略设想\n\n- 兰木达融资建设交易平台，希望通过共享数据、复用交易流程降低单客服务成本，在服务效果相近时获得更大的降价空间。\n- 朱治中设想从购电服务延伸至园区能源运营：先通过分时电价引导用户调整用电时段，再统筹园区的外购电、光伏、储能和充电设施，降低综合用电成本。\n",
     "createdAt": "2026-11-20T07:16:17Z",
-    "updatedAt": "2026-11-20T07:47:19Z",
+    "updatedAt": "2026-11-20T07:53:43Z",
     "author": "parallelarc",
     "authorAvatar": "https://avatars.githubusercontent.com/u/63178075?v=4",
     "authorUrl": "https://github.com/parallelarc",
@@ -14,7 +14,6 @@
       "podcast",
       "power-trading",
       "quant",
-      "energy",
       "ai"
     ],
     "url": "https://github.com/parallelarc/parallelarc.github.io/issues/13",
@@ -34,7 +33,7 @@
     "labels": [
       "blog",
       "podcast",
-      "physical-intelligence"
+      "pi"
     ],
     "url": "https://github.com/parallelarc/parallelarc.github.io/issues/12",
     "commentsCount": 0,
@@ -71,7 +70,7 @@
     "labels": [
       "blog",
       "podcast",
-      "physical-intelligence"
+      "pi"
     ],
     "url": "https://github.com/parallelarc/parallelarc.github.io/issues/10",
     "commentsCount": 0,
@@ -90,7 +89,7 @@
     "labels": [
       "blog",
       "podcast",
-      "physical-intelligence"
+      "pi"
     ],
     "url": "https://github.com/parallelarc/parallelarc.github.io/issues/9",
     "commentsCount": 0,
@@ -109,7 +108,7 @@
     "labels": [
       "blog",
       "podcast",
-      "physical-intelligence"
+      "pi"
     ],
     "url": "https://github.com/parallelarc/parallelarc.github.io/issues/8",
     "commentsCount": 0,
@@ -148,7 +147,7 @@
     "labels": [
       "blog",
       "podcast",
-      "physical-intelligence"
+      "pi"
     ],
     "url": "https://github.com/parallelarc/parallelarc.github.io/issues/6",
     "commentsCount": 0,
@@ -215,13 +214,12 @@
     "title": "扩散模型量化：如何在 ONNX 中优雅地处理「重复 N 步」问题",
     "content": "# 扩散模型量化：如何在 ONNX 中优雅地处理「重复 N 步」问题\n\n> 当你需要让 Stable Diffusion 在手机或边缘设备上跑起来时，一个关键问题摆在面前：扩散模型需要采样几十甚至上百步，到底该怎么量化？本文将从工程实践角度，帮你理清三种主流方案，并给出明确的选型建议。\n\n---\n\n## 问题的诞生\n\n以 Stable Diffusion 为代表的扩散模型，其核心是一个去噪网络（通常是 UNet）。在生成一张图的过程中，这个网络要被反复调用 N 次——每调用一次，就从噪声状态往前走一小步。\n\n这个看似简单的「重复 N 次」，在模型部署时却带来了一个让人头疼的问题：\n\n**应该把 UNet 在 ONNX 图里复制 N 份然后一次性跑完，还是只导出一份然后在运行时用 for 循环反复调用？**\n\n这个问题看似简单，背后却涉及模型大小、推理性能、工程维护成本等多个维度。今天我们就来深入剖析。\n\n---\n\n## 两种方案的抽象对比\n\n先让我们把问题抽象清楚，假设 N = 50 步：\n\n| 方案 | ONNX 图的结构 | 推理时的执行方式 |\n|------|--------------|-----------------|\n| **方案 A**：展开 N 份 | 把 UNet 拷贝 50 份，按时间步串联成一个大图 | 一次 `Session.run` 跑完整个图 |\n| **方案 B**：单步复用 | ONNX 里只有一份 UNet | 写个 for 循环，每次调用 `Session.run` 传新的 `x_t` |\n\n如果你正在考虑方案 A，先别急着动手——往下看。\n\n---\n\n## 方案 A：把模型展开 N 遍\n\n### 看起来很美，实则问题重重\n\n把模型展开 N 次，乍一看像是「一步到位」：不需要循环调用，减少了函数调用开销，多么优雅！\n\n但现实很骨感。\n\n**首先是模型体积爆炸。** 扩散模型本身就很大（UNet + VAE + Text Encoder），如果按 50 步展开，ONNX 文件大小直接乘以 50。加载时间、传输时间、磁盘占用都会成倍增加。更糟糕的是，过大的图会让可视化工具直接罢工，调试变成噩梦。\n\n**其次是维护成本极高。** 产品中经常需要调整采样步数：极速模式 10 步、质量模式 30 步、细节模式 50 步。一旦把 N 固死在图里，想改步数就得重新导出整套 ONNX + 重新量化。这运维成本，任谁都得掂量掂量。\n\n**最后是性能并不占优。** 很多人觉得减少 API 调用能提速，但现代推理引擎（ONNX Runtime、TensorRT、OpenVINO）对重复结构都有不错的融合和缓存优化，反而是图膨胀带来的缓存失效、调度开销可能抵消理论优势。在内存紧张的边缘设备上，这个问题尤为突出。\n\n> 所以，方案 A 一般只用于「一次性学术实验」或「对固定步数做极端 profiling」的场景，不推荐作为工程实践。\n\n---\n\n## 方案 B：单步量化 + 运行时循环\n\n### 当前业界的主流选择\n\n这正是当前 Stable Diffusion + ONNX Runtime 部署教程采用的方式：\n\n```\ntext_encoder.onnx  →  处理文本提示\nunet.onnx          →  单步去噪（量化后）\nvae_decoder.onnx   →  解码成最终图像\n```\n\n推理时在 Python/C# 中写采样循环，把 `x_t`（当前隐变量）和 `t`（当前时间步）一步步喂给量化后的 UNet。\n\n### 为什么这是更合理的选择\n\n**量化更简单。** 只需要对一个 UNet 做 PTQ/QAT，shape 推断更稳定，可以使用 ONNX Runtime 官方量化工具以及 AMD Quark、Intel Neural Compressor 等成熟工具链。\n\n**文件小，易部署。** ONNX 模型大小 ≈ 原 UNet 大小，适合移动端、边缘设备、Web 浏览器等资源受限场景。\n\n**灵活性最高。** 步数由外层 for 循环控制，随时可以调参，轻松支持 DDIM、DPM-Solver 等不同调度器，甚至可以实现自适应终止（early stopping）。\n\n**性能可以通过工程手段补足。** 使用 ONNX Runtime 的 IO Binding 避免重复内存拷贝，预热 session 消除首轮编译开销，在 GPU 上结合 CUDA Graph，循环开销大多可以摊平。\n\n### 一个隐藏的陷阱：量化误差累积\n\n但这里有个关键问题：扩散模型的量化误差会在多次去噪步骤中累积。早期步骤的小误差会沿着轨迹不断放大，导致最终图像质量下降。\n\n解决方案包括：\n\n- **多步感知校准**（如 AccuQuant）：校准时模拟真实的多步采样轨迹，而不只是单步激活分布。\n- **时间步感知修正**：为不同时间步设计不同的量化参数，在关键早期 timestep 更保守，后期更激进。\n\n这些都是基于「单步网络 + 循环调用」设计的，和方案 B 完全兼容。\n\n---\n\n## 方案 C：ONNX 图内显式循环（进阶最佳实践）\n\n### 用 Loop/Scan 算子封装循环\n\nONNX 标准提供了 `Loop` 和 `Scan` 运算符，用来在图内部表达循环。这是一种介于 A、B 之间，但综合优势更明显的做法。\n\n**结构特征：**\n\n- 图里只有一份「单步 UNet 子图」，但这份子图被作为 `Loop` 的 body 反复执行 N 次；\n- 步数 N 可以是常量（图中写死，类似 A 但不复制结构），也可以是输入张量（运行时指定，实现动态步数）。\n\n**核心优势：**\n\n1. **保持模型紧凑**——不发生 N 倍结构复制，文件大小和方案 B 类似。\n2. **减少框架层调度开销**——循环在 ONNX Runtime 内部执行，相比「外层 Python for + 内层 Session.run」，调用边界更少，内存复用和算子调度优化更容易做。\n3. **更利于高端推理后端优化**——对 TensorRT、QNN、OpenVINO 等运行时，图内 Loop 可能被特殊对待，如展开少量迭代做 kernel fusion，或对循环体进行更强的运算图优化。\n4. **仍具备灵活性**——可以通过输入控制步数，仍然是单一量化子网络。\n\n**什么时候不必用 Loop：**\n\n- 如果部署环境不支持 ONNX Loop 或支持不佳；\n- 或者你的工程栈已经在 C++/Rust 侧对 for 循环做了充分优化（IO Binding + CUDA Graph）。\n\n\n### 参考文献\n\n[1] [Quantize ONNX models - ONNX Runtime](https://onnxruntime.ai/docs/performance/model-optimizations/quantization.html)  \n[2] [Inference Stable Diffusion with C# and ONNX Runtime](https://onnxruntime.ai/docs/tutorials/csharp/stable-diffusion-csharp.html)  \n[3] [How to Run Stable Diffusion with ONNX](https://towardsdatascience.com/how-to-run-stable-diffusion-with-onnx-dafd2d29cd14/)  \n[4] [Quantizing a Diffusion Model using Quark - AMD](https://quark.docs.amd.com/latest/tutorials/torch/diffusion_tutorial/diffusion_tutorial.html)  \n[5] [ONNX Models Repository](https://github.com/onnx/models)  \n[6] [AccuQuant: Simulating Multiple Denoising Steps for Quantizing Diffusion Models](https://arxiv.org/abs/2510.20348)  \n[7] [Timestep-Aware Correction for Quantized Diffusion Models](https://arxiv.org/abs/2407.03917)  \n[8] [Q-Diffusion: Quantizing Diffusion Models - ICCV 2023](https://openaccess.thecvf.com/content/ICCV2023/papers/Li_Q-Diffusion_Quantizing_Diffusion_Models_ICCV_2023_paper.pdf)  \n[9] [Error Propagation Mechanisms and Compensation for Quantized Diffusion Models](https://arxiv.org/html/2508.12094v3)  \n[10] [Loop - ONNX Operator Documentation](https://onnx.ai/onnx/operators/onnx__Loop.html)  \n[11] [Training and Optimizing ONNX Models with DSPy - ONNX Loop usage gist](https://gist.github.com/ruvnet/ff246cff60a69d00dc161e194d43a889)\n",
     "createdAt": "2026-01-11T05:26:15Z",
-    "updatedAt": "2026-11-20T07:47:25Z",
+    "updatedAt": "2026-11-20T07:53:46Z",
     "author": "parallelarc",
     "authorAvatar": "https://avatars.githubusercontent.com/u/63178075?v=4",
     "authorUrl": "https://github.com/parallelarc",
     "labels": [
       "blog",
-      "diffusion",
       "tech"
     ],
     "url": "https://github.com/parallelarc/parallelarc.github.io/issues/2",
