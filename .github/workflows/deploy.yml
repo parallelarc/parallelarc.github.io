@@ -19,7 +19,7 @@ jobs:
   deploy:
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment_final.outputs.page_url || steps.deployment_retry.outputs.page_url || steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -55,6 +55,27 @@ jobs:
         with:
           path: dist
 
-      - name: Deploy to GitHub Pages
+      # Retry deployment only; re-uploading can create duplicate named artifacts.
+      - name: Deploy to GitHub Pages (attempt 1/3)
         id: deployment
+        continue-on-error: true
+        uses: actions/deploy-pages@v4
+
+      - name: Wait before second deployment attempt
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 10
+
+      - name: Deploy to GitHub Pages (attempt 2/3)
+        id: deployment_retry
+        if: steps.deployment.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/deploy-pages@v4
+
+      - name: Wait before final deployment attempt
+        if: steps.deployment_retry.outcome == 'failure'
+        run: sleep 30
+
+      - name: Deploy to GitHub Pages (attempt 3/3)
+        id: deployment_final
+        if: steps.deployment_retry.outcome == 'failure'
         uses: actions/deploy-pages@v4

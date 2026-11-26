@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  fireEvent,
   render,
   screen,
   userEvent,
@@ -58,6 +59,58 @@ describe("Terminal integration", () => {
     expect(input.tagName).toBe("TEXTAREA");
     expect(input.value).toBe("");
     expect(screen.getByTestId("input-command")).toHaveTextContent("welcome");
+  });
+
+  it.each([false, true])(
+    "focuses the prompt when clicking terminal content (touch: %s)",
+    async touchMode => {
+      const { user, input } = await setup(touchMode);
+      input.blur();
+      await user.click(screen.getByTestId("terminal-wrapper"));
+      expect(input).toHaveFocus();
+
+      input.blur();
+      await user.click(screen.getByTestId("input-command"));
+      expect(input).toHaveFocus();
+      await user.keyboard("draft");
+      expect(input.value).toBe("draft");
+    }
+  );
+
+  it("keeps terminal buttons and links focused when clicked", async () => {
+    const { user, input } = await setup();
+    const shortcut = screen.getByRole("button", { name: "/contact" });
+    await user.click(shortcut);
+    expect(shortcut).toHaveFocus();
+    const contact = await screen.findByTestId("contact");
+    const link = within(contact).getAllByRole("link")[0];
+    link.addEventListener("click", event => event.preventDefault(), {
+      once: true,
+    });
+    await user.click(link);
+    expect(link).toHaveFocus();
+    expect(input).not.toHaveFocus();
+  });
+
+  it("preserves selected terminal text without focusing the prompt", async () => {
+    const { input } = await setup();
+    input.blur();
+    const output = screen.getByTestId("input-command");
+    const selection = window.getSelection();
+    if (!selection) throw new Error("Text selection is unavailable");
+    const range = document.createRange();
+    range.selectNodeContents(output);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    const selectedText = selection.toString();
+    try {
+      // A drag ends with a click while the selected range is still present.
+      fireEvent.click(output);
+      expect(input).not.toHaveFocus();
+      expect(selection.toString()).toBe(selectedText);
+    } finally {
+      selection.removeAllRanges();
+    }
   });
 
   it.each(["about", "contact", "projects"])(

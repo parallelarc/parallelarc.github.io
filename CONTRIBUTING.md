@@ -167,6 +167,12 @@ Blog updates dispatch the deployment workflow. The deploy job checks out the
 latest source, regenerates the index, article bodies, and search data, and
 publishes them as build artifacts. A failed generation or dispatch fails the run.
 
+The Pages deployment step makes at most three attempts, waiting 10 seconds and
+then 30 seconds after failures. Only deployment is retried; generation, building,
+and artifact upload run once. This allows a temporarily empty artifact lookup to
+recover without uploading duplicate artifacts. A third failed deployment fails
+the workflow; a successful attempt supplies the environment's site URL.
+
 The GitHub Pages workflow builds and deploys the static site. Run tests and lint
 locally before delivery. Frontend settings use repository Variables with safe
 `VITE_*` values. GitHub build credentials come from the workflow token.

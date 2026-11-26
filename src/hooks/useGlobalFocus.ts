@@ -7,6 +7,7 @@ export interface UseGlobalFocusProps {
 
 /**
  * Hook for managing global keyboard focus in the terminal
+ * - Focuses input when clicking terminal content without selecting text
  * - Auto-focuses input when typing outside interactive controls
  * - Scrolls to input when focused
  * - Prevents focus when typing in other inputs
@@ -16,9 +17,39 @@ export function useGlobalFocus({
   inputRef,
 }: UseGlobalFocusProps): void {
   useEffect(() => {
+    const handleGlobalClick = (event: MouseEvent) => {
+      const target = event.target;
+      if (
+        event.defaultPrevented ||
+        event.button !== 0 ||
+        event.detail > 1 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.altKey ||
+        event.shiftKey ||
+        !(target instanceof Element) ||
+        !containerRef.current?.contains(target) ||
+        target.closest(
+          "a, button, input, textarea, select, label, summary, dialog, [role='button'], [contenteditable]:not([contenteditable='false'])"
+        ) ||
+        !window.getSelection()?.isCollapsed
+      ) {
+        return;
+      }
+
+      inputRef.current?.focus({ preventScroll: true });
+    };
+
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       // Let links, buttons and browser navigation keep their native keyboard behavior.
-      if (e.defaultPrevented || e.key.length !== 1 || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (
+        e.defaultPrevented ||
+        e.key.length !== 1 ||
+        e.metaKey ||
+        e.ctrlKey ||
+        e.altKey
+      )
+        return;
 
       const activeElement = document.activeElement;
       if (activeElement?.closest("a, button, [role='button']")) return;
@@ -56,8 +87,10 @@ export function useGlobalFocus({
       }
     };
 
+    document.addEventListener("click", handleGlobalClick);
     document.addEventListener("keydown", handleGlobalKeyDown);
     return () => {
+      document.removeEventListener("click", handleGlobalClick);
       document.removeEventListener("keydown", handleGlobalKeyDown);
     };
   }, [containerRef, inputRef]);
