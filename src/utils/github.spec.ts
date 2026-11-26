@@ -1,13 +1,44 @@
-import { afterEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   fetchIssues,
   fetchBlogPosts,
   fetchBlogContent,
   fetchBlogSearch,
+  formatRelativeTime,
 } from "./github";
 /* eslint camelcase: "off" */
 
 afterEach(() => vi.unstubAllGlobals());
+
+describe("blog publication dates", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date(2026, 10, 26, 0, 5));
+  });
+  afterEach(() => vi.useRealTimers());
+
+  it.each([
+    [26, "today"],
+    [25, "1 day ago"],
+    [20, "6 days ago"],
+    [19, "Nov 19, 2026"],
+    [1, "Nov 1, 2026"],
+    [27, "Nov 27, 2026"],
+  ])("formats November %s as %s", (day, expected) => {
+    expect(formatRelativeTime(new Date(2026, 10, day).toISOString())).toBe(
+      expected
+    );
+  });
+
+  it("counts calendar days across midnight rather than elapsed hours", () => {
+    expect(
+      formatRelativeTime(new Date(2026, 10, 25, 23, 55).toISOString())
+    ).toBe("1 day ago");
+    expect(
+      formatRelativeTime(new Date(2026, 10, 19, 23, 55).toISOString())
+    ).toBe("Nov 19, 2026");
+  });
+});
 
 it("loads all raw issue pages and filters PRs after pagination", async () => {
   const issues = Array.from({ length: 100 }, (_, index) => ({

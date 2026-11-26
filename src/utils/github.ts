@@ -312,39 +312,32 @@ export function calculateCategoryStats(
  * Format date for display
  */
 export function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
+  return new Date(dateString).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 /**
- * Format relative time (e.g., "3 days ago")
+ * Use relative calendar days for the past week, then an exact date.
  */
 export function formatRelativeTime(dateString: string): string {
   const date = new Date(dateString);
   const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  const published = Date.UTC(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate()
+  );
+  const diffDays = (today - published) / (1000 * 60 * 60 * 24);
 
   if (diffDays === 0) {
     return "today";
   }
-  if (diffDays === 1) {
-    return "yesterday";
-  }
-  if (diffDays < 7) {
-    return `${diffDays} days ago`;
-  }
-  if (diffDays < 30) {
-    const weeks = Math.floor(diffDays / 7);
-    return `${weeks} week${weeks > 1 ? "s" : ""} ago`;
-  }
-  if (diffDays < 365) {
-    const months = Math.floor(diffDays / 30);
-    return `${months} month${months > 1 ? "s" : ""} ago`;
+  if (diffDays > 0 && diffDays < 7) {
+    return `${diffDays} day${diffDays === 1 ? "" : "s"} ago`;
   }
 
   return formatDate(dateString);

@@ -193,9 +193,6 @@ function Blog() {
     }
   }, [currentPage, activeCategory, loading, isLatest]);
 
-  const formatLabels = (labels: string[]) =>
-    labels.filter(label => label.toLowerCase() !== "blog").join(", ");
-
   return (
     <BlogContainer
       data-testid="blog"
@@ -283,7 +280,6 @@ function Blog() {
                 const isFocused =
                   focusState.section === "posts" &&
                   focusState.postIndex === index;
-                const labels = formatLabels(post.labels);
                 return (
                   <TuiUnifiedItem
                     key={post.id}
@@ -307,9 +303,8 @@ function Blog() {
                       <TuiPostTitle>
                         {startIndex + index + 1}. {post.title}
                       </TuiPostTitle>
-                      <TuiPostMeta>
+                      <TuiPostMeta as="time" dateTime={post.createdAt}>
                         {formatRelativeTime(post.createdAt)}
-                        {labels && ` · ${labels}`}
                       </TuiPostMeta>
                     </TuiPostContent>
                   </TuiUnifiedItem>

@@ -518,12 +518,12 @@ export const TuiPostTitle = styled.span`
 `;
 
 export const TuiPostMeta = styled.span`
+  flex-shrink: 0;
   font-size: 0.8rem;
   color: ${({ theme }) => theme.colors?.text[200]};
-  overflow-wrap: anywhere;
+  white-space: nowrap;
 
   @media (min-width: 641px) {
-    flex: 0 1 40%;
     text-align: right;
   }
 `;

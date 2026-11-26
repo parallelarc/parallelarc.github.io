@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { BLOG_CONFIG } from "../config/blog";
 import { useBlogData } from "../hooks/useBlogData";
 import { POSTS_PER_PAGE } from "../hooks/useGitHubIssues";
-import { calculateCategoryStats, formatDate } from "../utils/github";
+import { calculateCategoryStats, formatRelativeTime } from "../utils/github";
 import {
   ArticleList,
   BrowseAction,
@@ -103,12 +103,8 @@ export default function BlogList({
                 </h2>
                 <p>
                   <time dateTime={item.createdAt}>
-                    {formatDate(item.createdAt)}
-                  </time>{" "}
-                  ·{" "}
-                  {item.labels
-                    .filter(label => label.toLowerCase() !== "blog")
-                    .join(" / ") || "Post"}
+                    {formatRelativeTime(item.createdAt)}
+                  </time>
                 </p>
               </a>
             ))}
