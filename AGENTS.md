@@ -62,9 +62,24 @@ This portfolio provides browse and terminal interfaces. Read
 4. Report what changed, what was verified, and what remains unresolved. Separate
    existing failures from regressions. A passing focused suite is not a passing
    full suite; consult the documented baseline rather than hiding old failures.
-5. Update documentation when behavior, configuration, or commands change. Keep
-   English and Chinese README product/setup facts aligned; detailed engineering
-   guidance belongs in its linked document, not duplicated in every entry point.
+5. Update docs only when requested or existing instructions become incorrect;
+   marginal features need no documentation changes. Keep English and Chinese
+   README facts aligned when changing them.
+
+## Git commits and authorization
+
+- Commit, push, or deploy only when authorized for the current task; permission
+  to commit does not authorize pushing.
+- Follow [commitlint.config.js](commitlint.config.js); local checks are in
+  [CONTRIBUTING.md](CONTRIBUTING.md#commit-messages).
+- Keep commits focused and stage explicit paths or hunks. Inspect the staged
+  diff and run `git diff --cached --check` before committing.
+- Verify the remote commit after pushing, and the workflow result and live site
+  before claiming deployment success.
+- **Every Git tag operation requires explicit user confirmation in advance.**
+  Name the repository, exact tag, and target commit before creating, pushing,
+  moving, overwriting, or deleting a tag. Approval to release or push does not
+  authorize choosing a version or manipulating tags.
 
 ## Credentials, generated files, and publishing
 
@@ -77,11 +92,3 @@ This portfolio provides browse and terminal interfaces. Read
 - `public/blog/` is generated from Issues. Regenerate it only when needed
   for the task; do not hand-edit authored articles through the snapshot. Keep
   `dist/`, generated blog assets, credentials, local configuration, and temporary artifacts untracked.
-- Commit or push when requested for the current task, staging only relevant
-  files. Inspect the resulting diff and verify the remote branch after pushing.
-  A successful push does not prove successful deployment; check the workflow
-  before claiming the site is deployed.
-- **Every Git tag operation requires explicit user confirmation in advance.**
-  Name the repository, exact tag, and target commit before creating, pushing,
-  moving, overwriting, or deleting a tag. Approval to release or push does not
-  authorize choosing a version or manipulating tags.

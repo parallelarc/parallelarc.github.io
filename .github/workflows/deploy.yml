@@ -16,7 +16,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  commitlint:
+    permissions:
+      contents: read
+    uses: ./.github/workflows/commitlint.yml
+
   deploy:
+    needs: commitlint
     environment:
       name: github-pages
       url: ${{ steps.deployment_final.outputs.page_url || steps.deployment_retry.outputs.page_url || steps.deployment.outputs.page_url }}

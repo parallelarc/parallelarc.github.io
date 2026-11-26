@@ -83,6 +83,33 @@ the repository or guide moves. No additional article representations are generat
 
 ## Verification
 
+### Commit messages
+
+CI checks new non-merge commits with `commitlint.config.js`. Use
+`type(scope): summary` or `type: summary`, optionally adding `!` before `:` for
+breaking changes. Types are `build`, `chore`, `ci`, `docs`, `feat`, `fix`, `perf`,
+`refactor`, `revert`, `style`, and `test`. Summaries can be English or Chinese;
+the subject line must be at most 100 characters. For example:
+
+```text
+fix(terminal): restore focus when clicking page content
+ci: 校验新增提交的格式
+```
+
+Run `npm run lint:commits -- --from HEAD^ --to HEAD` locally, or pass another
+`--from <base> --to <head>` range. Merge commits are excluded by Git topology; ordinary commits
+with fixup, squash, or release-only subjects still need the required format.
+Existing history outside the checked range is not revalidated.
+
+PRs check every commit between their base and head. Branch pushes check the full
+pushed range; newly created branches compare with the default branch, falling
+back to the latest commit when no earlier base exists. Main pushes and manual
+deployments run the same check as a prerequisite of deployment. Failed checks
+prevent deployment. To also block PR merging, require the `Commit message format`
+status check in the repository's branch protection or ruleset settings.
+
+### Checks by change
+
 Choose checks that cover the changed behavior. Current scripts are defined in
 `package.json`. Run checks explicitly before committing; there is no commit hook.
 

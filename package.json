@@ -13,6 +13,7 @@
     "test": "vitest",
     "coverage": "vitest run --coverage",
     "lint": "eslint .",
+    "lint:commits": "commitlint --git-log-args=--no-merges",
     "format:check": "prettier --check .",
     "format": "prettier --write ."
   },
@@ -27,6 +28,8 @@
     "zustand": "^5.0.2"
   },
   "devDependencies": {
+    "@commitlint/cli": "20.5.3",
+    "@commitlint/config-conventional": "20.5.3",
     "@testing-library/dom": "^9.3.4",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^14.0.0",
